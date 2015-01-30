@@ -2,6 +2,7 @@
 #include <random>
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 using namespace std;
 
@@ -13,18 +14,40 @@ AdjGraph gen_tp_prob(const bool selfloop, const size_t n_node,
 }
 
 // Generate $n_edge[i]$ edges for each node $i$, randomly connect to other nodes.
-AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vector<size_t>& n_edges){
+AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vector<size_t>& o_deg){
 	random_device rd;
 	mt19937 gen(rd());
 	uniform_int_distribution<size_t> dist(0, n_node);
-	const size_t n = n_node - selfloop ? 0 : 1;
+	const size_t max_od = n_node - (selfloop ? 0 : 1);
 
 	vector<size_t> sf_vec;
 	vector<bool> used;
 	AdjGraph g(n_node);
 	for(size_t i = 0; i < n_node; ++i){
-		size_t m = n_edges[i];
-		if(m <= n_node << 1){	//mark and re-generate
+		size_t m = o_deg[i];
+		if(m > max_od){
+			throw invalid_argument(string("out-degree of node(")+to_string(i)+string(") is ")+to_string(m)+string(" . It exceeds max out-degree"));
+			//m = min(m, max_od);
+		}
+		if(n_node <= 200 || m >= (n_node << 1)) {
+			//shuffle a continuous list and pick the first m
+			if(sf_vec.empty()){//first use the shuffle vector
+				sf_vec.reserve(n_node);
+				size_t t = 0;
+				generate_n(back_inserter(sf_vec), n_node, [&t](){return t++; });
+//				for(size_t i = 0; i < n_node; ++i)
+//					sf_vec.push_back(i);
+			}
+			random_shuffle(sf_vec.begin(), sf_vec.end());
+			for(size_t j = 0; j < m; ++j){
+				if(!selfloop && j == i){
+					++m;
+					continue;
+				}
+				g.add(i, j);
+			}
+		}else{
+			//mark and re-generate
 			used.assign(n_node, false);
 			used[i] = true;
 			for(size_t j = 0; j < m; j++){
@@ -34,18 +57,7 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vect
 				used[t] = true;
 				g.add(i, t);
 			}
-		}else{	//shuffle a continuous list and pick the first m
-			if(sf_vec.empty()){//first use the shuffle vector
-				sf_vec.reserve(n_node);
-				size_t t = 0;
-				generate_n(back_inserter(sf_vec), n_node, [&t](){return t++; });
-//				for(size_t i = 0; i < n_node; ++i)
-//					sf_vec.push_back(i);
-			}
-			random_shuffle(sf_vec.begin(), sf_vec.end());
-			for(size_t j = 0; j < m; ++j)
-				g.add(i, j);
-		}
+		}//end if
 	}
 	return g;
 }
@@ -80,7 +92,7 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const size_t n_
 	size_t n_sum = 0;
 	for(size_t i = 0; i < n_node-1; ++i){
 		size_t t = static_cast<size_t>(round(n_edge / temp[i]));
-		t = t>max_od ? max_od : t;
+		t = min(t, max_od);
 		v.push_back(t);
 		n_sum += t;
 	}
