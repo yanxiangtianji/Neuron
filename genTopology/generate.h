@@ -8,7 +8,7 @@ AdjGraph gen_tp_prob(const bool selfloop, const size_t n_node,
 
 
 // Generate $n_edge[i]$ edges for each node $i$, randomly connect to other nodes.
-AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vector<size_t>& n_edges);
+AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vector<size_t>& o_deg);
 
 // Generate out-degree by $fun_out_degree$, randomly connect to other nodes.
 AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node,
