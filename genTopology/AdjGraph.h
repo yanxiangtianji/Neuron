@@ -12,10 +12,12 @@ public:
 	bool add(const size_t from, const size_t to);
 	bool remove(const size_t from, const size_t to);
 
-	void sort_up();
+	AdjGraph& sort_up();
 	std::ostream& output(std::ostream& os) const;
 
 private:
 	std::vector<std::vector<size_t> > cont;
+	bool unsorted_any;
+	std::vector<bool> unsorted;
 };
 
