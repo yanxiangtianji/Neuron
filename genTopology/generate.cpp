@@ -26,7 +26,7 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vect
 	for(size_t i = 0; i < n_node; ++i){
 		size_t m = o_deg[i];
 		if(m > max_od){
-			throw invalid_argument(string("out-degree of node(")+to_string(i)+string(") is ")+to_string(m)+string(" . It exceeds max out-degree"));
+			throw invalid_argument("out-degree of node("+to_string(i)+") is "+to_string(m)+" . It exceeds maximum out-degree.");
 			//m = min(m, max_od);
 		}
 		if(n_node <= 200 || m >= (n_node << 1)) {
@@ -40,11 +40,11 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vect
 			}
 			random_shuffle(sf_vec.begin(), sf_vec.end());
 			for(size_t j = 0; j < m; ++j){
-				if(!selfloop && j == i){
+				if(!selfloop && sf_vec[j] == i){
 					++m;
 					continue;
 				}
-				g.add(i, j);
+				g.add(i, sf_vec[j]);
 			}
 		}else{
 			//mark and re-generate
@@ -79,11 +79,14 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const size_t n_
 	std::function<double(const size_t nid)> fun_out_degree)
 {
 	const size_t max_od = n_node - (selfloop?0:1);
+	if(n_edge > max_od*n_node){
+		throw invalid_argument("Total out-degree(" + to_string(n_edge) + ") exceeds maximum possible out-degree(" + to_string(max_od*n_node) + ").");
+	}
 	double sum = 0.0;
 	vector<double> temp;
 	temp.reserve(n_node);
 	for (size_t i = 0; i < n_node; ++i){
-		double t = fun_out_degree(i);
+		double t = max(0.0, fun_out_degree(i));
 		temp.push_back(t);
 		sum += t;
 	}
@@ -91,12 +94,12 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const size_t n_
 	v.reserve(n_node);
 	size_t n_sum = 0;
 	for(size_t i = 0; i < n_node-1; ++i){
-		size_t t = static_cast<size_t>(round(n_edge / temp[i]));
+		size_t t = static_cast<size_t>(round(n_edge * temp[i] / sum));
 		t = min(t, max_od);
 		v.push_back(t);
 		n_sum += t;
 	}
-	v.push_back(n_edge - n_sum);
+	v.push_back(n_sum >= n_edge ? 0 : n_edge - n_sum);
 	return gen_tp_degree(selfloop, n_node, v);
 
 }
