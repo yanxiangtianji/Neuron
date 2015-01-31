@@ -24,12 +24,27 @@
     <ClCompile Include="Network.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="neuron_dynamic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EventQueue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Neuron.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Network.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="neuron_dynamic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EventQueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

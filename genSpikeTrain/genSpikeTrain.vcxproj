@@ -64,13 +64,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EventQueue.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Neuron.cpp" />
+    <ClCompile Include="neuron_dynamic.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="def.h" />
+    <ClInclude Include="EventQueue.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Neuron.h" />
+    <ClInclude Include="neuron_dynamic.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
