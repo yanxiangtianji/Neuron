@@ -4,6 +4,8 @@
 #include "AdjGraph.h"
 #include "AdjGraphSec.h"
 #include "generate.h"
+#include <map>
+#include <string>
 
 using namespace std;
 
@@ -31,7 +33,7 @@ void test_graph(){
 	cout << gs << endl;
 }
 
-void test_gen(){
+void test_gen_degree(){
 	size_t n = 10;
 	//AdjGraph g1 = gen_tp_degree(false, n, {1,2,3,4,5,6,7,8,9,0});
 	//g1.sort_up();
@@ -48,8 +50,21 @@ void test_gen(){
 	cout << g3.get_n() << ' ' << g3.get_m() << endl;
 }
 
+void go(const size_t n,const string& fn,const vector<size_t>& vec){
+	AdjGraph g = gen_tp_degree(false, n, vec);
+	ofstream fout(fn);
+	fout << g.sort_up();
+	fout.close();
+}
+
 int main(){
+	string base_dir("../data/");
 //	test_graph();
-	test_gen();
+//	test_gen_degree();
+	go(4, base_dir + "multiparent.txt", { 0, 0, 0, 3 });
+	go(3, base_dir + "indirect1.txt", { 0, 1, 1 });
+	go(4, base_dir + "indirect2.txt", { 0, 0, 1, 3 });
+	go(3, base_dir + "common1.txt", { 0,1,1});
+	go(4, base_dir + "common2.txt", { 0, 0, 2, 2 });
 	return 0;
 }
