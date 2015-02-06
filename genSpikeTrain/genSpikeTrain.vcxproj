@@ -64,7 +64,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EventQueue.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Neuron.cpp" />
