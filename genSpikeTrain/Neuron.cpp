@@ -1,4 +1,7 @@
 #include "Neuron.h"
+#include <limits>
+
+using namespace std;
 
 tp_t Neuron::fire_min_interval=0;
 const Neuron::signal_t Neuron::default_fire_sh = 0;
@@ -7,7 +10,7 @@ Neuron::cb_fire_t Neuron::default_cb_fire = [](neu_ptr_t p, const tp_t& t){p->re
 
 
 Neuron::Neuron(const nid_t nid, const signal_t fire_shd, fun_delay_fire_t fire_f)
-	:id(nid), fire_shreshold(fire_shd), fun_delay_fire(fire_f)
+	:id(nid), fire_shreshold(fire_shd), fun_delay_fire(fire_f), last_fire_time(numeric_limits<tp_t>::min())
 {
 }
 
