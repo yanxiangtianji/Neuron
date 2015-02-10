@@ -140,29 +140,48 @@ void test_neuron(){
 		cout << p->get_id() << " " << t << endl;
 	};
 
-	pn1->reg(cb);	pn2->reg(cb);	pn3->reg(cb);	pn4->reg(cb);
+	pn1->reg_cb_f(cb);	pn2->reg_cb_f(cb);	pn3->reg_cb_f(cb);	pn4->reg_cb_f(cb);
 
 	pn1->receive(0);
 	pn2->receive(10);
 }
 
 void test_init(const string& fn){
-	random_device rd;
-	//Neuron::fun_delay_t fun1 = [&](const tp_t mean){
-	//	tp_t t=static_cast<tp_t>(normal_distribution<>(mean, 5)(rd));
-	//	return max(0, t);
-	//};
-	//Network n;
-	//n.initial(fn,fun1);
+	typedef normal_distribution<double> n_dis_t;
+	typedef uniform_int_distribution<int> u_dis_t;
+	Network::metafun_fire_sh_t mf_fire_sh = [](const nid_t&)->signal_t{return 0; };
+	Network::metafun_fire_d_t mf_fire_d = [](const nid_t&){return Neuron::get_default_fun_delay(); };
+	Network::metafun_prog_d_t mf_prog_d = [](const nid_t&, const nid_t&){return Neuron::get_default_fun_delay(); };
+	Network n;
+	n.initial(fn,mf_fire_sh,mf_fire_d,mf_prog_d);
+	for(size_t i = 0; i < n.size(); ++i){
+		auto p = n.get(i);
+		cout << p->get_fun_delay_f()() << " ";
+	}
+	cout << endl;
+
+	Network::metafun_fire_d_t mf_fire_d2 = [](const nid_t&){return ToolRandom::bind_gen_bmin(0,n_dis_t(5,2)); };
+	Network::metafun_prog_d_t mf_prog_d2 = [](const nid_t&, const nid_t&){
+		int mean = ToolRandom::get_int(7, 14);
+		return ToolRandom::bind_gen_bmin(0, n_dis_t(mean, 3)); 
+	};
+	Network n2;
+	n2.initial(fn, mf_fire_sh, mf_fire_d2, mf_prog_d2);
+	for(size_t i = 0; i < n.size(); ++i){
+		auto p = n2.get(i);
+		cout << p->get_fun_delay_f()() << " ";
+	}
+	cout << endl;
+
 }
 
 int main(){
-	string base_dir("../data");
+	string base_dir("../data/");
 //	test_eq();
 //	test_random();
-	test_bind();
+//	test_bind();
 //	test_neuron();
-//	test_init(base_dir+"multiparent.txt");
+	test_init(base_dir+"multiparent.txt");
 	return 0;
 }
 
