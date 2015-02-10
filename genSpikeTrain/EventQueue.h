@@ -19,6 +19,7 @@ public:
 
 	bool empty() const { return cont.empty(); }
 	size_t size() const { return cont.size(); }
+	void clear(){ cont.clear(); }
 };
 
 template<class T1, class T2>
