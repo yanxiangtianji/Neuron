@@ -8,6 +8,7 @@
 class Neuron
 {
 public:	//for typedef
+	typedef size_t nid_t;
 	typedef float signal_t;
 	typedef std::shared_ptr<Neuron> ptr_t;
 	typedef std::function<tp_t()> fun_delay_t;
@@ -17,10 +18,11 @@ public:	//for typedef
 	typedef std::function<void(ptr_t, const tp_t&)> cb_fire_t;
 public:
 //	Neuron(const nid_t nid);
-	Neuron(const nid_t nid, const signal_t fire_shd = 0, fun_delay_t fire_f = default_fun_delay);
+	Neuron(const nid_t nid, const signal_t fire_shd = default_fire_sh, fun_delay_t fire_f = default_fun_delay);
 	Neuron(const Neuron&) = default;
 
-	void add_child(ptr_t& p, const fun_delay_prog_t& t){ children[p] = t; }
+	void add_child(ptr_t& p, const fun_delay_prog_t& t=default_fun_delay){ children[p] = t; }
+	void add_child(ptr_t& p, fun_delay_prog_t&& t){ children[p] = t; }
 
 	/*!
 	@brief Handle the things when this neuron fires.
@@ -30,31 +32,39 @@ public:
 	*/
 	void fire(const tp_t current);
 	/*!
+	@brief Register the callback function of fire.
+	@param cb_f The function called, when this neuron fires.
+	*/
+	void reg_cb_f(std::function<void(ptr_t, tp_t)> cb_f){ cb_fire = cb_f; }
+	/*!
 	@brief Handle the input.
 	@param current The time at which it receives a signal.
 	@param amount The amount of signal the neuron actually receives.
 	*/
 	void receive(const tp_t current, const signal_t& amount);
 	void receive(const tp_t current);
-	void reg(std::function<void(ptr_t, tp_t)> f){ cb_fire = f; }
 
 //getter & setter:
 	nid_t get_id()const { return id; }
 	tp_t get_last_fire_time()const { return last_fire_time; }
 	signal_t get_fire_shreshold()const { return fire_shreshold; }
 	fun_delay_fire_t get_fun_delay_f()const{ return fun_delay_fire; }
-	const fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{
+	fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{
 		return children.at(p); 
 	}
 	void set_fire_shreshold(const signal_t& t){ fire_shreshold = t; }
+	void set_fire_shreshold(signal_t&& t){ fire_shreshold = t; }
 	void set_fun_delay_f(const fun_delay_fire_t& f){ fun_delay_fire = f; }
-//	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
+	void set_fun_delay_f(fun_delay_fire_t&& f){ fun_delay_fire = f; }
+	//	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
+public:
+	static fun_delay_t get_default_fun_delay(){ return default_fun_delay; }
+	static signal_t get_default_fire_sh(){ return default_fire_sh; }
 private:
 	const nid_t id;
 	signal_t fire_shreshold;
 	tp_t last_fire_time;
-//	signal_t value
-	;
+//	signal_t value;
 	//delays:
 	fun_delay_fire_t fun_delay_fire;
 	std::map<ptr_t, fun_delay_prog_t> children;//child neuron and the propagation delay to it.
@@ -62,12 +72,10 @@ private:
 	cb_fire_t cb_fire;
 //static:
 	static tp_t fire_min_interval;
+	static const signal_t default_fire_sh;
 	static fun_delay_t default_fun_delay;
 	static cb_fire_t default_cb_fire;
 };
-
-typedef Neuron::ptr_t neu_ptr_t;
-typedef Neuron::signal_t neu_signal_t;
 
 inline bool operator<(const Neuron& lth, const Neuron& rth){
 	return lth.get_id() < rth.get_id();
@@ -76,3 +84,9 @@ inline bool operator<(const Neuron& lth, const Neuron& rth){
 inline bool operator==(const Neuron& lth, const Neuron& rth){
 	return lth.get_id() == rth.get_id();
 }
+
+
+typedef Neuron::nid_t nid_t;
+typedef Neuron::ptr_t neu_ptr_t;
+typedef Neuron::signal_t signal_t;
+

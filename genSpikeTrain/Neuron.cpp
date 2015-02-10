@@ -1,7 +1,7 @@
 #include "Neuron.h"
 
 tp_t Neuron::fire_min_interval=0;
-
+const Neuron::signal_t Neuron::default_fire_sh = 0;
 Neuron::fun_delay_t Neuron::default_fun_delay = [](){return 0; };
 Neuron::cb_fire_t Neuron::default_cb_fire = [](neu_ptr_t p, const tp_t& t){p->receive(t); };
 
