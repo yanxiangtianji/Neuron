@@ -25,11 +25,24 @@ public:
 		return std::bind(trans<RES, typename DIS::result_type>, bind(dis, ref(gen)));
 	};
 	template<class RES>
-	static std::function<RES()> bound_min(RES min_bound, std::function<RES()> gen);
+	static std::function<RES()> bound_min(const RES min_bound, std::function<RES()> gen);
 	template<class RES>
-	static std::function<RES()> bound_max(RES max_bound, std::function<RES()> gen);
+	static std::function<RES()> bound_max(const RES max_bound, std::function<RES()> gen);
 	template<class RES>
-	static std::function<RES()> bound_minmax(RES min_bound, RES max_bound, std::function<RES()> gen);
+	static std::function<RES()> bound_minmax(const RES min_bound, RES max_bound, std::function<RES()> gen);
+
+	template<typename RES, class DIS>
+	static std::function<RES()> bind_gen_bmin(const RES min_bound, DIS dis){
+		return bound_min<RES>(min_bound, bind_gen<RES>(dis));
+	}
+	template<typename RES, class DIS>
+	static std::function<RES()> bind_gen_bmax(const RES max_bound, DIS dis){
+		return bound_max<RES>(max_bound, bind_gen<RES>(dis));
+	}
+	template<typename RES, class DIS>
+	static std::function<RES()> bind_gen_bminmax(const RES min_bound, const RES max_bound, DIS dis){
+		return bound_minmax<RES>(min_bound, max_bound, bind_gen<RES>(dis));
+	}
 
 private:
 //	static std::random_device gen;
@@ -38,18 +51,18 @@ private:
 };
 
 template<class RES>
-static std::function<RES()> ToolRandom::bound_min(RES min_bound, std::function<RES()> gen){
-	return bind(max<RES>,min_bound, bind(gen));
+inline static std::function<RES()> ToolRandom::bound_min(const RES min_bound, std::function<RES()> gen){
+	return bind(max<RES>, min_bound, bind(gen));
 }
 template<class RES>
-static std::function<RES()> ToolRandom::bound_max(RES max_bound, std::function<RES()> gen){
+inline static std::function<RES()> ToolRandom::bound_max(const RES max_bound, std::function<RES()> gen){
 	return bind(min<RES>, max_bound, bind(gen));
 }
 template<class RES>
-static std::function<RES()> ToolRandom::bound_minmax(RES min_bound, RES max_bound, std::function<RES()> gen){
+inline static std::function<RES()> ToolRandom::bound_minmax(const RES min_bound, RES max_bound, std::function<RES()> gen){
 	if(min_bound > max_bound){
 		throw exception("Invalid: min_bound is larger than max_bound");
 	}
-	return bound_min<RES>(min_bound, bind(bound_max<RES>(max_bound, bind(gen))));
+	return bound_min<RES>(min_bound, bound_max<RES>(max_bound, gen));
 }
 
