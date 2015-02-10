@@ -10,15 +10,17 @@ class Neuron
 public:	//for typedef
 	typedef float signal_t;
 	typedef std::shared_ptr<Neuron> ptr_t;
-	typedef std::function<tp_t(const tp_t&)> fun_delay_t;
+	typedef std::function<tp_t()> fun_delay_t;
+	typedef fun_delay_t fun_delay_fire_t;
+	typedef fun_delay_t fun_delay_prog_t;
+//	typedef std::function<void(ptr_t, const tp_t&, const signal_t&)> cb_fire_t;
 	typedef std::function<void(ptr_t, const tp_t&)> cb_fire_t;
 public:
 //	Neuron(const nid_t nid);
-	Neuron(const nid_t nid, const signal_t fire_shd = 0, const tp_t fire_d = 0,
-		fun_delay_t fire_f = default_fun_delay, fun_delay_t prog_f = default_fun_delay);
+	Neuron(const nid_t nid, const signal_t fire_shd = 0, fun_delay_t fire_f = default_fun_delay);
 	Neuron(const Neuron&) = default;
 
-	void add_child(ptr_t& p, const tp_t t){ children[p] = t; }
+	void add_child(ptr_t& p, const fun_delay_prog_t& t){ children[p] = t; }
 
 	/*!
 	@brief Handle the things when this neuron fires.
@@ -39,26 +41,25 @@ public:
 //getter & setter:
 	nid_t get_id()const { return id; }
 	tp_t get_last_fire_time()const { return last_fire_time; }
-	tp_t get_fire_delay()const { return fire_delay; }
 	signal_t get_fire_shreshold()const { return fire_shreshold; }
-	fun_delay_t get_fun_delay_f()const{ return fun_delay_f; }
-	fun_delay_t get_fun_delay_p()const{ return fun_delay_p; }
+	fun_delay_fire_t get_fun_delay_f()const{ return fun_delay_fire; }
+	const fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{
+		return children.at(p); 
+	}
 	void set_fire_shreshold(const signal_t& t){ fire_shreshold = t; }
-	void set_fire_delay(const tp_t& d){ fire_delay = d; }
-	void set_fun_delay_p(const fun_delay_t& f){ fun_delay_p = f; }
-	void set_fun_delay_f(const fun_delay_t& f){ fun_delay_f = f; }
+	void set_fun_delay_f(const fun_delay_fire_t& f){ fun_delay_fire = f; }
+//	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
 private:
 	const nid_t id;
 	signal_t fire_shreshold;
-//	signal_t value;
+	tp_t last_fire_time;
+//	signal_t value
+	;
 	//delays:
-	tp_t fire_delay;	//mean value of fire delay
-	fun_delay_t fun_delay_f;
-	std::map<ptr_t, tp_t> children;//child neuron and the propagation delay to it.
-	fun_delay_t fun_delay_p;
+	fun_delay_fire_t fun_delay_fire;
+	std::map<ptr_t, fun_delay_prog_t> children;//child neuron and the propagation delay to it.
 
 	cb_fire_t cb_fire;
-	tp_t last_fire_time;
 //static:
 	static tp_t fire_min_interval;
 	static fun_delay_t default_fun_delay;
