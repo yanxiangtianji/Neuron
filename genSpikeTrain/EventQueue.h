@@ -10,9 +10,8 @@ private:
 
 public:
 
-//	void push(typename cont_t::value_type::first_type& tp, const typename cont_t::value_type::second_type& nid){
 	void push(const T_TIME& tp, const T_MSG& nid){ cont.emplace(tp, nid); }
-	void push(cont_t::value_type& p){ push(p.first, p.second); }
+	void push(const typename cont_t::value_type& p){ push(p.first, p.second); }
 
 	typename cont_t::value_type get(){ return *cont.begin(); }
 	void pop();
