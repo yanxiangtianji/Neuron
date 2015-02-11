@@ -160,6 +160,16 @@ void test_init(const string& fn){
 	}
 	cout << endl;
 
+	Network::metafun_fire_d_t mf_fire_d1 = [](const nid_t&){return [](){return 1; }; };
+	Network::metafun_prog_d_t mf_prog_d1 = [](const nid_t&, const nid_t&){return [](){return 4; }; };
+	Network n1;
+	n1.initial(fn, mf_fire_sh, mf_fire_d1, mf_prog_d1);
+	for(size_t i = 0; i < n1.size(); ++i){
+		auto p = n1.get(i);
+		cout << p->get_fun_delay_f()() << " ";
+	}
+	cout << endl;
+
 	Network::metafun_fire_d_t mf_fire_d2 = [](const nid_t&){return ToolRandom::bind_gen_bmin(0,n_dis_t(5,2)); };
 	Network::metafun_prog_d_t mf_prog_d2 = [](const nid_t&, const nid_t&){
 		int mean = ToolRandom::get_int(7, 14);
@@ -167,11 +177,37 @@ void test_init(const string& fn){
 	};
 	Network n2;
 	n2.initial(fn, mf_fire_sh, mf_fire_d2, mf_prog_d2);
-	for(size_t i = 0; i < n.size(); ++i){
+	for(size_t i = 0; i < n2.size(); ++i){
 		auto p = n2.get(i);
 		cout << p->get_fun_delay_f()() << " ";
 	}
 	cout << endl;
+}
+
+void test_spike(const string& fn){
+	Network::metafun_fire_sh_t mf_fire_sh = [](const nid_t&)->signal_t{return 0; };
+	Network::metafun_fire_d_t mf_fire_d = [](const nid_t&){return [](){return 1; }; };
+	Network::metafun_prog_d_t mf_prog_d = [](const nid_t&, const nid_t&){return [](){return 4; }; };
+	Network n;
+	n.initial(fn, mf_fire_sh);
+	n.output_structure(cout);
+	cout << "---first---" << endl;
+//	Network::spike_trains_t ts=n.gen_spikes(4);
+//	n.record_spikes(cout, ts);
+	cout << "---second---" << endl;
+	Network::spike_trains_t ts2(n.size());
+	ts2[0].push_back(1);
+	ts2[0].push_back(1);
+	ts2[0].push_back(2);
+	ts2[1].push_back(8);
+	ts2[2].push_back(20);
+	ts2[3].push_back(30);
+	n.record_spikes(cout, ts2);
+	cout << "------" << endl;
+	n.record_spikes(cout, n.gen_spikes(ts2));
+}
+
+void go(const string& filename){
 
 }
 
@@ -181,7 +217,8 @@ int main(){
 //	test_random();
 //	test_bind();
 //	test_neuron();
-	test_init(base_dir+"multiparent.txt");
+//	test_init(base_dir+"multiparent.txt");
+	test_spike(base_dir + "multiparent.txt");
 	return 0;
 }
 
