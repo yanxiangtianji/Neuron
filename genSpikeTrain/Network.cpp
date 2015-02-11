@@ -25,27 +25,59 @@ void Network::clear(){
 	eq.clear();
 }
 
-void Network::gen_spikes(const std::string& o_filename, const size_t input_num){
-	ofstream fout(o_filename);
-	gen_spikes(fout, input_num);
-	fout.close();
-}
-
-void Network::gen_spikes(const std::ostream& os, const size_t input_num){
-	const tp_t MAX_TIME_INPUT = 10000;
-	auto g_neu = ToolRandom::bind_gen<size_t>(uniform_int_distribution<size_t>(0, size()));
-	auto g_time = ToolRandom::bind_gen<tp_t>(uniform_int_distribution<tp_t>(0, MAX_TIME_INPUT));
-	input_spike_t input;
-	input.reserve(input_num);
-	for(size_t i = 0; i < input_num; ++i){
-		input.emplace_back(g_time(), cont[g_neu()]);
+void Network::record_spikes(std::ostream& os, const spike_trains_t& input){
+	for(size_t i = 0; i < input.size(); ++i){
+		neu_ptr_t p = cont[i];
+		os << p->get_id() << '\n';
+		for(const auto& t : input[i])
+			os << ' ' << t;
+		os << '\n';
 	}
-	sort(input.begin(), input.end());
-	gen_spikes(os, input);
 }
 
-void Network::gen_spikes(const std::ostream& os, input_spike_t& input){
-	
+Network::spike_trains_t Network::gen_spikes(const size_t input_num, const tp_t MAX_TIME_INPUT){
+	auto g_neu = ToolRandom::bind_gen<size_t>(uniform_int_distribution<size_t>(0, size()-1));
+	auto g_time = ToolRandom::bind_gen<tp_t>(uniform_int_distribution<tp_t>(1, MAX_TIME_INPUT));
+	spike_trains_t input(size());
+	for(size_t i = 0; i < input_num; ++i){
+		input[g_neu()].push_back(g_time());
+	}
+	for(auto& train:input)
+		sort(train.begin(), train.end());
+	return gen_spikes(input);
+}
+
+Network::spike_trains_t Network::gen_spikes(spike_trains_t& input){
+	//initial neuron callback
+	function<void(neu_ptr_t, tp_t)> cb =
+//		bind(static_cast<void (eq_t::*)(const tp_t&, const neu_ptr_t&)>(&eq_t::push), &eq, placeholders::_2, placeholders::_1);
+		bind(&eq_t::push, &eq, placeholders::_2, placeholders::_1);
+	for(auto& pneu : cont)
+		pneu->reg_cb_f(cb);
+
+	//push the initial spikes
+	for(size_t i = 0; i < size();++i){
+		neu_ptr_t p = cont[i];
+		for(const tp_t& t : input[i])
+			eq.push(t, p);
+	}
+	//go
+	spike_trains_t res(size());
+	while(!eq.empty()){
+		pair<const tp_t,neu_ptr_t> evt = eq.get_n_pop();
+		const tp_t t = evt.first;
+		neu_ptr_t& p = evt.second;
+		res[idx_mapping[p]].push_back(t);
+		p->receive(t);
+	}
+	for(auto& train : res){
+		sort(train.begin(), train.end());
+		auto it=unique(train.begin(), train.end(), [](const tp_t&lth, const tp_t&rth)->bool{
+			return rth - lth <= Neuron::get_fire_min_interval();
+		});
+		train.erase(it, train.end());
+	}
+	return res;
 }
 
 void Network::initial(const std::string& filename, metafun_fire_sh_t mf_fire_sh, 
@@ -59,24 +91,38 @@ void Network::initial(const std::string& filename, metafun_fire_sh_t mf_fire_sh,
 	}
 	size_t n, m;
 	fin >> n >> m;
-	function<void(neu_ptr_t, tp_t)> cb = 
-		bind(static_cast<void (eq_t::*)(const tp_t&,const neu_ptr_t&)>(&eq_t::push), &eq, placeholders::_2, placeholders::_1);
 	for(size_t i = 0; i < n; ++i){
 		auto p = make_shared<Neuron>(i, mf_fire_sh(i), mf_fire(i));
-		p->reg_cb_f(cb);
-		cont.push_back(p);
+		add_node(p);
 	}
 //	function<tp_t()> prog_mean_meta_fun = ToolRandom::bind_gen_bmin(0, normal_distribution<double>(10, 2));
 	for(size_t i = 0; i < n; ++i){
-		size_t src, pn;
-		fin >> src >> pn;
-		neu_ptr_t& ptr = cont[src];
+		size_t chl, pn;
+		fin >> chl >> pn;
+		neu_ptr_t& ptr = cont[chl];
 		for(size_t j = 0; j < pn; ++j){
-			size_t dst;
-			fin >> dst;
+			size_t par;
+			fin >> par;
 			//auto fp = ToolRandom::bind_gen_bmin(0, normal_distribution<double>(prog_mean_meta_fun(), 1));
-			ptr->add_child(cont[dst],mf_prog(src,dst));
+			cont[par]->add_child(ptr, mf_prog(chl, par));
 		}
 	}
 }
 
+void Network::add_node(const neu_ptr_t& p){
+	size_t s = cont.size();
+	cont.push_back(p);
+	idx_mapping[p] = s;
+}
+
+void Network::output_structure(std::ostream& os){
+	os << size() << '\n';
+	for(size_t i = 0; i < size(); ++i){
+		neu_ptr_t p = cont[i];
+		os << p->get_id() << ' ' << p->size() << '\n';
+		for(const auto&par : p->get_children()){
+			os << ' ' << par.first->get_id();
+		}
+		os << '\n';
+	}
+}
