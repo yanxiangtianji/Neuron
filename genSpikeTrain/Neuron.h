@@ -44,6 +44,9 @@ public:
 	void receive(const tp_t current, const signal_t& amount);
 	void receive(const tp_t current);
 
+	size_t size() const{ return children.size(); }
+	void clear();
+
 //getter & setter:
 	nid_t get_id()const { return id; }
 	tp_t get_last_fire_time()const { return last_fire_time; }
@@ -52,14 +55,16 @@ public:
 	fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{
 		return children.at(p); 
 	}
+	const std::map<ptr_t, fun_delay_prog_t>& get_children() const { return children; }
 	void set_fire_shreshold(const signal_t& t){ fire_shreshold = t; }
 	void set_fire_shreshold(signal_t&& t){ fire_shreshold = t; }
 	void set_fun_delay_f(const fun_delay_fire_t& f){ fun_delay_fire = f; }
 	void set_fun_delay_f(fun_delay_fire_t&& f){ fun_delay_fire = f; }
 	//	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
 public:
-	static fun_delay_t get_default_fun_delay(){ return default_fun_delay; }
+	static tp_t get_fire_min_interval(){ return FIRE_MIN_INTERVAL; }
 	static signal_t get_default_fire_sh(){ return default_fire_sh; }
+	static fun_delay_t get_default_fun_delay(){ return default_fun_delay; }
 private:
 	const nid_t id;
 	signal_t fire_shreshold;
@@ -71,7 +76,9 @@ private:
 
 	cb_fire_t cb_fire;
 //static:
-	static tp_t fire_min_interval;
+private:
+	static const tp_t FIRE_MIN_INTERVAL=0;
+	static const tp_t default_last_fire_time = 0;
 	static const signal_t default_fire_sh;
 	static fun_delay_t default_fun_delay;
 	static cb_fire_t default_cb_fire;
