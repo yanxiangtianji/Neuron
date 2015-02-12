@@ -65,7 +65,18 @@ bool FirstAlg::contains(const ps_t& lth, const ps_t& rth){
 bool FirstAlg::equals(const ps_t& lth, const ps_t& rth){
 	return lth == rth;
 }
-
+bool FirstAlg::share_n_loop(const size_t i, const ps_t& lth, const size_t j, const ps_t& rth){
+	if(lth.size() != rth.size())
+		return false;
+	ps_t temp_l(lth);
+	auto itl = find(temp_l.begin(), temp_l.end(), j);
+	if(itl == temp_l.end())
+		return false;
+	if(find(rth.begin(), rth.end(), i) == rth.end())
+		return false;
+	*itl = i;
+	return temp_l == rth;
+}
 
 void FirstAlg::set_ps_by_mpps(){
 	size_t n = size();
@@ -76,12 +87,18 @@ void FirstAlg::set_ps_by_mpps(){
 		goon = false;
 		for(size_t i = 0; i < n; ++i){
 			for(size_t j = 0; j < n; ++j){
-				if(i == j)
+				if(i == j || ps[i].size()==0 || ps[j].size()==0)
 					continue;
+				//indirect: remove indirect links
 				if(contains(ps[i], ps[j]) && !equals(ps[i], ps[j])){
 					goon = true;
 					for(size_t p : ps[j])
 						ps[i].erase(find(ps[i].begin(), ps[i].end(), p));
+				}
+				//common input: remove spurious link loop among children sharing common parents
+				if(share_n_loop(i,ps[i],j, ps[j])){
+					ps[i].erase(find(ps[i].begin(), ps[i].end(), j));
+					ps[j].erase(find(ps[j].begin(), ps[j].end(), i));
 				}
 			}
 		}
@@ -92,7 +109,7 @@ void FirstAlg::output_ps(std::ostream& os){
 	size_t n = size();
 	os << n << '\n';
 	for(size_t i = 0; i < n; ++i){
-		os << i << '\n';
+		os << i << ' ' << ps[i].size() << '\n';
 		for(size_t pid : ps[i])
 			os << ' ' << pid;
 		os << '\n';
