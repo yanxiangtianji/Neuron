@@ -9,6 +9,11 @@ class SCVBinary
 public:
 	SCVBinary(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains::SpikeTrain& st);
 
+	uint8_t operator[](const size_t idx)const{ return vec[idx]; }
+
+	size_t get_length()const{ return length; }
+	const std::vector<uint8_t>& get_vec()const{ return vec; }
+	size_t get_sum()const { return sum; }
 private:
 	void _init(const SpikeTrains::SpikeTrain& st);
 	void set_length();
