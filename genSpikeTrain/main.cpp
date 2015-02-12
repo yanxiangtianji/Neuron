@@ -150,8 +150,8 @@ void test_init(const string& fn){
 	typedef normal_distribution<double> n_dis_t;
 	typedef uniform_int_distribution<int> u_dis_t;
 	Network::metafun_fire_sh_t mf_fire_sh = [](const nid_t&)->signal_t{return 0; };
-	Network::metafun_fire_d_t mf_fire_d = [](const nid_t&){return Neuron::get_default_fun_delay(); };
-	Network::metafun_prog_d_t mf_prog_d = [](const nid_t&, const nid_t&){return Neuron::get_default_fun_delay(); };
+	Network::metafun_fire_d_t mf_fire_d = [](const nid_t&){return Neuron::get_default_fun_delay_fire(); };
+	Network::metafun_prog_d_t mf_prog_d = [](const nid_t&, const nid_t&){return Neuron::get_default_fun_delay_prog(); };
 	Network n;
 	n.initial(fn,mf_fire_sh,mf_fire_d,mf_prog_d);
 	for(size_t i = 0; i < n.size(); ++i){
@@ -207,9 +207,35 @@ void test_spike(const string& fn){
 	n.record_spikes(cout, n.gen_spikes(ts2));
 }
 
-void go(const string& filename){
-
+void _go(Network& n, const string& spike_fn, const size_t s_num, const tp_t max_time){
+	ofstream fout(spike_fn);
+	if(!fout){
+		throw runtime_error("Cannot open file \""+spike_fn+"\" when outputing spike trains.");
+		return;
+	}
+	//generate random input spike only on input_layer(without parent)
+	auto res=n.gen_spikes(s_num, true, max_time);
+	n.record_spikes(fout,move(res));
+	fout.close();
 }
+
+void go(const string& topo_fn, const size_t s_num, const tp_t max_time,
+	Network::metafun_fire_sh_t mf_fire_sh, Network::metafun_fire_d_t mf_fire_d, Network::metafun_prog_d_t mf_prog_d)
+{
+	Network n;
+	n.initial(topo_fn,mf_fire_sh,mf_fire_d,mf_prog_d);
+	string spike_fn = topo_fn;
+	spike_fn.replace(topo_fn.rfind('.'), 1, "_st.");
+	_go(n, spike_fn, s_num, max_time);
+}
+void go(const string& topo_fn, const size_t s_num, const tp_t max_time){
+	Network n;
+	n.initial(topo_fn);
+	string spike_fn = topo_fn;
+	spike_fn.replace(topo_fn.rfind('.'), 1, "_st.");
+	_go(n, spike_fn, s_num, max_time);
+}
+
 
 int main(){
 	string base_dir("../data/");
@@ -217,8 +243,15 @@ int main(){
 //	test_random();
 //	test_bind();
 //	test_neuron();
-//	test_init(base_dir+"multiparent.txt");
-	test_spike(base_dir + "multiparent.txt");
+	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt","common2.txt" };
+//	test_init(base_dir+"mparent.txt");
+//	test_spike(base_dir + "mparent.txt");
+	const size_t s_num=30;
+	const tp_t max_time = 100;
+	size_t i = 0;
+	for(size_t i = 0; i < test_files.size(); ++i){
+		go(base_dir + test_files[i], s_num, max_time);
+	}
 	return 0;
 }
 
