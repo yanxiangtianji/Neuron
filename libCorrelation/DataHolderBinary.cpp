@@ -1,0 +1,78 @@
+#include "DataHolderBinary.h"
+
+using namespace std;
+
+DataHolderBinary::DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const string& fn)
+	:window_size(window_size), start_t(start), end_t(end)
+{
+	SpikeTrains sts(fn);
+	_init(sts);
+}
+
+DataHolderBinary::DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains& sts)
+	:window_size(window_size), start_t(start), end_t(end)
+{
+	_init(sts);
+}
+
+void DataHolderBinary::_init(const SpikeTrains& sts){
+	for(const SpikeTrains::SpikeTrain& st : sts.get()){
+		cont.push_back(SCVBinary(window_size, start_t, end_t, st));
+	}
+	cont.shrink_to_fit();
+}
+
+
+double DataHolderBinary::cor_dp(const SCVBinary& first, const SCVBinary& second){
+	double m = first.get_length();
+	return dot_product(first, second) / m;
+}
+double DataHolderBinary::cor_dp(const size_t first, const size_t second){
+	if(first == second)
+		return 1.0;
+	return cor_dp(cont[first], cont[second]);
+}
+double DataHolderBinary::cor_dp(const size_t first, const std::vector<size_t>& second){
+	std::vector<reference_wrapper<const SCVBinary>> temp;
+	for(size_t idx : second)
+		temp.push_back(cref(cont[idx]));
+	return cor_dp(cont[first], SCVBinary::merge(temp));
+}
+
+double DataHolderBinary::cor_dp_f(const SCVBinary& first, const SCVBinary& second){
+	size_t m = first.get_sum();
+	return m == 0 ? 0.0 : dot_product(first, second, [](const uint8_t lth, const uint8_t rth){return lth == 1 && lth == 1; })
+		/ static_cast<double>(m);
+}
+double DataHolderBinary::cor_dp_f(const size_t first, const size_t second){
+	if(first == second)
+		return 1.0;
+	return cor_dp_f(cont[first], cont[second]);
+}
+double DataHolderBinary::cor_dp_f(const size_t first, const std::vector<size_t>& second){
+	std::vector<reference_wrapper<const SCVBinary>> temp;
+	for(size_t idx : second)
+		temp.push_back(cref(cont[idx]));
+	return cor_dp_f(cont[first], SCVBinary::merge(temp));
+}
+
+
+size_t DataHolderBinary::dot_product(const SCVBinary& lth, const SCVBinary& rth){
+	size_t res=0;
+	size_t n = lth.get_length();
+	for(size_t i = 0; i < n; ++i){
+		res += andor(lth[i], rth[i]);
+	}
+	return res;
+}
+
+size_t DataHolderBinary::dot_product(const SCVBinary& lth, const SCVBinary& rth,
+	std::function<uint8_t(const uint8_t, const uint8_t)> inner)
+{
+	size_t res = 0;
+	size_t n = lth.get_length();
+	for(size_t i = 0; i < n; ++i){
+		res += inner(lth[i], rth[i]);
+	}
+	return res;
+}

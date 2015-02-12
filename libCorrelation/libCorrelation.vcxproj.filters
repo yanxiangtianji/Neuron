@@ -15,12 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SpikeTrainHolder.h">
+    <ClInclude Include="SCVBinary.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DataHolderBinary.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SpikeTrains.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SpikeTrainHolder.cpp">
+    <ClCompile Include="SCVBinary.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DataHolderBinary.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SpikeTrains.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
