@@ -2,7 +2,7 @@
 
 using namespace std;
 
-FirstAlg::FirstAlg(std::string& fn, const tp_t window_size, const tp_t start, const tp_t end)
+FirstAlg::FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn)
 	:dh(window_size, start, end, fn)
 {
 }
@@ -15,15 +15,17 @@ void FirstAlg::set_mpps(const double cor_th, const tp_t delay_th){
 
 FirstAlg::ppm_t FirstAlg::cal_by_cor(const double threshold){
 	size_t n = dh.size();
-	ppm_t res(n);
+	ppm_t res;
+	res.reserve(n);
 	for(size_t i = 0; i < n; ++i){
 		ppm_t::value_type temp(n,false);
 		for(size_t j = 0; j < n; ++j){
 			if(i == j)
 				temp[j] = false;
-			if(dh.cor_dp_f(i, j) >= threshold)
+			else if(dh.cor_dp_f(i, j) >= threshold)
 				temp[j] = true;
 		}
+		res.push_back(move(temp));
 	}
 	return res;
 }
@@ -46,13 +48,44 @@ void FirstAlg::set_mpps_by_ppm(ppm_t& ppm){
 	for(size_t i = 0; i < n; ++i){
 		for(size_t j = 0; j < n; ++j){
 			if(ppm[i][j])
-				mpps[i].push_back(j);
+				mpps[j].push_back(i);
 		}
 	}
 }
 
-void FirstAlg::set_ps_by_mpps(){
+bool FirstAlg::contains(const ps_t& lth, const ps_t& rth){
+	if(lth.size() < rth.size() || rth.size()==0)
+		return false;
+	for(size_t p : rth){
+		if(find(lth.begin(), lth.end(), p) == lth.end())
+			return false;
+	}
+	return true;
+}
+bool FirstAlg::equals(const ps_t& lth, const ps_t& rth){
+	return lth == rth;
+}
 
+
+void FirstAlg::set_ps_by_mpps(){
+	size_t n = size();
+	ps = mpps;
+	bool goon = true;
+	//change to SPFA like algorithm
+	while(goon){
+		goon = false;
+		for(size_t i = 0; i < n; ++i){
+			for(size_t j = 0; j < n; ++j){
+				if(i == j)
+					continue;
+				if(contains(ps[i], ps[j]) && !equals(ps[i], ps[j])){
+					goon = true;
+					for(size_t p : ps[j])
+						ps[i].erase(find(ps[i].begin(), ps[i].end(), p));
+				}
+			}
+		}
+	}
 }
 
 void FirstAlg::output_ps(std::ostream& os){
