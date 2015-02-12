@@ -27,3 +27,17 @@ void SCVBinary::_init(const SpikeTrains::SpikeTrain& st){
 	}
 	sum = accumulate(vec.begin(), vec.end(), 0);
 }
+
+SCVBinary SCVBinary::merge(const std::vector<std::reference_wrapper<const SCVBinary>>& org){
+	SCVBinary res(org[0].get());
+	size_t length = org[0].get().get_length();
+	for(size_t i = 1; i < org.size(); ++i){
+		const SCVBinary& scv=org[i];
+		for(size_t j = 0; j < length; ++j){
+			if(scv[j] != 0)
+				res.vec[j] = 1;
+		}
+	}
+	return res;
+}
+
