@@ -29,7 +29,14 @@ FirstAlg::ppm_t FirstAlg::cal_by_cor(const double threshold){
 }
 
 void FirstAlg::refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th){
-
+	size_t n = size();
+	for(size_t i = 0; i < n; ++i){
+		for(size_t j = 0; j < n; ++j){
+			if(ppm[i][j]){
+				ppm[i][j] = dh.check_before_all(i, j, delay_th);
+			}
+		}
+	}
 }
 
 void FirstAlg::set_mpps_by_ppm(ppm_t& ppm){
@@ -44,3 +51,17 @@ void FirstAlg::set_mpps_by_ppm(ppm_t& ppm){
 	}
 }
 
+void FirstAlg::set_ps_by_mpps(){
+
+}
+
+void FirstAlg::output_ps(std::ostream& os){
+	size_t n = size();
+	os << n << '\n';
+	for(size_t i = 0; i < n; ++i){
+		os << i << '\n';
+		for(size_t pid : ps[i])
+			os << ' ' << pid;
+		os << '\n';
+	}
+}
