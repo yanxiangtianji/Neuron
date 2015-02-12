@@ -41,7 +41,9 @@ double DataHolderBinary::cor_dp(const size_t first, const std::vector<size_t>& s
 
 double DataHolderBinary::cor_dp_f(const SCVBinary& first, const SCVBinary& second){
 	size_t m = first.get_sum();
-	return m == 0 ? 0.0 : dot_product(first, second, [](const uint8_t lth, const uint8_t rth){return lth == 1 && lth == 1; })
+	return m == 0 ? 0.0 : dot_product(first, second, 
+			[](const uint8_t lth, const uint8_t rth)->uint8_t{return lth == 1 && rth == 1?1:0; }
+		)
 		/ static_cast<double>(m);
 }
 double DataHolderBinary::cor_dp_f(const size_t first, const size_t second){
