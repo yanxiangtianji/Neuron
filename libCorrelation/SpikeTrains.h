@@ -12,7 +12,7 @@ public:
 	SpikeTrains(const std::string& filename);
 	SpikeTrains(std::istream& is);
 
-	bool check_before(const size_t& anchor, const size_t& rth, const tp_t start, const tp_t end, const tp_t delay_th);
+	bool check_before(const size_t& poss_pnt, const size_t& poss_chd, const tp_t start, const tp_t end, const tp_t delay_th);
 
 
 	size_t size()const { return n; }

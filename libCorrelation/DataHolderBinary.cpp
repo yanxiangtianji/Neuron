@@ -84,12 +84,12 @@ size_t DataHolderBinary::dot_product(const SCVBinary& lth, const SCVBinary& rth,
 	return res;
 }
 
-bool DataHolderBinary::check_before(const size_t anchor, const size_t rth, const size_t idx, const tp_t delay_th){
-	tp_t p_start = cont[anchor].cal_time_start(idx);
+bool DataHolderBinary::check_before(const size_t& poss_pnt, const size_t& poss_chd, const size_t idx, const tp_t delay_th){
+	tp_t p_start = cont[poss_chd].cal_time_start(idx);
 	tp_t p_end = p_start + window_size;
-	return sts.check_before(anchor, rth, p_start, p_end,delay_th);
+	return sts.check_before(poss_pnt, poss_chd, p_start, p_end, delay_th);
 }
 
-bool DataHolderBinary::check_before_all(const size_t anchor, const size_t rth, const tp_t delay_th){
-	return sts.check_before(anchor, rth, start_t, end_t, delay_th);
+bool DataHolderBinary::check_before_all(const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th){
+	return sts.check_before(poss_pnt, poss_chd, start_t, end_t, delay_th);
 }
