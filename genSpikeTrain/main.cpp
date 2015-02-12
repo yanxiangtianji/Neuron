@@ -202,9 +202,9 @@ void test_spike(const string& fn){
 	ts2[1].push_back(8);
 	ts2[2].push_back(20);
 	ts2[3].push_back(30);
-	n.record_spikes(cout, ts2);
+	n.output_spikes(cout, ts2);
 	cout << "------" << endl;
-	n.record_spikes(cout, n.gen_spikes(ts2));
+	n.output_spikes(cout, n.gen_spikes(ts2));
 }
 
 void _go(Network& n, const string& spike_fn, const size_t s_num, const tp_t max_time){
@@ -215,7 +215,7 @@ void _go(Network& n, const string& spike_fn, const size_t s_num, const tp_t max_
 	}
 	//generate random input spike only on input_layer(without parent)
 	auto res=n.gen_spikes(s_num, true, max_time);
-	n.record_spikes(fout,move(res));
+	n.output_spikes(fout, move(res));
 	fout.close();
 }
 

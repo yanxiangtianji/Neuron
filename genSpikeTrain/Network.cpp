@@ -79,10 +79,10 @@ void Network::add_node(const neu_ptr_t& p){
 	idx_mapping[p] = s;
 }
 
-void Network::record_spikes(std::ostream& os, const spike_trains_t& input){
+void Network::output_spikes(std::ostream& os, const spike_trains_t& input){
 	for(size_t i = 0; i < input.size(); ++i){
 		neu_ptr_t p = cont[i];
-		os << p->get_id() << '\n';
+		os << p->get_id() << ' ' << input[i].size() << '\n';
 		for(const auto& t : input[i])
 			os << ' ' << t;
 		os << '\n';

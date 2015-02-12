@@ -28,7 +28,7 @@ public:
 
 	spike_trains_t gen_spikes(const size_t input_num, const bool only_input_layer=true, const tp_t MAX_TIME_INPUT = 10000);
 	spike_trains_t gen_spikes(spike_trains_t& input);
-	void record_spikes(std::ostream& os, const spike_trains_t& input);
+	void output_spikes(std::ostream& os, const spike_trains_t& input);
 
 	void add_node(const neu_ptr_t& p);
 	void output_structure(std::ostream& os);
