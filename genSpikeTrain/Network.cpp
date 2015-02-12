@@ -90,13 +90,14 @@ void Network::output_spikes(std::ostream& os, const spike_trains_t& input){
 }
 
 Network::spike_trains_t Network::gen_spikes(const size_t input_num, const bool only_input_layer, const tp_t MAX_TIME_INPUT){
+	auto gen = ToolRandom::bind_gen<size_t>(uniform_int_distribution<size_t>(0, input_layer.size() - 1));
 	function<size_t()> g_neu;
 	if(only_input_layer){
 		if(input_layer.size() == 0){
 			throw runtime_error("Generating spikes starting on input layer ,but there is no input layer neuron.");
 		}
 		g_neu=[&](){
-			static auto gen = ToolRandom::bind_gen<size_t>(uniform_int_distribution<size_t>(0, input_layer.size() - 1));
+//			static auto gen = ToolRandom::bind_gen<size_t>(uniform_int_distribution<size_t>(0, input_layer.size() - 1));
 			return input_layer[gen()];
 		};
 	}else{
