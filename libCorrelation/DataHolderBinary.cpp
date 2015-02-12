@@ -3,14 +3,19 @@
 using namespace std;
 
 DataHolderBinary::DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const string& fn)
-	:window_size(window_size), start_t(start), end_t(end)
+	:window_size(window_size), start_t(start), end_t(end), sts(fn)
 {
-	SpikeTrains sts(fn);
 	_init(sts);
 }
 
 DataHolderBinary::DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains& sts)
-	:window_size(window_size), start_t(start), end_t(end)
+	: window_size(window_size), start_t(start), end_t(end), sts(sts)
+{
+	_init(sts);
+}
+
+DataHolderBinary::DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, SpikeTrains&& sts)
+	: window_size(window_size), start_t(start), end_t(end), sts(sts)
 {
 	_init(sts);
 }
@@ -77,4 +82,14 @@ size_t DataHolderBinary::dot_product(const SCVBinary& lth, const SCVBinary& rth,
 		res += inner(lth[i], rth[i]);
 	}
 	return res;
+}
+
+bool DataHolderBinary::check_before(const size_t anchor, const size_t rth, const size_t idx, const tp_t delay_th){
+	tp_t p_start = cont[anchor].cal_time_start(idx);
+	tp_t p_end = p_start + window_size;
+	return sts.check_before(anchor, rth, p_start, p_end,delay_th);
+}
+
+bool DataHolderBinary::check_before_all(const size_t anchor, const size_t rth, const tp_t delay_th){
+	return sts.check_before(anchor, rth, start_t, end_t, delay_th);
 }

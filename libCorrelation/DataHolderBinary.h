@@ -10,6 +10,7 @@ class DataHolderBinary
 public:
 	DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn);
 	DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains& sts);
+	DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, SpikeTrains&& sts);
 
 	double cor_dp(const SCVBinary& first, const SCVBinary& second);
 	double cor_dp(const size_t first, const size_t second);
@@ -18,18 +19,24 @@ public:
 	double cor_dp_f(const size_t first, const size_t second);
 	double cor_dp_f(const size_t first, const std::vector<size_t>& second);
 
-	size_t get_num()const { return cont.size(); }
+	bool check_before(const size_t anchor, const size_t rth, const size_t idx, const tp_t delay_th);
+	bool check_before_all(const size_t anchor, const size_t rth, const tp_t delay_th);
+
+	size_t size()const { return cont.size(); }
 	tp_t get_window_size()const{ return window_size; }
 	tp_t get_start_t()const{ return start_t; }
 	tp_t get_end_t()const{ return end_t; }
 private:
 	void _init(const SpikeTrains& sts);
+	size_t cal_idx(const tp_t t){ return size_t((t - start_t) / window_size); }
+	tp_t cal_time_start(const size_t idx){ return idx*window_size + start_t; }
 
 private:
 	tp_t window_size;
 	tp_t start_t, end_t;
 
 	std::vector<SCVBinary> cont;
+	SpikeTrains sts;
 
 /*static:*/
 public:
