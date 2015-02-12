@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genTopology", "genTopology\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genSpikeTrain", "genSpikeTrain\genSpikeTrain.vcxproj", "{F1F9F38A-D3B9-473C-8E47-C6E98B8A7FB3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "inference", "inference\inference.vcxproj", "{870C8B23-FFD9-415A-93A2-2DE42E563101}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCorrelation", "libCorrelation\libCorrelation.vcxproj", "{994621E0-544E-4824-9859-DE1B7925B04A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -21,6 +25,14 @@ Global
 		{F1F9F38A-D3B9-473C-8E47-C6E98B8A7FB3}.Debug|Win32.Build.0 = Debug|Win32
 		{F1F9F38A-D3B9-473C-8E47-C6E98B8A7FB3}.Release|Win32.ActiveCfg = Release|Win32
 		{F1F9F38A-D3B9-473C-8E47-C6E98B8A7FB3}.Release|Win32.Build.0 = Release|Win32
+		{870C8B23-FFD9-415A-93A2-2DE42E563101}.Debug|Win32.ActiveCfg = Debug|Win32
+		{870C8B23-FFD9-415A-93A2-2DE42E563101}.Debug|Win32.Build.0 = Debug|Win32
+		{870C8B23-FFD9-415A-93A2-2DE42E563101}.Release|Win32.ActiveCfg = Release|Win32
+		{870C8B23-FFD9-415A-93A2-2DE42E563101}.Release|Win32.Build.0 = Release|Win32
+		{994621E0-544E-4824-9859-DE1B7925B04A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{994621E0-544E-4824-9859-DE1B7925B04A}.Debug|Win32.Build.0 = Debug|Win32
+		{994621E0-544E-4824-9859-DE1B7925B04A}.Release|Win32.ActiveCfg = Release|Win32
+		{994621E0-544E-4824-9859-DE1B7925B04A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
