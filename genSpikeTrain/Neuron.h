@@ -18,10 +18,10 @@ public:	//for typedef
 	typedef std::function<void(ptr_t, const tp_t&)> cb_fire_t;
 public:
 //	Neuron(const nid_t nid);
-	Neuron(const nid_t nid, const signal_t fire_shd = default_fire_sh, fun_delay_t fire_f = default_fun_delay);
+	Neuron(const nid_t nid, const signal_t fire_shd = default_fire_sh, fun_delay_t fire_f = default_fun_delay_fire);
 	Neuron(const Neuron&) = default;
 
-	void add_child(ptr_t& p, const fun_delay_prog_t& t=default_fun_delay){ children[p] = t; }
+	void add_child(ptr_t& p, const fun_delay_prog_t& t=default_fun_delay_prog){ children[p] = t; }
 	void add_child(ptr_t& p, fun_delay_prog_t&& t){ children[p] = t; }
 
 	/*!
@@ -61,10 +61,6 @@ public:
 	void set_fun_delay_f(const fun_delay_fire_t& f){ fun_delay_fire = f; }
 	void set_fun_delay_f(fun_delay_fire_t&& f){ fun_delay_fire = f; }
 	//	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
-public:
-	static tp_t get_fire_min_interval(){ return FIRE_MIN_INTERVAL; }
-	static signal_t get_default_fire_sh(){ return default_fire_sh; }
-	static fun_delay_t get_default_fun_delay(){ return default_fun_delay; }
 private:
 	const nid_t id;
 	signal_t fire_shreshold;
@@ -75,12 +71,23 @@ private:
 	std::map<ptr_t, fun_delay_prog_t> children;//child neuron and the propagation delay to it.
 
 	cb_fire_t cb_fire;
-//static:
+
+/*static:*/
+public:
+	static bool is_same_spike(const tp_t& early, const tp_t& later);
+	static tp_t get_fire_min_interval(){ return FIRE_MIN_INTERVAL; }
+	static signal_t get_default_fire_sh(){ return default_fire_sh; }
+//	static fun_delay_t get_default_fun_delay(){ return default_fun_delay; }
+	static fun_delay_fire_t get_default_fun_delay_fire(){ return default_fun_delay_fire; }
+	static fun_delay_prog_t get_default_fun_delay_prog(){ return default_fun_delay_prog; }
 private:
 	static const tp_t FIRE_MIN_INTERVAL=0;
 	static const tp_t default_last_fire_time = 0;
 	static const signal_t default_fire_sh;
-	static fun_delay_t default_fun_delay;
+
+//	static fun_delay_t default_fun_delay;
+	static fun_delay_fire_t default_fun_delay_fire;
+	static fun_delay_prog_t default_fun_delay_prog;
 	static cb_fire_t default_cb_fire;
 };
 

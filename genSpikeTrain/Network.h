@@ -13,6 +13,7 @@ public:
 	typedef std::vector<tp_t> spike_train_t;
 	typedef std::vector<spike_train_t> spike_trains_t;
 	typedef EventQueue<tp_t, neu_ptr_t> eq_t;
+	//TODO: change "const nid_t&" to "neu_ptr_t"
 	typedef std::function<Neuron::signal_t(const nid_t&)> metafun_fire_sh_t;
 	typedef std::function<Neuron::fun_delay_fire_t(const nid_t&)> metafun_fire_d_t;
 	typedef std::function<Neuron::fun_delay_prog_t(const nid_t&, const nid_t&)> metafun_prog_d_t;
@@ -20,12 +21,13 @@ public:
 	Network();
 	~Network();
 
-//	void initial(const std::string& filename);
+	void initial(std::istream& is, metafun_fire_sh_t mf_fire_sh = default_mf_fire_sh,
+		metafun_fire_d_t mf_fire = default_mf_fire_d, metafun_prog_d_t mf_prog = default_mf_prog_d);
 	void initial(const std::string& filename, metafun_fire_sh_t mf_fire_sh = default_mf_fire_sh,
 		metafun_fire_d_t mf_fire = default_mf_fire_d, metafun_prog_d_t mf_prog = default_mf_prog_d);
 
+	spike_trains_t gen_spikes(const size_t input_num, const bool only_input_layer=true, const tp_t MAX_TIME_INPUT = 10000);
 	spike_trains_t gen_spikes(spike_trains_t& input);
-	spike_trains_t gen_spikes(const size_t input_num, const tp_t MAX_TIME_INPUT = 10000);
 	void record_spikes(std::ostream& os, const spike_trains_t& input);
 
 	void add_node(const neu_ptr_t& p);
@@ -38,8 +40,13 @@ public:
 //getter & setter:
 	neu_ptr_t get(const nid_t& id){ return cont[id]; }
 private:
+	void _init_input_layer();
+private:
 //node:
+	//all nodes:
 	std::vector<neu_ptr_t> cont;
+	//the idxes (in $cont$) of nodes without parent
+	std::vector<size_t> input_layer;
 	std::map<neu_ptr_t, size_t> idx_mapping;
 //event:
 	eq_t eq;

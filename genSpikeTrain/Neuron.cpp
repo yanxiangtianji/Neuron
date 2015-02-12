@@ -4,7 +4,9 @@ using namespace std;
 
 //tp_t Neuron::FIRE_MIN_INTERVAL=0;
 const Neuron::signal_t Neuron::default_fire_sh = 0;
-Neuron::fun_delay_t Neuron::default_fun_delay = [](){return 0; };
+//Neuron::fun_delay_t Neuron::default_fun_delay = [](){return 0; };
+Neuron::fun_delay_fire_t Neuron::default_fun_delay_fire = [](){return 0; };
+Neuron::fun_delay_prog_t Neuron::default_fun_delay_prog = [](){return 1; };
 Neuron::cb_fire_t Neuron::default_cb_fire = [](neu_ptr_t p, const tp_t& t){p->receive(t); };
 
 
@@ -27,6 +29,10 @@ void Neuron::receive(const tp_t current){
 		last_fire_time = current;
 		fire(current + fun_delay_fire());
 	}
+}
+
+bool Neuron::is_same_spike(const tp_t& early, const tp_t& later){
+	return (later <= early + FIRE_MIN_INTERVAL);
 }
 
 void Neuron::clear(){
