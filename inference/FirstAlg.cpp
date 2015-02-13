@@ -7,9 +7,9 @@ FirstAlg::FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, con
 {
 }
 
-void FirstAlg::set_mpps(const double cor_th, const tp_t delay_th){
+void FirstAlg::set_mpps(const double cor_th, const tp_t delay_th, const double delay_acc_rate){
 	ppm_t ppm = cal_by_cor(cor_th);
-	refine_ppm_by_delay(ppm, delay_th);
+	refine_ppm_by_delay(ppm, delay_th, delay_acc_rate);
 	set_mpps_by_ppm(ppm);
 }
 
@@ -30,12 +30,13 @@ FirstAlg::ppm_t FirstAlg::cal_by_cor(const double threshold){
 	return res;
 }
 
-void FirstAlg::refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th){
+void FirstAlg::refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double acc_rate){
 	size_t n = size();
 	for(size_t i = 0; i < n; ++i){
 		for(size_t j = 0; j < n; ++j){
 			if(ppm[i][j]){
-				ppm[i][j] = dh.check_before_all(i, j, delay_th);
+				pair<size_t, size_t> p = dh.check_cospike(i, j, delay_th);
+				ppm[i][j] = p.first*acc_rate<=p.second;
 			}
 		}
 	}
@@ -105,12 +106,12 @@ void FirstAlg::set_ps_by_mpps(){
 	}
 }
 
-void FirstAlg::output_ps(std::ostream& os){
-	size_t n = size();
+void FirstAlg::output_vps(std::ostream& os, const std::vector<ps_t>& vps){
+	size_t n = vps.size();
 	os << n << '\n';
 	for(size_t i = 0; i < n; ++i){
-		os << i << ' ' << ps[i].size() << '\n';
-		for(size_t pid : ps[i])
+		os << i << ' ' << vps[i].size() << '\n';
+		for(size_t pid : vps[i])
 			os << ' ' << pid;
 		os << '\n';
 	}
