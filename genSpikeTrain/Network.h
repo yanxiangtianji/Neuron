@@ -51,10 +51,16 @@ private:
 //event:
 	eq_t eq;
 
+/*static:*/
+
 private:
 	static metafun_fire_sh_t default_mf_fire_sh;
 	static metafun_fire_d_t default_mf_fire_d;
 	static metafun_prog_d_t default_mf_prog_d;
+public:
+	static const metafun_fire_sh_t get_default_mf_fire_sh(){ return default_mf_fire_sh; }
+	static const metafun_fire_d_t get_default_mf_fire_d(){ return default_mf_fire_d; }
+	static const metafun_prog_d_t get_default_mf_prog_d(){ return default_mf_prog_d; }
 
 };
 

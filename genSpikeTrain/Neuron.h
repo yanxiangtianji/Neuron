@@ -52,15 +52,13 @@ public:
 	tp_t get_last_fire_time()const { return last_fire_time; }
 	signal_t get_fire_shreshold()const { return fire_shreshold; }
 	fun_delay_fire_t get_fun_delay_f()const{ return fun_delay_fire; }
-	fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{
-		return children.at(p); 
-	}
+	fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{ return children.at(p); }
 	const std::map<ptr_t, fun_delay_prog_t>& get_children() const { return children; }
 	void set_fire_shreshold(const signal_t& t){ fire_shreshold = t; }
 	void set_fire_shreshold(signal_t&& t){ fire_shreshold = t; }
 	void set_fun_delay_f(const fun_delay_fire_t& f){ fun_delay_fire = f; }
 	void set_fun_delay_f(fun_delay_fire_t&& f){ fun_delay_fire = f; }
-	//	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
+	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
 private:
 	const nid_t id;
 	signal_t fire_shreshold;
