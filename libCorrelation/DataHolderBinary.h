@@ -19,8 +19,17 @@ public:
 	double cor_dp_f(const size_t first, const size_t second);
 	double cor_dp_f(const size_t first, const std::vector<size_t>& second);
 
-	bool check_before(const size_t& poss_pnt, const size_t& poss_chd, const size_t idx, const tp_t delay_th);
-	bool check_before_all(const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th);
+	/*!
+	@brief Find how many spikes of poss_pnt in range [st_t, end_t] have a corresponding spike within time delay_th on spike train poss_chd.
+	@details See SpikeTrains.check_cospike
+	*/
+	std::pair<size_t,size_t> check_cospike(const size_t& poss_pnt, const size_t& poss_chd, 
+		const tp_t delay_th, const tp_t st_t, const tp_t end_t);
+	//in the all time
+	std::pair<size_t, size_t> check_cospike(const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th);
+	//in the period of idx-th window
+	std::pair<size_t, size_t> check_cospike(const size_t& poss_pnt, const size_t& poss_chd,
+		const tp_t delay_th, const size_t idx);
 
 	size_t size()const { return cont.size(); }
 	tp_t get_window_size()const{ return window_size; }

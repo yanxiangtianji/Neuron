@@ -84,12 +84,18 @@ size_t DataHolderBinary::dot_product(const SCVBinary& lth, const SCVBinary& rth,
 	return res;
 }
 
-bool DataHolderBinary::check_before(const size_t& poss_pnt, const size_t& poss_chd, const size_t idx, const tp_t delay_th){
-	tp_t p_start = cont[poss_chd].cal_time_start(idx);
-	tp_t p_end = p_start + window_size;
-	return sts.check_before(poss_pnt, poss_chd, p_start, p_end, delay_th);
+std::pair<size_t, size_t> DataHolderBinary::check_cospike(
+	const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th, const tp_t st_t, const tp_t end_t)
+{
+	return sts.check_cospike(poss_pnt, poss_chd, delay_th, st_t, end_t);
 }
 
-bool DataHolderBinary::check_before_all(const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th){
-	return sts.check_before(poss_pnt, poss_chd, start_t, end_t, delay_th);
+std::pair<size_t, size_t> DataHolderBinary::check_cospike(const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th, const size_t idx){
+	tp_t p_start = cont[poss_chd].cal_time_start(idx);
+	tp_t p_end = p_start + window_size;
+	return check_cospike(poss_pnt, poss_chd, delay_th, p_start, p_end);
+}
+
+std::pair<size_t, size_t> DataHolderBinary::check_cospike(const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th){
+	return check_cospike(poss_pnt, poss_chd, delay_th, start_t, end_t);
 }
