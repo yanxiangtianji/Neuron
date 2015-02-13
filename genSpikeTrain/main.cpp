@@ -213,26 +213,27 @@ void _go(Network& n, const string& spike_fn, const size_t s_num, const tp_t max_
 		throw runtime_error("Cannot open file \""+spike_fn+"\" when outputing spike trains.");
 		return;
 	}
+	cout << spike_fn << endl;
 	//generate random input spike only on input_layer(without parent)
 	auto res=n.gen_spikes(s_num, true, max_time);
 	n.output_spikes(fout, move(res));
 	fout.close();
 }
 
-void go(const string& topo_fn, const size_t s_num, const tp_t max_time,
+void go(const string& topo_fn, const string& suffix, const size_t s_num, const tp_t max_time,
 	Network::metafun_fire_sh_t mf_fire_sh, Network::metafun_fire_d_t mf_fire_d, Network::metafun_prog_d_t mf_prog_d)
 {
 	Network n;
 	n.initial(topo_fn,mf_fire_sh,mf_fire_d,mf_prog_d);
 	string spike_fn = topo_fn;
-	spike_fn.replace(topo_fn.rfind('.'), 1, "_st.");
+	spike_fn.replace(topo_fn.rfind('.'), 1, suffix+".");
 	_go(n, spike_fn, s_num, max_time);
 }
-void go(const string& topo_fn, const size_t s_num, const tp_t max_time){
+void go(const string& topo_fn, const string& suffix, const size_t s_num, const tp_t max_time){
 	Network n;
 	n.initial(topo_fn);
 	string spike_fn = topo_fn;
-	spike_fn.replace(topo_fn.rfind('.'), 1, "_st.");
+	spike_fn.replace(topo_fn.rfind('.'), 1, suffix+".");
 	_go(n, spike_fn, s_num, max_time);
 }
 
@@ -243,15 +244,23 @@ int main(){
 //	test_random();
 //	test_bind();
 //	test_neuron();
-	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt","common2.txt" };
+	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt", "common2.txt", "common3.txt" };
 //	test_init(base_dir+"mparent.txt");
 //	test_spike(base_dir + "mparent.txt");
-	const size_t s_num=30;
-	const tp_t max_time = 100;
-	size_t i = 0;
-	for(size_t i = 0; i < test_files.size(); ++i){
-		go(base_dir + test_files[i], s_num, max_time);
+	const size_t s_num = 80;
+	const tp_t max_time = 1000;
+	Network::metafun_fire_sh_t mf_fire_sh = Network::get_default_mf_fire_sh();
+	auto dis_fire_d = ToolRandom::bind_gen_bmin<tp_t>(0, normal_distribution<double>(2, 1));
+	Network::metafun_fire_d_t mf_fire_d = [&](const nid_t&){ return dis_fire_d; };
+	auto dis_prog_d = ToolRandom::bind_gen_bmin<tp_t>(0, normal_distribution<double>(2, 1));
+	Network::metafun_prog_d_t mf_prog_d = [&](const nid_t&, const nid_t&){ return dis_prog_d; };
+//	for(size_t i = 0; i < test_files.size(); ++i)
+	for(size_t i = 2; i < 4; ++i)
+	{
+//		go(base_dir + test_files[i], "_st", s_num, max_time);
+		go(base_dir + test_files[i], "_st2", s_num, max_time, mf_fire_sh, mf_fire_d, mf_prog_d);
 	}
+//	go(base_dir + "common3.txt", s_num, max_time);
 	return 0;
 }
 
