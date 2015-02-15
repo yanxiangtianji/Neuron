@@ -107,16 +107,18 @@ AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
 				size_t t = 0;
 				generate_n(back_inserter(sf_vec), n_node, [&t](){return t++; });
 			}
-			if(self_loop)
-				shuffle_gen_sl(g, sf_vec, i, m);
-			else
-				shuffle_gen_nsl(g, sf_vec, i, m);
+			//if(self_loop)
+			//	shuffle_gen_sl(g, sf_vec, i, m);
+			//else
+			//	shuffle_gen_nsl(g, sf_vec, i, m);
+			shuffle_gen(g, sf_vec, i, m);
 		} else{
 			//mark and re-generate
-			if(self_loop)
-				enum_gen_sl(g, used, i, m);
-			else
-				enum_gen_nsl(g, used, i, m);
+			//if(self_loop)
+			//	enum_gen_sl(g, used, i, m);
+			//else
+			//	enum_gen_nsl(g, used, i, m);
+			enum_gen(g, used, i, m);
 		}//end if
 	}
 	return g;
