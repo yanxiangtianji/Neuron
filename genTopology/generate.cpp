@@ -13,15 +13,62 @@ AdjGraph gen_tp_prob(const bool selfloop, const size_t n_node,
 	return AdjGraph(1);
 }
 
+void shuffle_gen_sl(AdjGraph& g, vector<size_t>& sf_vec, const size_t idx, size_t m){
+	random_shuffle(sf_vec.begin(), sf_vec.end());
+	for(size_t j = 0; j < m; ++j){
+		g.add(idx, sf_vec[j]);
+	}
+}
+void shuffle_gen_nsl(AdjGraph& g, vector<size_t>& sf_vec, const size_t idx, size_t m){
+	random_shuffle(sf_vec.begin(), sf_vec.end());
+	for(size_t j = 0; j < m; ++j){
+		if(sf_vec[j] == idx){
+			++m;
+			continue;
+		}
+		g.add(idx, sf_vec[j]);
+	}
+}
+void enum_gen_nsl(AdjGraph& g, vector<bool>& used, const size_t idx, const size_t m,
+	const size_t n_node, function<size_t()> gen)
+{
+	used.assign(n_node, false);
+	used[idx] = true;
+	for(size_t j = 0; j < m; j++){
+		size_t t;
+		do{
+			t = gen();
+		} while(used[t]);
+		used[t] = true;
+		g.add(idx, t);
+	}
+}
+void enum_gen_sl(AdjGraph& g, vector<bool>& used, const size_t idx, const size_t m,
+	const size_t n_node, function<size_t()> gen)
+{
+	used.assign(n_node, false);
+//	used[idx] = true;
+	for(size_t j = 0; j < m; j++){
+		size_t t;
+		do{
+			t = gen();
+		} while(used[t]);
+		used[t] = true;
+		g.add(idx, t);
+	}
+}
+
+
 // Generate $n_edge[i]$ edges for each node $i$, randomly connect to other nodes.
 AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vector<size_t>& o_deg){
 	random_device rd;
 	mt19937 gen(rd());
-	uniform_int_distribution<size_t> dist(0, n_node);
-	const size_t max_od = n_node - (selfloop ? 0 : 1);
+	uniform_int_distribution<size_t> dist(0, n_node-1);
+	function<size_t()> fun = [&](){return dist(gen); };
+	const size_t max_od = n_node - (selfloop ? 0 : 1);	//maximum out-degree
 
-	vector<size_t> sf_vec;
-	vector<bool> used;
+	vector<size_t> sf_vec;	//shuffle vector. For alg_1: random shuffle a list and pick first m
+	vector<bool> used;	//used vector. For alg_2: random generating unique m
 	AdjGraph g(n_node);
 	for(size_t i = 0; i < n_node; ++i){
 		size_t m = o_deg[i];
@@ -38,25 +85,16 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vect
 //				for(size_t i = 0; i < n_node; ++i)
 //					sf_vec.push_back(i);
 			}
-			random_shuffle(sf_vec.begin(), sf_vec.end());
-			for(size_t j = 0; j < m; ++j){
-				if(!selfloop && sf_vec[j] == i){
-					++m;
-					continue;
-				}
-				g.add(i, sf_vec[j]);
-			}
+			if(selfloop)
+				shuffle_gen_sl(g, sf_vec, i, m);
+			else
+				shuffle_gen_nsl(g, sf_vec, i, m);
 		}else{
 			//mark and re-generate
-			used.assign(n_node, false);
-			used[i] = true;
-			for(size_t j = 0; j < m; j++){
-				size_t t = dist(gen);
-				while(used[t])
-					t = dist(gen);
-				used[t] = true;
-				g.add(i, t);
-			}
+			if(selfloop)
+				enum_gen_sl(g, used, i, m, n_node, fun);
+			else
+				enum_gen_nsl(g, used, i, m, n_node, fun);
 		}//end if
 	}
 	return g;
@@ -74,7 +112,7 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node,
 	return gen_tp_degree(selfloop, n_node, v);
 }
 
-// Generate out-degree by $n_edge$/$fun_out_degree(i)$, randomly connect to other nodes.
+// Generate out-degree by $n_edge$ * ($fun_out_degree(i)/sum of all fun_out_degree(i))$, randomly connect to other nodes.
 AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const size_t n_edge,
 	std::function<double(const size_t nid)> fun_out_degree)
 {
