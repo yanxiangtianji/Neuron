@@ -69,6 +69,7 @@
     <ClCompile Include="AdjGraph.cpp" />
     <ClCompile Include="AdjGraphSec.cpp" />
     <ClCompile Include="generate.cpp" />
+    <ClCompile Include="GeneratorDegree.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -76,6 +77,7 @@
     <ClInclude Include="AdjGraph.h" />
     <ClInclude Include="AdjGraphSec.h" />
     <ClInclude Include="generate.h" />
+    <ClInclude Include="GeneratorDegree.h" />
     <ClInclude Include="Graph.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

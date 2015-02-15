@@ -30,6 +30,9 @@
     <ClCompile Include="generate.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratorDegree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdjGraph.h">
@@ -42,6 +45,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="generate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratorDegree.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
