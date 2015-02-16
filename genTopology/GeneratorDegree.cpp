@@ -14,6 +14,8 @@ GeneratorDegree::GeneratorDegree(const size_t num_node, const DegreeType type,
 	auto seed = chrono::system_clock::now().time_since_epoch().count();
 	_random_gen.seed(static_cast<unsigned long>(seed));
 	node_random_gen = bind(uniform_int_distribution<size_t>(0,n_node-1),_random_gen);
+	set_fun_shuffle_gen();
+	set_fun_enum_gen();
 }
 
 std::function<bool(const size_t, const size_t)> GeneratorDegree::get_add_fun(AdjGraph& g){
@@ -100,24 +102,18 @@ AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
 			throw invalid_argument("out-degree of node(" + to_string(i) + ") is " + to_string(m) + " . It exceeds maximum out-degree.");
 			//m = min(m, max_od);
 		}
-		if(n_node <= 200 || m >= (n_node << 1)) {
+		if(m == 0){
+			//do nothing
+		}else if(_is_shuffle_better(m)) {
 			//shuffle a continuous list and pick the first m
 			if(sf_vec.empty()){//first use the shuffle vector
 				sf_vec.reserve(n_node);
 				size_t t = 0;
 				generate_n(back_inserter(sf_vec), n_node, [&t](){return t++; });
 			}
-			//if(self_loop)
-			//	shuffle_gen_sl(g, sf_vec, i, m);
-			//else
-			//	shuffle_gen_nsl(g, sf_vec, i, m);
 			shuffle_gen(g, sf_vec, i, m);
 		} else{
 			//mark and re-generate
-			//if(self_loop)
-			//	enum_gen_sl(g, used, i, m);
-			//else
-			//	enum_gen_nsl(g, used, i, m);
 			enum_gen(g, used, i, m);
 		}//end if
 	}

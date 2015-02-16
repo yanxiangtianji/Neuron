@@ -48,6 +48,6 @@ private:
 };
 
 
-bool GeneratorDegree::_is_shuffle_better(const size_t m) const{
+inline bool GeneratorDegree::_is_shuffle_better(const size_t m) const{
 	return n_node <= SHUFFLE_THRESHOLD || m >= (n_node << 1);
 }
