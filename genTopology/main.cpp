@@ -72,7 +72,7 @@ int main(){
 	go2(2, base_dir + "sparent.txt", { 0, 1 });
 	//go(4, base_dir + "mparent.txt", { 0, 0, 0, 3 });
 	//go(3, base_dir + "indirect1.txt", { 0, 1, 1 });
-	//go(4, base_dir + "indirect2.txt", { 0, 0, 1, 3 });
+	go2(4, base_dir + "indirect2.txt", { 0, 0, 1, 3 });
 	//go(3, base_dir + "common1.txt", { 0,1,1});
 	//go(4, base_dir + "common2.txt", { 0, 0, 2, 2 });
 	return 0;

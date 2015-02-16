@@ -14,7 +14,7 @@ AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node, const std::vect
 AdjGraph gen_tp_degree(const bool selfloop, const size_t n_node,
 	std::function<size_t(const size_t nid)> fun_out_degree);
 
-// Generate out-degree by $n_edge$ * ($fun_out_degree(i)/sum of all fun_out_degree(i))$, randomly connect to other nodes.
+// Generate out-degree by $n_edge$ * (fun_out_degree(i)/sum of all fun_out_degree(i))$, randomly connect to other nodes.
 /*!
  negative output of $fun_out_degree$ is regarded as 0
 */

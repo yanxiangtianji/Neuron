@@ -8,6 +8,8 @@ class GeneratorDegree
 {
 public:
 	enum class DegreeType{ INDEGREE, OUTDEGREE };
+private:
+	typedef std::function<bool(const size_t, const size_t)> add_fun_t;
 public:
 	GeneratorDegree(const size_t num_node, const DegreeType type, 
 		const bool self_loop, const bool indirect_loop, const size_t shuffle_threshold=200);
@@ -23,14 +25,14 @@ public:
 	AdjGraph gen(const size_t n_edge, std::function<double(const size_t nid)> fun_por_degree);
 
 private:
-	void shuffle_gen_sl(AdjGraph& g, std::vector<size_t>& sf_vec, const size_t idx, const size_t m);
-	void shuffle_gen_nsl(AdjGraph& g, std::vector<size_t>& sf_vec, const size_t idx, const size_t m);
-	void enum_gen_nsl(AdjGraph& g, std::vector<bool>& used, const size_t idx, const size_t m);
-	void enum_gen_sl(AdjGraph& g, std::vector<bool>& used, const size_t idx, const size_t m);
-	void _enum_gen_core(AdjGraph& g, std::vector<bool>& used, const size_t idx, const size_t m);
+	void shuffle_gen_sl(AdjGraph& g, std::vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_t& add);
+	void shuffle_gen_nsl(AdjGraph& g, std::vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_t& add);
+	void enum_gen_nsl(AdjGraph& g, std::vector<bool>& used, const size_t idx, const size_t m, add_fun_t& add);
+	void enum_gen_sl(AdjGraph& g, std::vector<bool>& used, const size_t idx, const size_t m, add_fun_t& add);
+	void _enum_gen_core(AdjGraph& g, std::vector<bool>& used, const size_t idx, const size_t m, add_fun_t& add);
 	bool _is_shuffle_better(const size_t m) const;
 
-	std::function<bool(const size_t, const size_t)> get_add_fun(AdjGraph& g);
+	add_fun_t get_add_fun(AdjGraph& g);
 	void set_fun_shuffle_gen();
 	void set_fun_enum_gen();
 
@@ -43,8 +45,8 @@ private:
 
 	std::mt19937 _random_gen;
 	std::function<size_t()> node_random_gen;
-	std::function<void(AdjGraph&, std::vector<size_t>&, const size_t, const size_t)> shuffle_gen;
-	std::function<void(AdjGraph&, std::vector<bool>&, const size_t, const size_t)> enum_gen;
+	std::function<void(AdjGraph&, std::vector<size_t>&, const size_t, const size_t, add_fun_t& add)> shuffle_gen;
+	std::function<void(AdjGraph&, std::vector<bool>&, const size_t, const size_t, add_fun_t& add)> enum_gen;
 };
 
 
