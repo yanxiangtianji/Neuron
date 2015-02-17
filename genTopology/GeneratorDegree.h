@@ -2,7 +2,19 @@
 #include <functional>
 #include <random>
 #include "AdjGraph.h"
-//#include 
+
+/*
+Algorithm for constructing directed acyclic graph (DAG):
+(use Out-Degree in description)
+1, Method:
+Add nodes one by one. Edges from current node must end at existing nodes. (no loop)
+2, Max Degree:
+According to the method above, the degree of the i-th added node should be no large than i. (start from 0)
+3, Requirement:
+According to the degree discustion, the maximum degree list is 0,1,2,3,4,5,6,...
+Any list (after sorted) with any value larger than its index (start from 0) cannot form a dag using this method.
+All the sorted lists whose each value is smaller than that, can construct a DAG
+*/
 
 class GeneratorDegree
 {
