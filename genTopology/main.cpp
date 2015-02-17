@@ -79,6 +79,19 @@ void test_nl_gen(){
 	cout << g.sort_up() << endl;
 }
 
+void test_distribution(){
+	GeneratorDegree gend(6, GeneratorDegree::DegreeType::OUTDEGREE, false);
+	mt19937 rgen(6);
+	auto ung = uniform_int_distribution<size_t>(0, 5);
+	auto int_dis = [&](const size_t nid){return ung(rgen); };
+	AdjGraph g = gend.gen(int_dis, true);
+	cout << g.sort_up() << endl;
+	auto nng = normal_distribution<double>(0, 4);
+	auto double_dis = [&](const size_t nid){return abs(nng(rgen)); };
+	g = gend.gen(8,double_dis,true);
+	cout << g.sort_up() << endl;
+}
+
 void go(const size_t n,const string& fn,const vector<size_t>& vec){
 	cout << fn << endl;
 	AdjGraph g = gen_tp_degree(false, n, vec);
@@ -100,7 +113,8 @@ int main(){
 //	test_graph();
 //	test_gen_degree();
 //	test_check();
-	test_nl_gen();
+//	test_nl_gen();
+	test_distribution();
 //	go2(2, base_dir + "sparent.txt", { 0, 1 });
 	//go(4, base_dir + "mparent.txt", { 0, 0, 0, 3 });
 	//go(3, base_dir + "indirect1.txt", { 0, 1, 1 });
