@@ -30,24 +30,27 @@ SpikeTrains::SpikeTrains(std::istream& is){
 	cont.shrink_to_fit();
 }
 
-bool SpikeTrains::check_before(
-	const size_t& poss_pnt, const size_t& poss_chd, const tp_t start, const tp_t end, const tp_t delay_th)
+std::pair<size_t, size_t> SpikeTrains::check_cospike(
+	const size_t& poss_pnt, const size_t& poss_chd, const tp_t delay_th, const tp_t start, const tp_t end)
 {
 	SpikeTrain& src = cont[poss_pnt];
 	SpikeTrain& dst = cont[poss_chd];
 	auto itsf = lower_bound(src.begin(), src.end(), start);
 	auto itsl = lower_bound(src.begin(), src.end(), end);
 	if(itsf == itsl)
-		return false;
+		return make_pair<size_t,size_t>(0,0);
+	size_t len = itsl - itsf;
+	auto itdf = lower_bound(dst.begin(), dst.end(), start);
+	auto itdl = lower_bound(dst.begin(), dst.end(), end);
+	if(itdl != dst.end())
+		++itdl;
+	size_t res=0;
 	while(itsf != itsl){
-		auto itd = lower_bound(dst.begin(), dst.end(), *itsf);
 		//*itd>=*itsf
-		if(itd == dst.end())
-			return false;
-//		++itd;
-		if(*itsf + delay_th<*itd)
-			return false;
+		auto itd = lower_bound(itdf, itdl, *itsf);
+		if(itd != itdl && *itsf + delay_th >= *itd)
+			++res;
 		++itsf;
 	}
-	return true;
+	return make_pair(len, res);
 }
