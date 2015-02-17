@@ -73,9 +73,10 @@ void test_check(){
 
 void test_nl_gen(){
 	GeneratorDegree gend(4, GeneratorDegree::DegreeType::OUTDEGREE, false);
-	AdjGraph g = gend.gen_nl({0,1,2,3});
+	AdjGraph g = gend.gen_nloop({0,1,2,3});
 	cout << g.sort_up() << endl;
-	gend.gen_nl({ 0, 0, 1, 3 });
+	g=gend.gen_nloop({ 0, 1, 0, 3 });
+	cout << g.sort_up() << endl;
 }
 
 void go(const size_t n,const string& fn,const vector<size_t>& vec){

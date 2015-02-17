@@ -17,11 +17,10 @@ public:
 
 	// Generate with given degree
 	AdjGraph gen(const std::vector<size_t>& degree);
-	/*!
-	no-loop version. 
-	Do not follow order of degree exactly. Just follow its content.
-	*/
-	AdjGraph gen_nl(const std::vector<size_t>& degree);
+	//allow-loop version. 
+	AdjGraph gen_aloop(const std::vector<size_t>& degree);
+	//no-loop version. Do not follow order of degree exactly. Just follow its content.
+	AdjGraph gen_nloop(const std::vector<size_t>& degree);
 
 	// Generate degree by $fun_degree$, randomly connect to other nodes.
 	AdjGraph gen(std::function<size_t(const size_t nid)> fun_degree);

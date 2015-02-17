@@ -58,7 +58,8 @@ void GeneratorDegree::shuffle_gen_nsl(vector<size_t>& sf_vec, const size_t idx, 
 void GeneratorDegree::shuffle_gen_nl(vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_bind_t add){
 	size_t t = 0;
 	generate_n(sf_vec.begin(), idx, [&](){return t++; });
-	random_shuffle(sf_vec.begin(), sf_vec.begin()+idx);
+	//random_shuffle(sf_vec.begin(), sf_vec.begin()+idx);
+	shuffle(sf_vec.begin(), sf_vec.begin() + idx, _random_gen);
 	size_t pick_n = m;
 	for(size_t j = 0; j < pick_n; ++j){
 		if(sf_vec[j] == idx){
@@ -140,11 +141,20 @@ std::vector<size_t> GeneratorDegree::prepare_degree_for_dag(const std::vector<si
 	return vec;
 }
 
-AdjGraph GeneratorDegree::gen_nl(const std::vector<size_t>& degree){
-	using placeholders::_1;
+
+AdjGraph GeneratorDegree::gen(const std::vector<size_t>& degree){
 	if(!check_degree(degree)){
 		throw invalid_argument("Given degree list cannot form a required graph.");
 	}
+	if(allow_loop){
+		return gen_aloop(degree);
+	} else{
+		return gen_nloop(prepare_degree_for_dag(degree));
+	}
+}
+
+AdjGraph GeneratorDegree::gen_nloop(const std::vector<size_t>& degree){
+	using placeholders::_1;
 	const size_t max_od = n_node - 1;	//maximum out-degree
 	vector<size_t> deg = prepare_degree_for_dag(degree);
 
@@ -167,7 +177,7 @@ AdjGraph GeneratorDegree::gen_nl(const std::vector<size_t>& degree){
 		} else if(_is_shuffle_better(m)) {
 			//shuffle a continuous list and pick the first m
 			if(sf_vec.empty())
-				sf_vec.resize(n_node);
+				sf_vec.resize(n_node);//allocate space
 			shuffle_gen_nl(sf_vec, i, m, bind(add_fun,i,_1));
 		} else{
 			//mark and re-generate
@@ -177,14 +187,9 @@ AdjGraph GeneratorDegree::gen_nl(const std::vector<size_t>& degree){
 	return g;
 }
 
-
-
 // Generate $n_edge[i]$ edges for each node $i$, randomly connect to other nodes.
-AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
+AdjGraph GeneratorDegree::gen_aloop(const std::vector<size_t>& deg){
 	using placeholders::_1;
-	if(!check_degree(deg)){
-		throw invalid_argument("Given degree list cannot form a required graph.");
-	}
 	const size_t max_od = n_node - 1;	//maximum out-degree
 
 	vector<size_t> sf_vec;	//shuffle vector. For alg_1: random shuffle a list and pick first m
@@ -203,7 +208,7 @@ AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
 		}else if(_is_shuffle_better(m)) {
 			//shuffle a continuous list and pick the first m
 			if(sf_vec.empty()){//first use the shuffle vector
-				sf_vec.reserve(n_node);
+				sf_vec.reserve(n_node);//initialized with 1...n_node
 				size_t t = 0;
 				generate_n(back_inserter(sf_vec), n_node, [&t](){return t++; });
 			}
