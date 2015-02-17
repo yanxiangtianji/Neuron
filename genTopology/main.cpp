@@ -51,17 +51,46 @@ void test_gen_degree(){
 	cout << g3.get_n() << ' ' << g3.get_m() << endl;
 }
 
+void test_check(){
+	GeneratorDegree gend(4, GeneratorDegree::DegreeType::OUTDEGREE, false, false);
+	cout << "ok: upper bound" << endl;
+	AdjGraph g = gend.gen({0,1,2,3});
+	cout << "ok: normal" << endl;
+	g = gend.gen({ 0, 0, 1, 2 });
+	cout << "problem: max degree" << endl;
+	try{
+		g = gend.gen({ 0, 4, 1, 2 });
+	} catch(exception& e){
+		cerr << e.what() << endl;
+	}
+	cout << "problem: distribution" << endl;
+	try{
+		g = gend.gen({ 3, 1, 1, 2 });
+	} catch(exception& e){
+		cerr << e.what() << endl;
+	}
+}
+
+void test_nl_gen(){
+	GeneratorDegree gend(4, GeneratorDegree::DegreeType::OUTDEGREE, false);
+	AdjGraph g = gend.gen_nl({0,1,2,3});
+	cout << g.sort_up() << endl;
+	gend.gen_nl({ 0, 0, 1, 3 });
+}
+
 void go(const size_t n,const string& fn,const vector<size_t>& vec){
+	cout << fn << endl;
 	AdjGraph g = gen_tp_degree(false, n, vec);
 	ofstream fout(fn);
 	fout << g.sort_up();
 	fout.close();
 }
 void go2(const size_t n, const string& fn, const vector<size_t>& vec){
-	GeneratorDegree gend(n, GeneratorDegree::DegreeType::OUTDEGREE, false, false);
+	cout << fn << endl;
+	GeneratorDegree gend(n, GeneratorDegree::DegreeType::OUTDEGREE, false);
 	AdjGraph g = gend.gen(vec);
 //	ofstream fout(fn);
-	cout << g.sort_up();
+	cout << g.sort_up() << endl;
 //	fout.close();
 }
 
@@ -69,10 +98,12 @@ int main(){
 	string base_dir("../data/");
 //	test_graph();
 //	test_gen_degree();
-	go2(2, base_dir + "sparent.txt", { 0, 1 });
+//	test_check();
+	test_nl_gen();
+//	go2(2, base_dir + "sparent.txt", { 0, 1 });
 	//go(4, base_dir + "mparent.txt", { 0, 0, 0, 3 });
 	//go(3, base_dir + "indirect1.txt", { 0, 1, 1 });
-	go2(4, base_dir + "indirect2.txt", { 0, 0, 1, 3 });
+//	go2(4, base_dir + "indirect2.txt", { 0, 0, 1, 3 });
 	//go(3, base_dir + "common1.txt", { 0,1,1});
 	//go(4, base_dir + "common2.txt", { 0, 0, 2, 2 });
 	return 0;

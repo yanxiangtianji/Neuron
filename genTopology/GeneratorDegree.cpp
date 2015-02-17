@@ -8,9 +8,8 @@
 using namespace std;
 
 GeneratorDegree::GeneratorDegree(const size_t num_node, const DegreeType type, 
-	const bool allow_self_loop, const bool allow_loop, const size_t shuffle_threshold)
-	:n_node(num_node), type(type), allow_self_loop(allow_self_loop),
-	allow_loop(allow_loop), SHUFFLE_THRESHOLD(shuffle_threshold)
+	const bool allow_loop, const size_t shuffle_threshold)
+	:n_node(num_node), type(type), allow_loop(allow_loop), SHUFFLE_THRESHOLD(shuffle_threshold)
 {
 	auto seed = chrono::system_clock::now().time_since_epoch().count();
 	_random_gen.seed(static_cast<unsigned long>(seed));
@@ -20,68 +19,83 @@ GeneratorDegree::GeneratorDegree(const size_t num_node, const DegreeType type,
 }
 
 GeneratorDegree::add_fun_t GeneratorDegree::get_add_fun(AdjGraph& g){
-	using placeholders::_1;
-	using placeholders::_2;
+	using namespace placeholders;
 	if(type == DegreeType::INDEGREE)
 		return bind(&AdjGraph::add_parent, ref(g), _1, _2);
+//		return bind(&AdjGraph::add_parent, _1, _2, _3);
 	else
 		return bind(&AdjGraph::add_child, ref(g), _1, _2);
+//		return bind(&AdjGraph::add_child, _1, _2, _3);
 }
 void GeneratorDegree::set_fun_shuffle_gen(){
 	using namespace placeholders;
-	if(allow_self_loop == true)
-		shuffle_gen = bind(&GeneratorDegree::shuffle_gen_sl, this, _1, _2, _3, _4, _5);
+	if(allow_loop == true)
+		shuffle_gen = bind(&GeneratorDegree::shuffle_gen_nsl, this, _1, _2, _3, _4);
 	else
-		shuffle_gen = bind(&GeneratorDegree::shuffle_gen_nsl, this, _1, _2, _3, _4, _5);
+		shuffle_gen = bind(&GeneratorDegree::shuffle_gen_nl, this, _1, _2, _3, _4);
 }
 void GeneratorDegree::set_fun_enum_gen(){
 	using namespace placeholders;
-	if(allow_self_loop == true)
-		enum_gen = bind(&GeneratorDegree::enum_gen_sl, this, _1, _2, _3, _4, _5);
+	if(allow_loop == true)
+		enum_gen = bind(&GeneratorDegree::enum_gen_nsl, this, _1, _2, _3, _4);
 	else
-		enum_gen = bind(&GeneratorDegree::enum_gen_nsl, this, _1, _2, _3, _4, _5);
+		enum_gen = bind(&GeneratorDegree::enum_gen_nl, this, _1, _2, _3, _4);
 }
 
 
-void GeneratorDegree::shuffle_gen_sl(AdjGraph& g, vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_t& add){
-	random_shuffle(sf_vec.begin(), sf_vec.end());
-	for(size_t j = 0; j < m; ++j){
-		add(idx, sf_vec[j]);
-	}
-}
-void GeneratorDegree::shuffle_gen_nsl(AdjGraph& g, vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_t& add){
-	random_shuffle(sf_vec.begin(), sf_vec.end());
+void GeneratorDegree::shuffle_gen_nsl(vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_bind_t add){
+	//random_shuffle(sf_vec.begin(), sf_vec.end());
+	shuffle(sf_vec.begin(), sf_vec.end(), _random_gen);
 	size_t pick_n = m;
 	for(size_t j = 0; j < pick_n; ++j){
 		if(sf_vec[j] == idx){
 			++pick_n;
 			continue;
 		}
-		add(idx, sf_vec[j]);
+		add(sf_vec[j]);
+	}
+}
+void GeneratorDegree::shuffle_gen_nl(vector<size_t>& sf_vec, const size_t idx, const size_t m, add_fun_bind_t add){
+	size_t t = 0;
+	generate_n(sf_vec.begin(), idx, [&](){return t++; });
+	random_shuffle(sf_vec.begin(), sf_vec.begin()+idx);
+	size_t pick_n = m;
+	for(size_t j = 0; j < pick_n; ++j){
+		if(sf_vec[j] == idx){
+			++pick_n;
+			continue;
+		}
+		add(sf_vec[j]);
 	}
 }
 
-void GeneratorDegree::_enum_gen_core(AdjGraph& g, vector<bool>& used, const size_t idx, const size_t m, add_fun_t& add){
+
+void GeneratorDegree::enum_gen_nsl(vector<bool>& used, const size_t idx, const size_t m, add_fun_bind_t add)
+{
+	used.assign(n_node, false);
+	used[idx] = true;
 	for(size_t j = 0; j < m; j++){
 		size_t t;
 		do{
 			t = node_random_gen();
 		} while(used[t]);
 		used[t] = true;
-		add(idx, t);
+		add(t);
 	}
 }
-void GeneratorDegree::enum_gen_nsl(AdjGraph& g, vector<bool>& used, const size_t idx, const size_t m, add_fun_t& add)
+void GeneratorDegree::enum_gen_nl(vector<bool>& used, const size_t idx, const size_t m, add_fun_bind_t add)
 {
 	used.assign(n_node, false);
 	used[idx] = true;
-	_enum_gen_core(g, used, idx, m, add);
-}
-void GeneratorDegree::enum_gen_sl(AdjGraph& g, vector<bool>& used, const size_t idx, const size_t m, add_fun_t& add)
-{
-	used.assign(n_node, false);
-//	used[idx] = true;
-	_enum_gen_core(g, used, idx, m, add);
+	uniform_int_distribution<size_t> rgen(0, idx - 1);
+	for(size_t j = 0; j < m; j++){
+		size_t t;
+		do{
+			t = rgen(_random_gen);
+		} while(used[t]);
+		used[t] = true;
+		add(t);
+	}
 }
 
 bool GeneratorDegree::check_degree(const std::vector<size_t>& degree){
@@ -120,11 +134,19 @@ bool GeneratorDegree::_check_degree_dag(const std::vector<size_t>& degree){
 	return true;
 }
 
+std::vector<size_t> GeneratorDegree::prepare_degree_for_dag(const std::vector<size_t>& degree){
+	vector<size_t> vec(degree);
+	sort(vec.begin(), vec.end());
+	return vec;
+}
 
-
-// Generate $n_edge[i]$ edges for each node $i$, randomly connect to other nodes.
-AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
-	const size_t max_od = n_node - (allow_self_loop ? 0 : 1);	//maximum out-degree
+AdjGraph GeneratorDegree::gen_nl(const std::vector<size_t>& degree){
+	using placeholders::_1;
+	if(!check_degree(degree)){
+		throw invalid_argument("Given degree list cannot form a required graph.");
+	}
+	const size_t max_od = n_node - 1;	//maximum out-degree
+	vector<size_t> deg = prepare_degree_for_dag(degree);
 
 	vector<size_t> sf_vec;	//shuffle vector. For alg_1: random shuffle a list and pick first m
 	vector<bool> used;	//used vector. For alg_2: random generating unique m
@@ -134,8 +156,47 @@ AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
 	for(size_t i = 0; i < n_node; ++i){
 		size_t m = deg[i];
 		if(m > max_od){
-			throw invalid_argument("out-degree of node(" + to_string(i) + ") is " + to_string(m) + " . It exceeds maximum out-degree.");
-			//m = min(m, max_od);
+			throw invalid_argument("Given degree of node(" + to_string(i) + ") is " + to_string(m)
+				+ " which exceeds maximum possible degree.");
+		}
+		if(m == 0){
+			//do nothing
+		} else if(m==i){
+			for(size_t j = 0; j < m; ++j)
+				add_fun(i, j);
+		} else if(_is_shuffle_better(m)) {
+			//shuffle a continuous list and pick the first m
+			if(sf_vec.empty())
+				sf_vec.resize(n_node);
+			shuffle_gen_nl(sf_vec, i, m, bind(add_fun,i,_1));
+		} else{
+			//mark and re-generate
+			enum_gen_nl(used, i, m, bind(add_fun,i,_1));
+		}//end if
+	}
+	return g;
+}
+
+
+
+// Generate $n_edge[i]$ edges for each node $i$, randomly connect to other nodes.
+AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
+	using placeholders::_1;
+	if(!check_degree(deg)){
+		throw invalid_argument("Given degree list cannot form a required graph.");
+	}
+	const size_t max_od = n_node - 1;	//maximum out-degree
+
+	vector<size_t> sf_vec;	//shuffle vector. For alg_1: random shuffle a list and pick first m
+	vector<bool> used;	//used vector. For alg_2: random generating unique m
+
+	AdjGraph g(n_node);
+	add_fun_t add_fun = get_add_fun(g);
+	for(size_t i = 0; i < n_node; ++i){
+		size_t m = deg[i];
+		if(m > max_od){
+			throw invalid_argument("Given degree of node(" + to_string(i) + ") is " + to_string(m)
+				+ " which exceeds maximum possible degree.");
 		}
 		if(m == 0){
 			//do nothing
@@ -146,10 +207,10 @@ AdjGraph GeneratorDegree::gen(const std::vector<size_t>& deg){
 				size_t t = 0;
 				generate_n(back_inserter(sf_vec), n_node, [&t](){return t++; });
 			}
-			shuffle_gen(g, sf_vec, i, m, add_fun);
+			shuffle_gen_nsl(sf_vec, i, m, bind(add_fun,i,_1));
 		} else{
 			//mark and re-generate
-			enum_gen(g, used, i, m, add_fun);
+			enum_gen_nsl(used, i, m, bind(add_fun,i,_1));
 		}//end if
 	}
 	return g;
@@ -169,7 +230,7 @@ AdjGraph GeneratorDegree::gen(std::function<size_t(const size_t nid)> fun_degree
 // Generate out-degree by $n_edge$ * (fun_por_degree(i)/sum of all fun_por_degree(i))$, randomly connect to other nodes.
 AdjGraph GeneratorDegree::gen(const size_t n_edge, std::function<double(const size_t nid)> fun_por_degree)
 {
-	const size_t max_od = n_node - (allow_self_loop ? 0 : 1);
+	const size_t max_od = n_node - 1;
 	if(n_edge > max_od*n_node){
 		throw invalid_argument("Total out-degree(" + to_string(n_edge) +
 			") exceeds maximum possible out-degree(" + to_string(max_od*n_node) + ").");
