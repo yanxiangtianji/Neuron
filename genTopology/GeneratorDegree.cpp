@@ -170,6 +170,29 @@ std::vector<size_t> GeneratorDegree::modify_degree_for_dag(std::vector<size_t>& 
 	return degree;
 }
 
+AdjGraph GeneratorDegree::forward_from_distribution(std::vector<size_t>&& degree, const bool modify_if_necessary){
+	if(!allow_loop && modify_if_necessary){
+		return gen_nloop(modify_degree_for_dag(degree));
+	} else
+		return gen(degree);
+}
+std::vector<size_t> GeneratorDegree::_make_degree_from_portion(const size_t n_edge, 
+	const std::vector<double>& portion,const double sum)
+{
+	const size_t max_od = n_node - 1;
+	vector<size_t> v;
+	v.reserve(n_node);
+	size_t n_sum = 0;
+	for(size_t i = 0; i < n_node - 1; ++i){
+		size_t t = static_cast<size_t>(round(n_edge * portion[i] / sum));
+		t = min(t, max_od);
+		v.push_back(t);
+		n_sum += t;
+	}
+	v.push_back(n_sum >= n_edge ? 0 : n_edge - n_sum);
+	return v;
+}
+
 
 
 AdjGraph GeneratorDegree::gen_nloop(const std::vector<size_t>& deg){
@@ -247,12 +270,17 @@ AdjGraph GeneratorDegree::gen(std::function<size_t(const size_t nid)> fun_degree
 	v.reserve(n_node);
 	for(size_t i = 0; i < n_node; ++i)
 		v.push_back(fun_degree(i));
-
-	if(!allow_loop && modify_if_necessary){
-		return gen_nloop(modify_degree_for_dag(v));
-	}else
-		return gen(v);
+	return forward_from_distribution(move(v), modify_if_necessary);
 }
+AdjGraph GeneratorDegree::gen(std::function<size_t()> fun_degree, const bool modify_if_necessary)
+{
+	vector<size_t> v;
+	v.reserve(n_node);
+	for(size_t i = 0; i < n_node; ++i)
+		v.push_back(fun_degree());
+	return forward_from_distribution(move(v), modify_if_necessary);
+}
+
 
 // Generate out-degree by $n_edge$ * (fun_por_degree(i)/sum of all fun_por_degree(i))$, randomly connect to other nodes.
 AdjGraph GeneratorDegree::gen(const size_t n_edge,
@@ -271,20 +299,27 @@ AdjGraph GeneratorDegree::gen(const size_t n_edge,
 		temp.push_back(t);
 		sum += t;
 	}
-	vector<size_t> v;
-	v.reserve(n_node);
-	size_t n_sum = 0;
-	for(size_t i = 0; i < n_node - 1; ++i){
-		size_t t = static_cast<size_t>(round(n_edge * temp[i] / sum));
-		t = min(t, max_od);
-		v.push_back(t);
-		n_sum += t;
-	}
-	v.push_back(n_sum >= n_edge ? 0 : n_edge - n_sum);
-
-	if(!allow_loop && modify_if_necessary){
-		return gen_nloop(modify_degree_for_dag(v));
-	} else
-		return gen(v);
+	vector<size_t> v = _make_degree_from_portion(n_edge, temp, sum);
+	return forward_from_distribution(move(v), modify_if_necessary);
 }
 
+AdjGraph GeneratorDegree::gen(const size_t n_edge,
+	std::function<double()> fun_por_degree, const bool modify_if_necessary)
+{
+	const size_t max_od = n_node - 1;
+	if(n_edge > max_od*n_node){
+		throw invalid_argument("Total out-degree(" + to_string(n_edge) +
+			") exceeds maximum possible out-degree(" + to_string(max_od*n_node) + ").");
+	}
+	double sum = 0.0;
+	vector<double> temp;
+	temp.reserve(n_node);
+	for(size_t i = 0; i < n_node; ++i){
+		double t = max(0.0, fun_por_degree());
+		temp.push_back(t);
+		sum += t;
+	}
+	vector<size_t> v = _make_degree_from_portion(n_edge, temp, sum);
+	return forward_from_distribution(move(v), modify_if_necessary);
+
+}

@@ -81,13 +81,13 @@ void test_nl_gen(){
 
 void test_distribution(){
 	GeneratorDegree gend(6, GeneratorDegree::DegreeType::OUTDEGREE, false);
-	mt19937 rgen(6);
+	mt19937 rgen(69);
 	auto ung = uniform_int_distribution<size_t>(0, 5);
-	auto int_dis = [&](const size_t nid){return ung(rgen); };
+	function<size_t(const size_t)> int_dis = [&](const size_t nid){return ung(rgen); };
 	AdjGraph g = gend.gen(int_dis, true);
 	cout << g.sort_up() << endl;
 	auto nng = normal_distribution<double>(0, 4);
-	auto double_dis = [&](const size_t nid){return abs(nng(rgen)); };
+	function<double()> double_dis = [&](){return abs(nng(rgen)); };
 	g = gend.gen(8,double_dis,true);
 	cout << g.sort_up() << endl;
 }
