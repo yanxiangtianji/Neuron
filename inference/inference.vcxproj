@@ -74,6 +74,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CompareTopo.cpp" />
     <ClCompile Include="FirstAlg.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -83,6 +84,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CompareTopo.h" />
     <ClInclude Include="FirstAlg.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -108,18 +108,32 @@ void go2(const size_t n, const string& fn, const vector<size_t>& vec){
 //	fout.close();
 }
 
+void go3(const size_t n, const string& fn){
+	GeneratorDegree gend(n, GeneratorDegree::DegreeType::OUTDEGREE, false);
+	mt19937 rg;
+	uniform_int_distribution<size_t> udis(0, n - 1);
+	function<size_t()> ugen = bind(udis, rg);
+	AdjGraph g = gend.gen(ugen, true);
+	ofstream fout(fn);
+	fout << g.sort_up();
+	fout.close();
+}
+
 int main(){
 	string base_dir("../data/");
 //	test_graph();
 //	test_gen_degree();
 //	test_check();
 //	test_nl_gen();
-	test_distribution();
+//	test_distribution();
 //	go2(2, base_dir + "sparent.txt", { 0, 1 });
 	//go(4, base_dir + "mparent.txt", { 0, 0, 0, 3 });
 	//go(3, base_dir + "indirect1.txt", { 0, 1, 1 });
 //	go2(4, base_dir + "indirect2.txt", { 0, 0, 1, 3 });
 	//go(3, base_dir + "common1.txt", { 0,1,1});
 	//go(4, base_dir + "common2.txt", { 0, 0, 2, 2 });
+	//go3(100, base_dir + "big100.txt");
+	//go3(25, base_dir + "big25.txt");
+	go3(10, base_dir + "big10.txt");
 	return 0;
 }

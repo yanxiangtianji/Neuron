@@ -244,7 +244,8 @@ int main(){
 //	test_random();
 //	test_bind();
 //	test_neuron();
-	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt", "common2.txt", "common3.txt" };
+	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt",
+		"common2.txt", "common3.txt", "big100.txt", "big25.txt", "big10.txt" };
 //	test_init(base_dir+"mparent.txt");
 //	test_spike(base_dir + "mparent.txt");
 	const size_t s_num = 80;
@@ -255,9 +256,9 @@ int main(){
 	auto dis_prog_d = ToolRandom::bind_gen_bmin<tp_t>(0, normal_distribution<double>(2, 1));
 	Network::metafun_prog_d_t mf_prog_d = [&](const nid_t&, const nid_t&){ return dis_prog_d; };
 //	for(size_t i = 0; i < test_files.size(); ++i)
-	for(size_t i = 2; i < 4; ++i)
+	for(size_t i = 9; i < 10; ++i)
 	{
-//		go(base_dir + test_files[i], "_st", s_num, max_time);
+		go(base_dir + test_files[i], "_st", s_num, max_time);
 		go(base_dir + test_files[i], "_st2", s_num, max_time, mf_fire_sh, mf_fire_d, mf_prog_d);
 	}
 //	go(base_dir + "common3.txt", s_num, max_time);

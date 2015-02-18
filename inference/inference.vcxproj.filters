@@ -21,9 +21,15 @@
     <ClCompile Include="FirstAlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CompareTopo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FirstAlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CompareTopo.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
