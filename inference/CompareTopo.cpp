@@ -17,7 +17,7 @@ CompareTopo::CompareTopo(const std::string& fn)
 	fin >> n_node >> n_edge;
 	g = read_topo(fin, n_node);
 	fin.close();
-	n_node = g.size();
+	this->n_node = n_node;
 }
 
 std::vector<std::vector<size_t>> CompareTopo::read_topo(std::istream& is, const size_t n){
@@ -52,26 +52,54 @@ CompareTopo::cmp_res_t CompareTopo::compare(const std::string& fn){
 }
 
 CompareTopo::cmp_res_t CompareTopo::compare(const vvs_t& h){
-	vvs_t more(n_node), less(n_node);
-	std::vector<size_t> matched(n_node);
+	cmp_res_t res;	//matched, added, lost
 	for(size_t idx = 0; idx < n_node; ++idx){
 		const vector<size_t>& ref = g[idx];
 		const vector<size_t>& ipt = h[idx];
-		size_t& mc = matched[idx];
+		size_t mc = 0;
+		vector<size_t> more, less;
 		size_t i = 0, j = 0;
-		for(; i < ref.size() && j < ipt.size(); ++i, ++j){
+		while(i < ref.size() && j < ipt.size()){
 			if(ref[i] == ipt[j]){
 				++mc;
+				++i;
+				++j;
 			} else if(ref[i] < ipt[j]){
-				less[idx].push_back(ref[i]);
+				less.push_back(ref[i]);
+				++i;
 			} else{
-				more[idx].push_back(ipt[j]);
+				more.push_back(ipt[j]);
+				++j;
 			}
 		}
+		res.push_back(make_tuple(mc, move(more), move(less)));
 	}
-	return make_tuple(move(matched), move(more), move(less));
+	return res;
 }
 
-std::tuple<double, double, double, double> CompareTopo::scores(const cmp_res_t& stat){
-
+CompareTopo::ConfusionMatix CompareTopo::cmatrix(const cmp_res_t& stat){
+	size_t tp = 0, tn = 0, fn = 0, fp=0;
+	for(const tuple<size_t,vector<size_t>,vector<size_t>>& temp:stat){
+		tp += get<0>(temp);
+		tn += get<1>(temp).size();
+		fn += get<2>(temp).size();
+	}
+	fp = n_node*n_node - tp - tn - fn;
+	return ConfusionMatix{tp,tn,fn,fp};
 }
+
+
+CompareTopo::StatScore CompareTopo::scores(const ConfusionMatix& cm){
+	double precision, recall, f1, accurancy;
+	precision = static_cast<double>(cm.tp) / (cm.tp + cm.tn);
+	recall = static_cast<double>(cm.tp) / (cm.tp + cm.fn);
+	f1 = 2 * precision*recall / (precision + recall);
+	accurancy = static_cast<double>(cm.tp + cm.fp) / (cm.tp + cm.tn + cm.fn + cm.fp);
+	return StatScore(precision, recall, f1, accurancy);
+}
+
+CompareTopo::StatScore CompareTopo::scores(const cmp_res_t& stat){
+	return scores(cmatrix(stat));
+}
+
+
