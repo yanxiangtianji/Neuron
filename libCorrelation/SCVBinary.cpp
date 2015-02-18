@@ -23,7 +23,10 @@ void SCVBinary::_init(const SpikeTrains::SpikeTrain& st){
 	set_length();
 	vec.resize(length, 0);
 	for(const auto& t : st){
-		vec[cal_idx(t)] = 1;
+		size_t idx = cal_idx(t);
+		if(idx >= length)
+			break;
+		vec[idx] = 1;
 	}
 	sum = accumulate(vec.begin(), vec.end(), 0);
 }
