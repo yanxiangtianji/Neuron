@@ -119,6 +119,19 @@ void go3(const size_t n, const string& fn){
 	fout.close();
 }
 
+void go4(const size_t n, const string& fn){
+	GeneratorDegree gend(n, GeneratorDegree::DegreeType::OUTDEGREE, false);
+	mt19937 rg;
+	auto nng = normal_distribution<double>(0, n*(n-1)/2/5);
+	function<size_t()> int_dis = [&](){
+		return static_cast<size_t>(abs(nng(rg)));
+	};
+	AdjGraph g = gend.gen(int_dis, true);
+	ofstream fout(fn);
+	fout << g.sort_up();
+	fout.close();
+}
+
 int main(){
 	string base_dir("../data/");
 //	test_graph();
@@ -134,6 +147,6 @@ int main(){
 	//go(4, base_dir + "common2.txt", { 0, 0, 2, 2 });
 	//go3(100, base_dir + "big100.txt");
 	//go3(25, base_dir + "big25.txt");
-	go3(10, base_dir + "big10.txt");
+	go4(10, base_dir + "big10.txt");
 	return 0;
 }
