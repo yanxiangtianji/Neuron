@@ -5,7 +5,7 @@
 #include "def.h"
 #include "EventQueue.h"
 #include "Network.h"
-#include "ToolRandom.h"
+#include "../libRandom/ToolRandom.h"
 
 
 using namespace std;

@@ -69,14 +69,17 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Neuron.cpp" />
-    <ClCompile Include="ToolRandom.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="def.h" />
     <ClInclude Include="EventQueue.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Neuron.h" />
-    <ClInclude Include="ToolRandom.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libRandom\libRandom.vcxproj">
+      <Project>{c4aa0294-bd43-4f3d-9203-ce03b9e1e590}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
