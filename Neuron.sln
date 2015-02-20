@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Windows Desktop
+# Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genTopology", "genTopology\genTopology.vcxproj", "{3E08C970-882B-480E-96AD-05265663BFEC}"
@@ -10,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "inference", "inference\inference.vcxproj", "{870C8B23-FFD9-415A-93A2-2DE42E563101}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCorrelation", "libCorrelation\libCorrelation.vcxproj", "{994621E0-544E-4824-9859-DE1B7925B04A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libRandom", "libRandom\libRandom.vcxproj", "{C4AA0294-BD43-4F3D-9203-CE03B9E1E590}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{994621E0-544E-4824-9859-DE1B7925B04A}.Debug|Win32.Build.0 = Debug|Win32
 		{994621E0-544E-4824-9859-DE1B7925B04A}.Release|Win32.ActiveCfg = Release|Win32
 		{994621E0-544E-4824-9859-DE1B7925B04A}.Release|Win32.Build.0 = Release|Win32
+		{C4AA0294-BD43-4F3D-9203-CE03B9E1E590}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C4AA0294-BD43-4F3D-9203-CE03B9E1E590}.Debug|Win32.Build.0 = Debug|Win32
+		{C4AA0294-BD43-4F3D-9203-CE03B9E1E590}.Release|Win32.ActiveCfg = Release|Win32
+		{C4AA0294-BD43-4F3D-9203-CE03B9E1E590}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
