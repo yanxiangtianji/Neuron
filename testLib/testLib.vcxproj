@@ -85,6 +85,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="test_eval.cpp" />
+    <ClCompile Include="test_powerlaw.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pld_eval_test.hpp" />
+    <ClInclude Include="test_eval.h" />
+    <ClInclude Include="test_powerlaw.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
