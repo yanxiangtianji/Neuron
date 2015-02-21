@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="power_law_distribution.cpp" />
     <ClCompile Include="ToolRandom.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="power_law_distribution.h" />
+    <ClInclude Include="degree_pl_distribution.hpp" />
+    <ClInclude Include="power_law_distribution.hpp" />
     <ClInclude Include="ToolRandom.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

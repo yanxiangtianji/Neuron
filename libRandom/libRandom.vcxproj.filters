@@ -18,15 +18,15 @@
     <ClCompile Include="ToolRandom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="power_law_distribution.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ToolRandom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="power_law_distribution.h">
+    <ClInclude Include="power_law_distribution.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="degree_pl_distribution.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
