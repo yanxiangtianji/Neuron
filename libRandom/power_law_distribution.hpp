@@ -1,6 +1,5 @@
 #pragma once
 #include <random>
-#include <type_traits>
 #include <limits>
 #include <stdexcept>
 
@@ -41,14 +40,15 @@ public:
 	};
 
 public:
-	explicit power_law_distribution(T xmin=1, double alpha=2.5) :urng(), par(xmin,alpha){}
+	explicit power_law_distribution(T xmin=1, double alpha=2.5) :par(xmin,alpha){}
 	explicit power_law_distribution(const param_type& params) :par(params){}
 
 	result_type min()const{ return xmin(); }
 	result_type max()const{ return std::numeric_limits<result_type>::max(); }
 	param_type param()const{ return par; }
 	void param(const param_type& parm){ par = parm; }
-	void reset(){ urng.reset(); };
+	void reset(){ urng.reset(); }	//comment if use dynamic urng
+//	void reset(){}
 
 	result_type xmin()const{ return par.xmin; }
 	double alpha()const{ return par.alpha; }
@@ -75,12 +75,12 @@ public:
 private:
 	template <class Engine>
 	result_type eval(Engine& eng, const param_type& par) const{
-		urng_type::result_type y = urng(eng);
-		return static_cast<result_type>(par.xmin*std::pow(1.0-y,par._exp));
+		//urng_type urng;	//uncomment if use dynamic urng
+		return static_cast<result_type>(par.xmin*std::pow(1.0 - urng(eng), par._exp));
 	}
 
 private:
-	urng_type urng;
+	urng_type urng;	//comment if use dynamic urng
 	param_type par;
 };
 
