@@ -7,9 +7,9 @@ FirstAlg::FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, con
 {
 }
 
-void FirstAlg::set_mpps(const double cor_th, const tp_t delay_th, const double delay_acc_rate){
+void FirstAlg::set_mpps(const double cor_th, const tp_t delay_th, const double cospike_dif_tol){
 	ppm_t ppm = cal_by_cor(cor_th);
-	refine_ppm_by_delay(ppm, delay_th, delay_acc_rate);
+	refine_ppm_by_delay(ppm, delay_th, cospike_dif_tol);
 	set_mpps_by_ppm(ppm);
 }
 
@@ -30,13 +30,14 @@ FirstAlg::ppm_t FirstAlg::cal_by_cor(const double threshold){
 	return res;
 }
 
-void FirstAlg::refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double acc_rate){
+void FirstAlg::refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double cospike_dif_tol){
 	size_t n = size();
 	for(size_t i = 0; i < n; ++i){
 		for(size_t j = 0; j < n; ++j){
 			if(ppm[i][j]){
 				pair<size_t, size_t> p = dh.check_cospike(i, j, delay_th);
-				ppm[i][j] = p.first*acc_rate<=p.second;
+				//p.first spikes in i; p.second qualified spikes in j
+				ppm[i][j] = p.second >= p.first*cospike_dif_tol;
 			}
 		}
 	}

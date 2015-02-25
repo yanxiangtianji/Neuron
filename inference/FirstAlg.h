@@ -13,7 +13,8 @@ public:	//typedef
 	typedef std::vector<size_t> ps_t;
 public:	//interface
 	FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn);
-	void set_mpps(const double cor_th, const tp_t delay_th, const double delay_acc_rate);
+	//cor_th: minimum correlation; delay_th: maximum delay length; cospike_dif_tol: minimum fraction of co-spike
+	void set_mpps(const double cor_th, const tp_t delay_th, const double cospike_dif_tol);
 	void set_ps_by_mpps();
 	
 	size_t size()const{ return dh.size(); }
@@ -23,8 +24,10 @@ public:	//interface
 	void output_ps(std::ostream& os){ output_vps(os, ps); }
 
 private:	//helper fun
+	//cor_th: minimum correlation
 	ppm_t cal_by_cor(const double cor_th);
-	void refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double acc_rate);
+	//delay_th: maximum delay length; cospike_dif_tol: minimum fraction of co-spike
+	void refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double cospike_dif_tol);
 	void set_mpps_by_ppm(ppm_t& ppm);
 	//whether rth is contained by lth
 	bool contains(const ps_t& lth, const ps_t& rth);

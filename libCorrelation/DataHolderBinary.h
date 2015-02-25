@@ -22,6 +22,7 @@ public:
 	/*!
 	@brief Find how many spikes of poss_pnt in range [st_t, end_t] have a corresponding spike within time delay_th on spike train poss_chd.
 	@details See SpikeTrains.check_cospike
+	@return pair(the num of countted spikes in poss_pnt, the num of qualified spikes in poss_chd).
 	*/
 	std::pair<size_t,size_t> check_cospike(const size_t& poss_pnt, const size_t& poss_chd, 
 		const tp_t delay_th, const tp_t st_t, const tp_t end_t);
