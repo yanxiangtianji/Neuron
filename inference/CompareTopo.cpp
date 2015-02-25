@@ -77,7 +77,7 @@ CompareTopo::cmp_res_t CompareTopo::compare(const vvs_t& h){
 	return res;
 }
 
-CompareTopo::ConfusionMatix CompareTopo::cmatrix(const cmp_res_t& stat){
+ConfusionMatrix CompareTopo::cmatrix(const cmp_res_t& stat){
 	size_t tp = 0, tn = 0, fn = 0, fp=0;
 	for(const tuple<size_t,vector<size_t>,vector<size_t>>& temp:stat){
 		tp += get<0>(temp);
@@ -85,21 +85,22 @@ CompareTopo::ConfusionMatix CompareTopo::cmatrix(const cmp_res_t& stat){
 		fn += get<2>(temp).size();
 	}
 	fp = n_node*n_node - tp - tn - fn;
-	return ConfusionMatix{tp,tn,fn,fp};
+	return ConfusionMatrix{tp,tn,fn,fp};
+}
+
+StatScore CompareTopo::scores(const cmp_res_t& stat){
+	return StatScore(cmatrix(stat));
+}
+StatScore CompareTopo::scores(const ConfusionMatrix& cm){
+	return StatScore(cm);
 }
 
 
-CompareTopo::StatScore CompareTopo::scores(const ConfusionMatix& cm){
-	double precision, recall, f1, accurancy;
+StatScore::StatScore(const ConfusionMatrix& cm){
 	precision = static_cast<double>(cm.tp) / (cm.tp + cm.tn);
 	recall = static_cast<double>(cm.tp) / (cm.tp + cm.fn);
 	f1 = 2 * precision*recall / (precision + recall);
 	accurancy = static_cast<double>(cm.tp + cm.fp) / (cm.tp + cm.tn + cm.fn + cm.fp);
-	return StatScore(precision, recall, f1, accurancy);
-}
-
-CompareTopo::StatScore CompareTopo::scores(const cmp_res_t& stat){
-	return scores(cmatrix(stat));
 }
 
 
