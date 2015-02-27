@@ -30,7 +30,8 @@ private:
 	size_t sum;
 /*static:*/
 public:
-	static SCVBinary merge(const std::vector<std::reference_wrapper<const SCVBinary>>& org);
+	static SCVBinary union_v(const std::vector<std::reference_wrapper<const SCVBinary>>& org);
+	static SCVBinary union_v(const SCVBinary& lth, const SCVBinary& rth);
 	static size_t cal_length(const tp_t window_size, const tp_t start, const tp_t end);
 };
 

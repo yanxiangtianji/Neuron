@@ -41,7 +41,7 @@ double DataHolderBinary::cor_dp(const size_t first, const std::vector<size_t>& s
 	std::vector<reference_wrapper<const SCVBinary>> temp;
 	for(size_t idx : second)
 		temp.push_back(cref(cont[idx]));
-	return cor_dp(cont[first], SCVBinary::merge(temp));
+	return cor_dp(cont[first], SCVBinary::union_v(temp));
 }
 
 double DataHolderBinary::cor_dp_f(const SCVBinary& first, const SCVBinary& second){
@@ -60,7 +60,7 @@ double DataHolderBinary::cor_dp_f(const size_t first, const std::vector<size_t>&
 	std::vector<reference_wrapper<const SCVBinary>> temp;
 	for(size_t idx : second)
 		temp.push_back(cref(cont[idx]));
-	return cor_dp_f(cont[first], SCVBinary::merge(temp));
+	return cor_dp_f(cont[first], SCVBinary::union_v(temp));
 }
 
 
