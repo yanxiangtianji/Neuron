@@ -5,6 +5,7 @@
 #include "../libCorrelation/DataHolderBinary.h"
 #include "FirstAlg.h"
 #include "CompareTopo.h"
+#include "AnalyzeTopo.h"
 
 using namespace std;
 
@@ -105,6 +106,33 @@ void test_regex(){
 	}
 }
 
+void test_analy(){
+	size_t n = 4;
+	AnalyzeTopo::adj_g_t g1{ { 2, 3 }, { 0 }, { 1, 0 }, {} };
+	AnalyzeTopo::adj_g_t g2{ { 1, 2, 3 }, { 1, 3 }, { 2 }, { 2 } };
+	AnalyzeTopo::adj_g_t g3{ { 0, 2, 3 }, { 0, 1 }, { 2 }, { 0, 2 } };
+	cout.precision(4);
+	function<void(AnalyzeTopo::prob_g_t&)> show=[](AnalyzeTopo::prob_g_t& pg){
+		for(auto& line : pg){
+			for(double d : line){
+				cout << '\t' << d;
+			}
+			cout << '\n';
+		}
+	};
+	AnalyzeTopo anl(n);
+	anl.add(g1);
+	cout << "g1:"<<endl;
+	show(anl.get_prob_g());
+	anl.add(g2);
+	cout << "g1+g2:"<<endl;
+	show(anl.get_prob_g());
+	anl.add(g3);
+	cout << "g1+g2+g3:"<<endl;
+	show(anl.get_prob_g());
+	cout << endl;
+}
+
 
 void test(const string base_dir){
 //	test_bin_cor(base_dir+"mparent_st.txt");
@@ -112,6 +140,7 @@ void test(const string base_dir){
 //	test_ps(base_dir + "indirect1_st.txt");
 //	test_cmp(base_dir + "indirect2.txt", "_st_if");
 //	test_cmp(base_dir + "big10.txt", "_st2_if");
-	test_regex();
+//	test_regex();
+	test_analy();
 }
 
