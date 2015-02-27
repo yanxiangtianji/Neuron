@@ -13,7 +13,11 @@ public:	//typedef
 	typedef std::vector<size_t> ps_t;
 public:	//interface
 	FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn);
-	//cor_th: minimum correlation; delay_th: maximum delay length; cospike_dif_tol: minimum fraction of co-spike
+	/*!
+	@param cor_th: minimum acceptable correlation;
+	@param delay_th: maximum acceptable delay length;
+	@param cospike_dif_tol: minimum acceptable fraction of co-spikes
+	*/
 	void set_mpps(const double cor_th, const tp_t delay_th, const double cospike_dif_tol);
 	void set_ps_by_mpps();
 	
