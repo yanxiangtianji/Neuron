@@ -18,6 +18,7 @@ void AnalyzeTopo::add(const adj_g_t& g){
 		for(size_t j : g[i])
 			++count[i][j];
 	}
+	++n_graph;
 }
 
 AnalyzeTopo::prob_g_t AnalyzeTopo::get_prob_g() const{
