@@ -34,19 +34,23 @@ void DataHolder::_init(const SpikeTrains& sts){
 
 double DataHolder::pearson_correlation(const SCV& first, const SCV& second){
 	size_t l = first.get_length();
-	SCV::value_type sx1 = 0, sx2 = 0, sy1 = 0, sy2 = 0, xy = 0;
+	size_t sx1 = 0, sx2 = 0, sy1 = 0, sy2 = 0, xy = 0;
 	for(size_t i = 0; i < l; ++i){
-		int x = first[i];
+		auto x = first[i];
 		sx1 += x;
 		sx2 += x*x;
-		int y = first[i];
+		auto y = second[i];
 		sy1 += y;
 		sy2 += y*y;
 		xy += x*y;
 	}
-	SCV::value_type up = l*xy - sx1*sy1;
-	SCV::value_type down2 = (l*sx2 - sx1*sx1)*(l*sy2 - sy1*sy1);
-	return up / sqrt(down2);
+	double a = l*sx2 - sx1*sx1;
+	double b = l*sy2 - sy1*sy1;
+	if(a == 0.0 || b == 0.0)
+		return 0.0;
+	double down = sqrt(a*b);
+	double up = static_cast<double>(l)*xy - static_cast<double>(sx1)*sy1;
+	return up / down;
 }
 double DataHolder::pearson_correlation(const size_t first, const size_t second){
 	return pearson_correlation(cont[first], cont[second]);

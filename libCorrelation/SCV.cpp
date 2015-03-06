@@ -9,6 +9,7 @@ SCV::SCV(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTr
 {
 	_init(st);
 }
+/*
 SCV::SCV(const tp_t window_size, const tp_t start, const tp_t end, const std::vector<value_type>& vec, int)
 	: start(start), end(end), window_size(window_size), vec(vec)
 {
@@ -17,6 +18,7 @@ SCV::SCV(const tp_t window_size, const tp_t start, const tp_t end, std::vector<v
 	: start(start), end(end), window_size(window_size), vec(vec)
 {
 }
+*/
 
 void SCV::set_length(){
 	length = cal_length(window_size, start, end);

@@ -10,8 +10,8 @@ public:
 public:
 	SCV(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains::SpikeTrain& st);
 	//the last parameter int is used to distinguish "SpikeTrains::SpikeTrain" and "std::vector<value_type>" when they are the same
-	SCV(const tp_t window_size, const tp_t start, const tp_t end, const std::vector<value_type>& vec, int);
-	SCV(const tp_t window_size, const tp_t start, const tp_t end, std::vector<value_type>&& vec, int);
+//	SCV(const tp_t window_size, const tp_t start, const tp_t end, const std::vector<value_type>& vec, int);
+//	SCV(const tp_t window_size, const tp_t start, const tp_t end, std::vector<value_type>&& vec, int);
 
 	size_t cal_idx(const tp_t t){ return size_t((t - start) / window_size); }
 	tp_t cal_time_start(const size_t idx){ return idx*window_size + start; }
