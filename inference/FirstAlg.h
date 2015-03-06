@@ -36,6 +36,7 @@ private:	//helper fun
 	//whether rth is contained by lth
 	bool contains(const ps_t& lth, const ps_t& rth);
 	bool equals(const ps_t& lth, const ps_t& rth);
+	//check whether i's parents lth and j's parent rth have a loop (lth has j && rth has i)
 	bool share_n_loop(const size_t i, const ps_t& lth, const size_t j, const ps_t& rth);
 private:	//data member
 	DataHolderBinary dh;
