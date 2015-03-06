@@ -12,9 +12,11 @@ public:
 	DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains& sts);
 	DataHolderBinary(const tp_t window_size, const tp_t start, const tp_t end, SpikeTrains&& sts);
 
+	//dot-product correlation using andor
 	double cor_dp(const SCVBinary& first, const SCVBinary& second);
 	double cor_dp(const size_t first, const size_t second);
 	double cor_dp(const size_t first, const std::vector<size_t>& second);
+	//dot-product correlation using and
 	double cor_dp_f(const SCVBinary& first, const SCVBinary& second);
 	double cor_dp_f(const size_t first, const size_t second);
 	double cor_dp_f(const size_t first, const std::vector<size_t>& second);

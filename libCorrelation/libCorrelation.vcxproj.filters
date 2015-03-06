@@ -27,6 +27,12 @@
     <ClInclude Include="SpikeTrains.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SCV.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DataHolder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SCVBinary.cpp">
@@ -36,6 +42,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SpikeTrains.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SCV.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DataHolder.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -77,13 +77,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DataHolder.h" />
     <ClInclude Include="DataHolderBinary.h" />
     <ClInclude Include="def.h" />
+    <ClInclude Include="SCV.h" />
     <ClInclude Include="SCVBinary.h" />
     <ClInclude Include="SpikeTrains.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataHolder.cpp" />
     <ClCompile Include="DataHolderBinary.cpp" />
+    <ClCompile Include="SCV.cpp" />
     <ClCompile Include="SCVBinary.cpp" />
     <ClCompile Include="SpikeTrains.cpp" />
   </ItemGroup>

@@ -3,7 +3,6 @@
 #include "SpikeTrains.h"
 #include <vector>
 #include <cstdint>
-#include <functional>
 
 class SCVBinary
 {
