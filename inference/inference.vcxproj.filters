@@ -30,6 +30,9 @@
     <ClCompile Include="AnalyzeTopo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SecondAlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FirstAlg.h">
@@ -42,6 +45,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="AnalyzeTopo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SecondAlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

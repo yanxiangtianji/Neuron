@@ -78,6 +78,7 @@
     <ClCompile Include="CompareTopo.cpp" />
     <ClCompile Include="FirstAlg.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SecondAlg.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -89,6 +90,7 @@
     <ClInclude Include="AnalyzeTopo.h" />
     <ClInclude Include="CompareTopo.h" />
     <ClInclude Include="FirstAlg.h" />
+    <ClInclude Include="SecondAlg.h" />
     <ClInclude Include="test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

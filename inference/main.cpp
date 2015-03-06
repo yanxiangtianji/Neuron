@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 	string base_dir("../data/");
 	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt",
 		"common2.txt", "common3.txt", "big100.txt", "big25.txt", "big10.txt" };
-//	test(base_dir); return 0;
+	test(base_dir); return 0;
 
 	string base = base_dir + "real/";
 //	go_real_data(base,10);
