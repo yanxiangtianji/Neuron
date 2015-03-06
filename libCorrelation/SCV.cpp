@@ -5,9 +5,17 @@
 using namespace std;
 
 SCV::SCV(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains::SpikeTrain& st)
-	:start(start), end(end), window_size(window_size), sum(0)
+	:start(start), end(end), window_size(window_size)
 {
 	_init(st);
+}
+SCV::SCV(const tp_t window_size, const tp_t start, const tp_t end, const std::vector<value_type>& vec, int)
+	: start(start), end(end), window_size(window_size), vec(vec)
+{
+}
+SCV::SCV(const tp_t window_size, const tp_t start, const tp_t end, std::vector<value_type>&& vec, int)
+	: start(start), end(end), window_size(window_size), vec(vec)
+{
 }
 
 void SCV::set_length(){
@@ -19,7 +27,6 @@ size_t SCV::cal_length(const tp_t window_size, const tp_t start, const tp_t end)
 }
 
 void SCV::_init(const SpikeTrains::SpikeTrain& st){
-	sum = 0;
 	set_length();
 	vec.resize(length, 0);
 	for(const auto& t : st){
@@ -28,7 +35,6 @@ void SCV::_init(const SpikeTrains::SpikeTrain& st){
 			break;
 		++vec[idx];
 	}
-	sum = accumulate(vec.begin(), vec.end(), 0);
 }
 
 SCV SCV::union_v(const std::vector<std::reference_wrapper<const SCV>>& org){
