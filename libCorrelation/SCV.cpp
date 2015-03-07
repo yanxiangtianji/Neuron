@@ -28,6 +28,19 @@ size_t SCV::cal_length(const tp_t window_size, const tp_t start, const tp_t end)
 	return static_cast<size_t>(ceil(double(end - start) / window_size));
 }
 
+bool SCV::set_vec(const std::vector<value_type>& v){
+	if(v.size() != length)
+		return false;
+	vec = v;
+	return true;
+}
+bool SCV::set_vec(std::vector<value_type>&& v){
+	if(v.size() != length)
+		return false;
+	vec = v;
+	return true;
+}
+
 void SCV::_init(const SpikeTrains::SpikeTrain& st){
 	set_length();
 	vec.resize(length, 0);

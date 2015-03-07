@@ -19,6 +19,11 @@ public:
 	value_type operator[](const size_t idx)const{ return vec[idx]; }
 	size_t get_length()const{ return length; }
 	const std::vector<value_type>& get_vec()const{ return vec; }
+	void set_start(const tp_t s){ start = s; set_length(); }
+	void set_end(const tp_t e){ end = e; set_length(); }
+	void set_window_size(const tp_t w){ window_size = w; set_length(); }
+	bool set_vec(const std::vector<value_type>& v);
+	bool set_vec(std::vector<value_type>&& v);
 private:
 	void _init(const SpikeTrains::SpikeTrain& st);
 	void set_length();
