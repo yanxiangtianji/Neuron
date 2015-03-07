@@ -14,11 +14,17 @@ public:	//typedef
 public:	//interface
 	SecondAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn);
 
-	// cor_th: minimum acceptable correlation
-	void set_ps(const double cor_th);
+	/*!
+	@param cor_th: minimum acceptable correlation
+	@param delay_th: maximum acceptable delay length;
+	*/
+	void set_mpps(const double cor_th);
+	void set_ps_by_mpps();
 
 	size_t size()const{ return dh.size(); }
 	const std::vector<std::vector<size_t> >& get_ps()const{ return ps; }
+	const std::vector<std::vector<size_t> >& get_mpps()const{ return mpps; }
+	void output_mpps(std::ostream& os){ output_vps(os, mpps); }
 	void output_ps(std::ostream& os){ output_vps(os, ps); }
 
 private:	//helper fun
@@ -27,11 +33,17 @@ private:	//helper fun
 
 	//cor_th: minimum correlation
 	ppm_t cal_by_cor(const double cor_th);
-	void set_ps_by_ppm(ppm_t& ppm);
+//	void refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th);
+	void set_mpps_by_ppm(ppm_t& ppm);
+
+	//whether rth is contained by lth
+	bool contains(const ps_t& lth, const ps_t& rth);
+	bool equals(const ps_t& lth, const ps_t& rth);
 
 private:	//data member
 	DataHolder dh;	//spike-count vector -> delta spike-count vector
 	//Maximum sized Possible Parent Set
+	std::vector<ps_t> mpps;
 	std::vector<ps_t> ps;
 
 	/*static:*/

@@ -1,4 +1,6 @@
 #include "SecondAlg.h"
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -9,25 +11,60 @@ SecondAlg::SecondAlg(const tp_t window_size, const tp_t start, const tp_t end, c
 }
 
 void SecondAlg::_init(){
-	vector<SCV> temp(dh.get_cont());
+	vector<SCV>& temp=dh.get_cont();
+	size_t l = temp[0].get_length();
 	size_t w = dh.get_window_size();
-	size_t s = dh.get_start_t();
-	size_t e = dh.get_end_t();
-	vector<SCV> res;
-	for(auto& scv : temp){
+	for(SCV& scv : temp){
 		vector<SCV::value_type> v = scv.get_vec();
-		for(size_t i = 1; i < v.size(); ++i)
+		for(size_t i = 1; i < l; ++i)
 			v[i - 1] = v[i] - v[i - 1];
 		v.erase(--v.end());
-		res.push_back(SCV(w, s, e, v));
+		scv.set_start(w);
+		for(auto&t : v)
+			cout << setw(3) << t;
+		cout << endl;
+		if(!scv.set_vec(move(v)))
+			throw invalid_argument("Fail to set delta spike count vector.");
 	}
-	res.shrink_to_fit();
-	dh = DataHolder(w, s, e, move(res));
 }
 
-void SecondAlg::set_ps(const double cor_th){
+void SecondAlg::set_mpps(const double cor_th){
 	ppm_t ppm = cal_by_cor(cor_th);
-	set_ps_by_ppm(ppm);
+	set_mpps_by_ppm(ppm);
+}
+
+bool SecondAlg::contains(const ps_t& lth, const ps_t& rth){
+	if(lth.size() < rth.size() || rth.size() == 0)
+		return false;
+	for(size_t p : rth){
+		if(find(lth.begin(), lth.end(), p) == lth.end())
+			return false;
+	}
+	return true;
+}
+bool SecondAlg::equals(const ps_t& lth, const ps_t& rth){
+	return lth == rth;
+}
+
+void SecondAlg::set_ps_by_mpps(){
+	size_t n = size();
+	ps = mpps;
+	bool goon = false;
+	while(goon){
+		goon = false;
+		for(size_t i = 0; i < n; ++i){
+			for(size_t j = 0; j < n; ++j){
+				if(i == j || ps[i].size() == 0 || ps[j].size() == 0)
+					continue;
+				//indirect: remove indirect links
+				if(contains(ps[i], ps[j]) && !equals(ps[i], ps[j])){
+					goon = true;
+					for(size_t p : ps[j])
+						ps[i].erase(find(ps[i].begin(), ps[i].end(), p));
+				}
+			}
+		}
+	}
 }
 
 SecondAlg::ppm_t SecondAlg::cal_by_cor(const double threshold){
@@ -48,14 +85,15 @@ SecondAlg::ppm_t SecondAlg::cal_by_cor(const double threshold){
 }
 
 
-void SecondAlg::set_ps_by_ppm(ppm_t& ppm){
+
+void SecondAlg::set_mpps_by_ppm(ppm_t& ppm){
 	size_t n = size();
-	ps.clear();
-	ps.resize(n);
+	mpps.clear();
+	mpps.resize(n);
 	for(size_t i = 0; i < n; ++i){
 		for(size_t j = 0; j < n; ++j){
 			if(ppm[i][j])
-				ps[j].push_back(i);
+				mpps[j].push_back(i);
 		}
 	}
 }

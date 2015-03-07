@@ -84,7 +84,7 @@ void FirstAlg::set_ps_by_mpps(){
 	size_t n = size();
 	ps = mpps;
 	bool goon = true;
-	//change to SPFA like algorithm
+	//TODO: change to SPFA like algorithm
 	while(goon){
 		goon = false;
 		for(size_t i = 0; i < n; ++i){

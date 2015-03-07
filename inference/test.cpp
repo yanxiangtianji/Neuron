@@ -63,12 +63,15 @@ void test_first_ps(const string& fn){
 	alg.output_ps(cout);
 }
 
-void test_second_ps(const string& fn){
+void test_second(const string& fn){
 	cout << fn << endl;
-	SecondAlg alg(20, 0, 1020, fn);
+	SecondAlg alg(40, 0, 1020, fn);
 	size_t n = alg.size();
-	alg.set_ps(0.6);
+	alg.set_mpps(0.8);
+	cout << "mpps:" << endl;
+	alg.output_mpps(cout); 
 	cout << "ps:" << endl;
+	alg.set_ps_by_mpps();
 	alg.output_ps(cout);
 }
 
@@ -149,7 +152,7 @@ void test(const string base_dir){
 //	test_bin_cor(base_dir+"mparent_st.txt");
 //	test_first_mpps(base_dir + "mparent_st.txt");
 //	test_first_ps(base_dir + "indirect1_st.txt");
-	test_second_ps(base_dir + "indirect1_st.txt");
+	test_second(base_dir + "mparent_st.txt");
 //	test_cmp(base_dir + "indirect2.txt", "_st_if");
 //	test_cmp(base_dir + "big10.txt", "_st2_if");
 //	test_regex();
