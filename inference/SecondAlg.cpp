@@ -20,9 +20,8 @@ void SecondAlg::_init(){
 			v[i - 1] = v[i] - v[i - 1];
 		v.erase(--v.end());
 		scv.set_start(w);
-		for(auto&t : v)
-			cout << setw(3) << t;
-		cout << endl;
+//		for(auto&t : v)	cout << setw(3) << t;
+//		cout << endl;
 		if(!scv.set_vec(move(v)))
 			throw invalid_argument("Fail to set delta spike count vector.");
 	}
