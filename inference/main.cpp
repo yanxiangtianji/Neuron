@@ -93,37 +93,41 @@ void merge_result(const size_t n, const string& base_dir, const vector<string>& 
 }
 
 
-void go_real_data(const string base_dir, const int amp2ms, double th){
-	int n_c1 = 54, n_c2 = 52;
-	vector<string> name_list;
+void go_real_data(const string base_dir, const string& st_fld,
+	const string& if_fld, const int amp2ms, double th)
+{
+	const int n_c1 = 54, n_c2 = 52;
 	function<void(const string&)> fun_if = [&](const string& fn_st){
-//		infer(fn_st, trans_name(fn_st, "../if/", ""), 30 * amp2ms, 0, int(10.1 * 1000 * amp2ms), 0.1, 10 * amp2ms, 0.1);
-		infer2(fn_st, trans_name(fn_st, "../if2/", ""), 30 * amp2ms, 0, int(10.1 * 1000 * amp2ms), 0.2);
+		string st_f = base_dir + st_fld + fn_st;
+		string if_f = base_dir + if_fld + fn_st;
+//		infer(st_f, if_f, 50 * amp2ms, 0, int(10.1 * 1000 * amp2ms), 0.1, 10 * amp2ms, 0.1);
+		infer2(st_f, if_f, 200 * amp2ms, 0, int(10.1 * 1000 * amp2ms), 0.2);
 	};
-	function<void(const vector<string>& name_list)> fun_mg = [&](const vector<string>& name_list){
-//		string sub = "if/";
-		string sub = "if2/";
-		ofstream fout_pg(base_dir + sub+"cue1_prog.txt");
-		ofstream fout_if(base_dir + sub+"cue1_prog_if.txt");
-		merge_result(19, base_dir + sub, name_list, th, fout_pg, fout_if);
+	function<void(const string& fn_head, const vector<string>& name_list)> fun_mg
+		= [&](const string& fn_head, const vector<string>& name_list)
+	{
+		ofstream fout_pg(base_dir + if_fld + fn_head + ".txt");
+		ofstream fout_if(base_dir + if_fld + fn_head + "_if.txt");
+		merge_result(19, base_dir + if_fld, name_list, th, fout_pg, fout_if);
 		fout_pg.close();
 		fout_if.close();
 	};
 	//go:
+	vector<string> name_list;
 	for(int i = 0; i < n_c1; ++i){
-		string fn_st = base_dir + "st/cue1_" + to_string(i) + ".txt";
-		name_list.push_back("cue1_" + to_string(i) + ".txt");
-//		fun_if(fn_st);
-	}
-	fun_mg(name_list);
-	return;
-	name_list.clear();
-	for(int i = 0; i < n_c2; ++i){
-		string fn_st = base_dir + "st/cue2_" + to_string(i) + ".txt";
-		name_list.push_back("st/cue2_" + to_string(i) + ".txt");
+		string fn_st = "cue1_" + to_string(i) + ".txt";
+		name_list.push_back(fn_st);
 		fun_if(fn_st);
 	}
-	fun_mg(name_list);
+	fun_mg("cue1_prob",name_list);
+//	return;
+	name_list.clear();
+	for(int i = 0; i < n_c2; ++i){
+		string fn_st = "cue2_" + to_string(i) + ".txt";
+		name_list.push_back(fn_st);
+		fun_if(fn_st);
+	}
+	fun_mg("cue2_prob",name_list);
 }
 
 void compare(const string& base_fn, const string& suffix){
@@ -153,14 +157,14 @@ int main(int argc, char* argv[])
 //	test(base_dir); return 0;
 	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt",
 		"common2.txt", "common3.txt", "big100.txt", "big25.txt", "big10.txt" };
-	vector<string> name_list1;
-	for(int i = 0; i < 54; ++i)
-		name_list1.push_back("cue1_" + to_string(i) + ".txt");
 
 //	infer2(base_dir2 + "st/cue1_1.txt", base_dir2 + "if2/cue1_1.txt", 200 * 10, 0, 1020 * 10, 0.2);
 //	return 0;
 
-	go_real_data(base_dir2,10,0.5);
+	go_real_data(base_dir2,"st/","if2/",10,0.5);
+	go_real_data(base_dir2, "st0-3/", "if2_0-3/", 10, 0.5);
+	go_real_data(base_dir2, "st0-3/", "if2_3-6/", 10, 0.5);
+	go_real_data(base_dir2, "st0-3/", "if2_6-9/", 10, 0.5);
 	return 0;
 
 //	infer(base_dir + "big100.txt", "_st2", 20, 0, 1040, 0.6, 8, 0.8);
