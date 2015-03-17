@@ -1,11 +1,11 @@
 #include "SecondAlg.h"
-#include <iostream>
-#include <iomanip>
+//#include <iostream>
+//#include <iomanip>
 
 using namespace std;
 
 SecondAlg::SecondAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn)
-	:dh(window_size, start, end, fn)
+	:AlgBase(), dh(window_size, start, end, fn)
 {
 	_init();
 }
@@ -32,18 +32,6 @@ void SecondAlg::set_mpps(const double cor_th){
 	set_mpps_by_ppm(ppm);
 }
 
-bool SecondAlg::contains(const ps_t& lth, const ps_t& rth){
-	if(lth.size() < rth.size() || rth.size() == 0)
-		return false;
-	for(size_t p : rth){
-		if(find(lth.begin(), lth.end(), p) == lth.end())
-			return false;
-	}
-	return true;
-}
-bool SecondAlg::equals(const ps_t& lth, const ps_t& rth){
-	return lth == rth;
-}
 
 void SecondAlg::set_ps_by_mpps(){
 	size_t n = size();
@@ -97,14 +85,3 @@ void SecondAlg::set_mpps_by_ppm(ppm_t& ppm){
 	}
 }
 
-
-void SecondAlg::output_vps(std::ostream& os, const std::vector<ps_t>& vps){
-	size_t n = vps.size();
-	os << n << '\n';
-	for(size_t i = 0; i < n; ++i){
-		os << i << ' ' << vps[i].size() << '\n';
-		for(size_t pid : vps[i])
-			os << ' ' << pid;
-		os << '\n';
-	}
-}

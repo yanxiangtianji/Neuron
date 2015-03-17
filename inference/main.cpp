@@ -23,7 +23,8 @@ void infer(const string& fn_st, const string& fn_inf,
 	cout << fn_st << endl;
 	FirstAlg alg(window_size, start, end, fn_st);
 	size_t n = alg.size();
-	alg.set_mpps(cor_th, delay_th, delay_acc_rate);
+	alg.set_mpps_param(delay_th, delay_acc_rate);
+	alg.set_mpps(cor_th);
 //	alg.output_mpps(cout);
 
 	alg.set_ps_by_mpps();
@@ -130,6 +131,10 @@ void go_real_data(const string base_dir, const string& st_fld,
 	fun_mg("cue2_prob",name_list);
 }
 
+void go_on_multi_parameter(){
+
+}
+
 void compare(const string& base_fn, const string& suffix){
 	cout << base_fn << "\t" << suffix << endl;
 	CompareTopo cmp(base_fn);
@@ -158,8 +163,8 @@ int main(int argc, char* argv[])
 	vector<string> test_files{ "sparent.txt", "mparent.txt", "indirect1.txt", "indirect2.txt", "common1.txt",
 		"common2.txt", "common3.txt", "big100.txt", "big25.txt", "big10.txt" };
 
-//	infer2(base_dir2 + "st/cue1_1.txt", base_dir2 + "if2/cue1_1.txt", 200 * 10, 0, 1020 * 10, 0.2);
-//	return 0;
+	infer2(base_dir2 + "st/cue1_1.txt", base_dir2 + "if2/cue1_1.txt", 200 * 10, 0, 1020 * 10, 0.2);
+	return 0;
 
 	go_real_data(base_dir2,"st/","if2/",10,0.5);
 	go_real_data(base_dir2, "st0-3/", "if2_0-3/", 10, 0.5);

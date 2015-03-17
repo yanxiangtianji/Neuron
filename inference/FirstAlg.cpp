@@ -3,11 +3,13 @@
 using namespace std;
 
 FirstAlg::FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn)
-	:dh(window_size, start, end, fn)
+	:AlgBase(), dh(window_size, start, end, fn)
 {
 }
 
-void FirstAlg::set_mpps(const double cor_th, const tp_t delay_th, const double cospike_dif_tol){
+void FirstAlg::set_mpps(const double cor_th){
+	const tp_t delay_th = _mpps_param_delay_th;
+	const double cospike_dif_tol = _mpps_param_cospike_dif_tol;
 	ppm_t ppm = cal_by_cor(cor_th);
 	refine_ppm_by_delay(ppm, delay_th, cospike_dif_tol);
 	set_mpps_by_ppm(ppm);
@@ -55,30 +57,6 @@ void FirstAlg::set_mpps_by_ppm(ppm_t& ppm){
 	}
 }
 
-bool FirstAlg::contains(const ps_t& lth, const ps_t& rth){
-	if(lth.size() < rth.size() || rth.size()==0)
-		return false;
-	for(size_t p : rth){
-		if(find(lth.begin(), lth.end(), p) == lth.end())
-			return false;
-	}
-	return true;
-}
-bool FirstAlg::equals(const ps_t& lth, const ps_t& rth){
-	return lth == rth;
-}
-bool FirstAlg::share_n_loop(const size_t i, const ps_t& lth, const size_t j, const ps_t& rth){
-	if(lth.size() != rth.size())
-		return false;
-	ps_t temp_l(lth);
-	auto itl = find(temp_l.begin(), temp_l.end(), j);
-	if(itl == temp_l.end())
-		return false;
-	if(find(rth.begin(), rth.end(), i) == rth.end())
-		return false;
-	*itl = i;
-	return temp_l == rth;
-}
 
 void FirstAlg::set_ps_by_mpps(){
 	size_t n = size();
@@ -104,16 +82,5 @@ void FirstAlg::set_ps_by_mpps(){
 				}
 			}
 		}
-	}
-}
-
-void FirstAlg::output_vps(std::ostream& os, const std::vector<ps_t>& vps){
-	size_t n = vps.size();
-	os << n << '\n';
-	for(size_t i = 0; i < n; ++i){
-		os << i << ' ' << vps[i].size() << '\n';
-		for(size_t pid : vps[i])
-			os << ' ' << pid;
-		os << '\n';
 	}
 }

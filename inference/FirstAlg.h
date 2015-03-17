@@ -2,30 +2,26 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include "AlgBase.h"
 #include "../libCorrelation/DataHolderBinary.h"
 
 class FirstAlg
+	: public AlgBase
 {
-public:	//typedef
-	//possible edge matrix type
-	typedef std::vector<std::vector<bool> > ppm_t;
-	//parent set type
-	typedef std::vector<size_t> ps_t;
 public:	//interface
 	FirstAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn);
+
 	/*!
 	@param cor_th: minimum acceptable correlation;
 	@param delay_th: maximum acceptable delay length;
 	@param cospike_dif_tol: minimum acceptable fraction of co-spikes
 	*/
-	void set_mpps(const double cor_th, const tp_t delay_th, const double cospike_dif_tol);
+	void set_mpps_param(const tp_t delay_th, const double cospike_dif_tol){
+		_mpps_param_delay_th = delay_th; _mpps_param_cospike_dif_tol = cospike_dif_tol; }
+	void set_mpps(const double cor_th);
 	void set_ps_by_mpps();
 	
 	size_t size()const{ return dh.size(); }
-	const std::vector<std::vector<size_t> >& get_ps()const{ return ps; }
-	const std::vector<std::vector<size_t> >& get_mpps()const{ return mpps; }
-	void output_mpps(std::ostream& os){ output_vps(os, mpps); }
-	void output_ps(std::ostream& os){ output_vps(os, ps); }
 
 private:	//helper fun
 	//cor_th: minimum correlation
@@ -33,19 +29,11 @@ private:	//helper fun
 	//delay_th: maximum delay length; cospike_dif_tol: minimum fraction of co-spike
 	void refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double cospike_dif_tol);
 	void set_mpps_by_ppm(ppm_t& ppm);
-	//whether rth is contained by lth
-	bool contains(const ps_t& lth, const ps_t& rth);
-	bool equals(const ps_t& lth, const ps_t& rth);
-	//check whether i's parents lth and j's parent rth have a loop (lth has j && rth has i)
-	bool share_n_loop(const size_t i, const ps_t& lth, const size_t j, const ps_t& rth);
+
 private:	//data member
 	DataHolderBinary dh;
-	//Maximum sized Possible Parent Set
-	std::vector<ps_t> mpps;
-	std::vector<ps_t> ps;
-
-/*static:*/
-private:
-	static void output_vps(std::ostream& os, const std::vector<ps_t>& vps);
+	//parameters for mpps:
+	tp_t _mpps_param_delay_th;
+	double _mpps_param_cospike_dif_tol;
 };
 

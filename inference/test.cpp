@@ -33,7 +33,8 @@ void test_first_mpps(const string& fn){
 	cout << fn << endl;
 	FirstAlg alg(20, 0, 1020, fn);
 	size_t n = alg.size();
-	alg.set_mpps(0.6, 3, 0.8);
+	alg.set_mpps_param(3, 0.8);
+	alg.set_mpps(0.6);
 	auto& mpps = alg.get_mpps();
 	for(size_t i = 0; i < n; ++i){
 		cout << i << '\n';
@@ -48,7 +49,8 @@ void test_first_ps(const string& fn){
 	cout << fn << endl;
 	FirstAlg alg(20, 0, 1020, fn);
 	size_t n = alg.size();
-	alg.set_mpps(0.6, 3, 0.8);
+	alg.set_mpps_param(3, 0.8);
+	alg.set_mpps(0.6);
 	cout << "mpps:" << endl;
 	auto& mpps = alg.get_mpps();
 	for(size_t i = 0; i < n; ++i){
