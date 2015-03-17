@@ -10,6 +10,7 @@ public:
 	typedef std::vector<std::vector<bool> > ppm_t;
 	//parent set type
 	typedef std::vector<size_t> ps_t;
+	typedef std::vector<ps_t> pss_t;
 
 public:
 
@@ -18,8 +19,8 @@ public:
 
 
 	virtual size_t size()const = 0;
-	const std::vector<std::vector<size_t> >& get_ps()const{ return ps; }
-	const std::vector<std::vector<size_t> >& get_mpps()const{ return mpps; }
+	const pss_t& get_ps()const{ return ps; }
+	const pss_t& get_mpps()const{ return mpps; }
 	void output_mpps(std::ostream& os){ output_vps(os, mpps); }
 	void output_ps(std::ostream& os){ output_vps(os, ps); }
 
@@ -36,11 +37,11 @@ protected:	//helper fun
 
 protected:	//data member
 	//Maximum sized Possible Parent Set
-	std::vector<ps_t> mpps;
-	std::vector<ps_t> ps;
+	pss_t mpps;
+	pss_t ps;
 
 /*static:*/
 private:
-	static void output_vps(std::ostream& os, const std::vector<ps_t>& vps);
+	static void output_vps(std::ostream& os, const pss_t& vps);
 };
 
