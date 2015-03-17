@@ -74,6 +74,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AlgBase.cpp" />
     <ClCompile Include="AnalyzeTopo.cpp" />
     <ClCompile Include="CompareTopo.cpp" />
     <ClCompile Include="FirstAlg.cpp" />
@@ -87,6 +88,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AlgBase.h" />
     <ClInclude Include="AnalyzeTopo.h" />
     <ClInclude Include="CompareTopo.h" />
     <ClInclude Include="FirstAlg.h" />

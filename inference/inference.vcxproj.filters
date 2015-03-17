@@ -33,6 +33,9 @@
     <ClCompile Include="SecondAlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AlgBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FirstAlg.h">
@@ -48,6 +51,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="SecondAlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AlgBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
