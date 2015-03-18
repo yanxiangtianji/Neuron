@@ -1,6 +1,7 @@
 #include "OnRealData.h"
 #include <string>
 #include <fstream>
+#include <iostream>
 #include <vector>
 #include <functional>
 #include "AnalyzeTopo.h"
@@ -84,6 +85,7 @@ void OnRealData::go_mid(const string& res_head, const std::vector<std::string>& 
 	};
 	//go:
 	for(size_t i = 0; i < name_list.size(); ++i){
+		cout << name_list[i] << endl;
 		fun_if(name_list[i]);
 	}
 	ofstream fout_pg(base_dir + if_fld + res_head + ".txt");
@@ -97,8 +99,8 @@ void OnRealData::go_mid(const string& res_head, const std::vector<std::string>& 
 void OnRealData::go_no_mid(const string& res_head, const vector<string>& name_list,
 	const double cor_th, const double prob_th)
 {
-	function<const AlgBase::pss_t&(const string&)> fun_if =
-		[&](const string& fn_st)->const AlgBase::pss_t&
+	function<AlgBase::pss_t(const string&)> fun_if =
+		[&](const string& fn_st)->AlgBase::pss_t
 	{
 		string st_f = base_dir + st_fld + fn_st;
 //		infer(st_f, if_f, 50 * amp2ms, 0, int(1.01 * 1000 * amp2ms), 0.1, 10 * amp2ms, 0.1);
@@ -111,6 +113,7 @@ void OnRealData::go_no_mid(const string& res_head, const vector<string>& name_li
 	//go:
 	AnalyzeTopo anl(n_node);
 	for(size_t i = 0; i < name_list.size(); ++i){
+		cout << name_list[i] << endl;
 		anl.add(fun_if(name_list[i]));
 	}
 	ofstream fout_pg(base_dir + if_fld + res_head + ".txt");
@@ -123,10 +126,21 @@ void OnRealData::go_no_mid(const string& res_head, const vector<string>& name_li
 void OnRealData::go_multi_parameter(const string& res_head, const vector<string>& name_list,
 	const vector<double>& cor_th, const vector<double>& prob_th)
 {
+#ifdef _WIN32
+#define my_sprintf sprintf_s
+#else
+#define my_sprintf snprintf
+#endif
 	for(double c_th : cor_th){
+		char str_c[10];
+		my_sprintf(str_c, 10, "%.2lf", c_th);
 		for(double p_th : prob_th){
-			go_no_mid(res_head + "_c" + to_string(c_th) + "_p" + to_string(p_th), name_list, c_th, p_th);
+			//go_no_mid(res_head + "_c" + to_string(c_th) + "_p" + to_string(p_th), name_list, c_th, p_th);
+			char str_p[10];
+			my_sprintf(str_p, "%.2lf", p_th);
+			go_no_mid(res_head + "_c" + str_c + "_p" + str_p, name_list, c_th, p_th);
 		}
 	}
+#undef my_sprintf
 }
 
