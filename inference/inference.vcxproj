@@ -79,6 +79,7 @@
     <ClCompile Include="CompareTopo.cpp" />
     <ClCompile Include="FirstAlg.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OnRealData.cpp" />
     <ClCompile Include="SecondAlg.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
@@ -92,6 +93,7 @@
     <ClInclude Include="AnalyzeTopo.h" />
     <ClInclude Include="CompareTopo.h" />
     <ClInclude Include="FirstAlg.h" />
+    <ClInclude Include="OnRealData.h" />
     <ClInclude Include="SecondAlg.h" />
     <ClInclude Include="test.h" />
   </ItemGroup>
