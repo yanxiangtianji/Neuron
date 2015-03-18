@@ -45,18 +45,6 @@ void FirstAlg::refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double
 	}
 }
 
-void FirstAlg::set_mpps_by_ppm(ppm_t& ppm){
-	size_t n = size();
-	mpps.clear();
-	mpps.resize(n);
-	for(size_t i = 0; i < n; ++i){
-		for(size_t j = 0; j < n; ++j){
-			if(ppm[i][j])
-				mpps[j].push_back(i);
-		}
-	}
-}
-
 
 void FirstAlg::set_ps_by_mpps(){
 	size_t n = size();

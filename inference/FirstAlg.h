@@ -28,7 +28,6 @@ private:	//helper fun
 	ppm_t cal_by_cor(const double cor_th);
 	//delay_th: maximum delay length; cospike_dif_tol: minimum fraction of co-spike
 	void refine_ppm_by_delay(ppm_t& ppm, const tp_t delay_th, const double cospike_dif_tol);
-	void set_mpps_by_ppm(ppm_t& ppm);
 
 private:	//data member
 	DataHolderBinary dh;

@@ -30,7 +30,6 @@ private:	//helper fun
 
 	//cor_th: minimum correlation
 	ppm_t cal_by_cor(const double cor_th);
-	void set_mpps_by_ppm(ppm_t& ppm);
 
 private:	//data member
 	DataHolder dh;	//spike-count vector -> delta spike-count vector

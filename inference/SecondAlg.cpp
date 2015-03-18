@@ -72,16 +72,3 @@ SecondAlg::ppm_t SecondAlg::cal_by_cor(const double threshold){
 }
 
 
-
-void SecondAlg::set_mpps_by_ppm(ppm_t& ppm){
-	size_t n = size();
-	mpps.clear();
-	mpps.resize(n);
-	for(size_t i = 0; i < n; ++i){
-		for(size_t j = 0; j < n; ++j){
-			if(ppm[i][j])
-				mpps[j].push_back(i);
-		}
-	}
-}
-
