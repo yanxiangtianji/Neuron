@@ -265,8 +265,8 @@ int main(int argc, char* argv[])
 	{
 		real.set_st_fld(st_fld);
 		real.set_if_fld(if_fld);
-		real.go_mid("cue1_" + head, cue1_list, cor_th, pro_th);
-		real.go_mid("cue2_" + head, cue2_list, cor_th, pro_th);
+		real.go_batch("cue1_" + head, cue1_list, true, cor_th, pro_th);
+		real.go_batch("cue2_" + head, cue2_list, true, cor_th, pro_th);
 	};
 //	go_mid("prob", "st/", "if2", 0.2, 0.5);
 //	go_mid("prob", "st0-3/", "if2_0-3/", 0.2, 0.5);
@@ -279,9 +279,11 @@ int main(int argc, char* argv[])
 		real.set_st_fld(st_fld);
 		real.set_if_fld(if_fld);
 		real.go_multi_parameter("cue1_" + head, cue1_list, cor_ths, pro_ths);
-		//real.go_multi_parameter("cue2_" + head, cue2_list, cor_ths, pro_ths);
+		real.go_multi_parameter("cue2_" + head, cue2_list, cor_ths, pro_ths);
 	};
-	go_multi("prob", "st0-3/", "if2_0-3m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.6, 0.8 });
+	go_multi("prob", "st0-3/", "if2_0-3m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
+	go_multi("prob", "st3-6/", "if2_3-6m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
+	go_multi("prob", "st6-9/", "if2_6-9m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
 	return 0;
 
 //	infer(base_dir + "big100.txt", "_st2", 20, 0, 1040, 0.6, 8, 0.8);

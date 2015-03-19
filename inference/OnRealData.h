@@ -10,18 +10,16 @@ class OnRealData
 public:
 	OnRealData(const std::string base_dir, const size_t amp2ms, const size_t n_node);
 
-	void go_mid(const std::string& res_head, const std::vector<std::string>& name_list,
-		const double cor_th, const double prob_th);
-	void go_no_mid(const std::string& res_head, const std::vector<std::string>& name_list,
-		const double cor_th, const double prob_th);
+	void go_batch(const std::string& res_head, const std::vector<std::string>& name_list,
+		const bool with_mid, const double cor_th, const double prob_th);
 	void go_multi_parameter(const std::string& res_head, const std::vector<std::string>& name_list, 
-		const std::vector<double>& cor_th, const std::vector<double>& prob_th);
+		const std::vector<double>& cor_ths, const std::vector<double>& prob_ths);
 
+	void output_merged_result(const AnalyzeTopo::prob_g_t& pmat,
+		const double prob_th, std::ostream& os_mat, std::ostream& os_adj);
 
-	void merge_trial_result(const std::vector<std::string>& name_list,
-		const double prob_th, std::ostream& os_mat, std::ostream& os_if);
-	void merge_trial_result(const AnalyzeTopo& anl,
-		const double prob_th, std::ostream& os_mat, std::ostream& os_if);
+	void output_merged_result(const AnalyzeTopo& anl,
+		const double prob_th, std::ostream& os_mat, std::ostream& os_adj);
 
 	void set_base_dir(const std::string& base_dir){ this->base_dir = base_dir; }
 	void set_st_fld(const std::string& st_fld){ this->st_fld = st_fld; }
@@ -34,6 +32,7 @@ public:
 private:
 	AlgBase::pss_t _load_adj(const std::string& fn);
 
+	AlgBase::pss_t _infer(const std::string& fn_st, const bool out_if, const double cor_th);
 private:
 //	const int n_c1 = 54, n_c2 = 52;
 
