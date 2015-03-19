@@ -3,11 +3,13 @@
 #include "SpikeTrains.h"
 #include <vector>
 
+//spike count vector
 class SCV
 {
 public:
 	typedef int value_type;
 public:
+	//start and end describe which part of data will be used from st
 	SCV(const tp_t window_size, const tp_t start, const tp_t end, const SpikeTrains::SpikeTrain& st);
 	//the last parameter int is used to distinguish "SpikeTrains::SpikeTrain" and "std::vector<value_type>" when they are the same
 //	SCV(const tp_t window_size, const tp_t start, const tp_t end, const std::vector<value_type>& vec, int);
