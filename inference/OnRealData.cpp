@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <regex>
 #include "AnalyzeTopo.h"
 #include "FirstAlg.h"
 #include "SecondAlg.h"
@@ -15,6 +16,12 @@ ofstream F_DUMMY("nul");
 #else
 ofstream F_DUMMY("/dev/null");
 #endif
+
+string trans_name(const string& base, const string& prefix, const string& suffix){
+	static regex reg(R"(([^/]+?)\.([^\.]+?)$)", regex::ECMAScript | regex::optimize);
+	return regex_replace(base, regex(R"(([^/]+?)\.([^\.]+?)$)"), prefix + "$1" + suffix + ".$2");
+}
+
 
 OnRealData::OnRealData(const std::string base_dir, const size_t amp2ms, const size_t n_node)
 	:base_dir(base_dir), amp2ms(amp2ms), n_node(n_node)
@@ -40,7 +47,8 @@ AnalyzeTopo::adj_g_t OnRealData::_load_adj(const string& fn){
 	return res;
 }
 
-AlgBase::pss_t OnRealData::_infer(const string& fn_st, const bool out_if, const double cor_th)
+AlgBase::pss_t OnRealData::_infer(const string& fn_st, const string& fn_if,
+	const bool out_if, const double cor_th)
 {
 	int window_size = 200;
 	string st_f = base_dir + st_fld + fn_st;
@@ -88,6 +96,10 @@ void OnRealData::output_merged_result(const AnalyzeTopo::prob_g_t& pmat,
 	}
 }
 
+void OnRealData::go_one(const std::string& res_suf, const std::string& fn, const double cor_th)
+{
+	const auto& adj_g = _infer(fn, trans_name(fn,"","prog"), true, cor_th);
+}
 
 void OnRealData::go_batch(const string& res_head, const std::vector<std::string>& name_list,
 	const bool with_mid, const double cor_th, const double prob_th)
@@ -96,7 +108,7 @@ void OnRealData::go_batch(const string& res_head, const std::vector<std::string>
 	AnalyzeTopo anl(n_node);
 	for(size_t i = 0; i < name_list.size(); ++i){
 		cout << name_list[i] << endl;
-		anl.add(_infer(name_list[i], with_mid, cor_th));
+		anl.add(_infer(name_list[i], trans_name(name_list[i], "", "prog"), with_mid, cor_th));
 	}
 	//merge:
 	ofstream fout_pg(base_dir + if_fld + res_head + ".txt");
@@ -119,7 +131,7 @@ void OnRealData::go_multi_parameter(const string& res_head, const vector<string>
 		AnalyzeTopo anl(n_node);
 		for(size_t i = 0; i < name_list.size(); ++i){
 			cout << name_list[i] << endl;
-			anl.add(_infer(name_list[i], false, c_th));
+			anl.add(_infer(name_list[i], trans_name(name_list[i], "", "prog"), false, c_th));
 		}
 		char str_c[10];
 		my_sprintf(str_c, 10, "%.2lf", c_th);

@@ -10,6 +10,7 @@ class OnRealData
 public:
 	OnRealData(const std::string base_dir, const size_t amp2ms, const size_t n_node);
 
+	void go_one(const std::string& res_suf, const std::string& fn, const double cor_th);
 	void go_batch(const std::string& res_head, const std::vector<std::string>& name_list,
 		const bool with_mid, const double cor_th, const double prob_th);
 	void go_multi_parameter(const std::string& res_head, const std::vector<std::string>& name_list, 
@@ -32,7 +33,8 @@ public:
 private:
 	AlgBase::pss_t _load_adj(const std::string& fn);
 
-	AlgBase::pss_t _infer(const std::string& fn_st, const bool out_if, const double cor_th);
+	AlgBase::pss_t _infer(const std::string& fn_st, const std::string& fn_if,
+		const bool out_if, const double cor_th);
 private:
 //	const int n_c1 = 54, n_c2 = 52;
 
