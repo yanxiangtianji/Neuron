@@ -8,6 +8,7 @@
 #include "CompareTopo.h"
 #include "AnalyzeTopo.h"
 #include "OnRealData.h"
+#include "TopoOneTrial.h"
 #include "test.h"
 
 using namespace std;
@@ -47,6 +48,24 @@ void infer2(const string&fn_st, const string& fn_inf,
 	fout.close();
 }
 
+
+void go_trial(const string& fn_st, const string& fn_if_head,
+	int start, int end, int period, int window, int amp2ms, double cor_th)
+{
+	TopoOneTrial trial(fn_st, start, end, period, window, amp2ms);
+	trial.set_param(cor_th);
+	trial.go();
+	trial.gen_static_structure();
+	size_t n = trial.size();
+	for(size_t i = 0; i < n; ++i){
+		ofstream fout(fn_if_head + to_string(i) + ".txt");
+		AlgBase::output_vps(fout, trial.get_structure(i));
+		fout.close();
+	}
+	ofstream fout(fn_if_head +  "static.txt");
+	AlgBase::output_vps(fout, trial.get_static_structure());
+	fout.close();
+}
 
 void compare(const string& base_fn, const string& suffix){
 	cout << base_fn << "\t" << suffix << endl;
@@ -110,10 +129,16 @@ int main(int argc, char* argv[])
 		real.go_multi_parameter("cue1_" + head, cue1_list, cor_ths, pro_ths);
 		real.go_multi_parameter("cue2_" + head, cue2_list, cor_ths, pro_ths);
 	};
-	go_multi("prob", "st0-3/", "if2_0-3m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
-	go_multi("prob", "st3-6/", "if2_3-6m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
-	go_multi("prob", "st6-9/", "if2_6-9m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
+//	go_multi("prob", "st0-3/", "if2_0-3m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
+//	go_multi("prob", "st3-6/", "if2_3-6m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
+//	go_multi("prob", "st6-9/", "if2_6-9m/", { 0.2, 0.4, 0.6, 0.8 }, { 0.2, 0.4, 0.5, 0.6, 0.8 });
+//	return 0;
+
+	go_trial(base_dir2 + "st/cue1_0.txt", base_dir2 + "if_trial/cue1_0_", 0, 10000, 1000, 100, 10, 0.95);
+	go_trial(base_dir2 + "st/cue1_1.txt", base_dir2 + "if_trial/cue1_1_", 0, 10000, 1000, 100, 10, 0.95);
+	go_trial(base_dir2 + "st/cue1_2.txt", base_dir2 + "if_trial/cue1_2_", 0, 10000, 1000, 100, 10, 0.95);
 	return 0;
+
 
 //	infer(base_dir + "big100.txt", "_st2", 20, 0, 1040, 0.6, 8, 0.8);
 //	for(size_t i = 0; i < test_files.size(); ++i)
