@@ -41,7 +41,7 @@ protected:	//data member
 	pss_t ps;
 
 /*static:*/
-private:
+public:
 	static void output_vps(std::ostream& os, const pss_t& vps);
 };
 
