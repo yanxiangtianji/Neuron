@@ -19,7 +19,7 @@ void SecondAlg::_init(){
 		for(size_t i = 1; i < l; ++i)
 			v[i - 1] = v[i] - v[i - 1];
 		v.erase(--v.end());
-		scv.set_start(w);
+		scv.set_start(dh.get_start_t()+w);
 //		for(auto&t : v)	cout << setw(3) << t;
 //		cout << endl;
 		if(!scv.set_vec(move(v)))
