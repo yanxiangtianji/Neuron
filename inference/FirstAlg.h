@@ -5,6 +5,7 @@
 #include "AlgBase.h"
 #include "../libCorrelation/DataHolderBinary.h"
 
+//excitatory dot product on binary spike vector
 class FirstAlg
 	: public AlgBase
 {

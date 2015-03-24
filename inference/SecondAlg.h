@@ -5,6 +5,7 @@
 #include "AlgBase.h"
 #include "../libCorrelation/DataHolder.h"
 
+//Pearson correlation on delta spike count vector
 class SecondAlg
 	:public AlgBase
 {
