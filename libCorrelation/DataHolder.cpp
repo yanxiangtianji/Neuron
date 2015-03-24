@@ -34,7 +34,7 @@ void DataHolder::_init(const SpikeTrains& sts){
 
 double DataHolder::pearson_correlation(const SCV& first, const SCV& second){
 	size_t l = first.get_length();
-	size_t sx1 = 0, sx2 = 0, sy1 = 0, sy2 = 0, xy = 0;
+	int sx1 = 0, sx2 = 0, sy1 = 0, sy2 = 0, xy = 0;
 	for(size_t i = 0; i < l; ++i){
 		auto x = first[i];
 		sx1 += x;
