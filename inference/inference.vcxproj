@@ -82,6 +82,7 @@
     <ClCompile Include="OnRealData.cpp" />
     <ClCompile Include="SecondAlg.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="TopoOneTrial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libCorrelation\libCorrelation.vcxproj">
@@ -96,6 +97,7 @@
     <ClInclude Include="OnRealData.h" />
     <ClInclude Include="SecondAlg.h" />
     <ClInclude Include="test.h" />
+    <ClInclude Include="TopoOneTrial.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
