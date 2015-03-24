@@ -7,6 +7,7 @@
 #include "SecondAlg.h"
 #include "CompareTopo.h"
 #include "AnalyzeTopo.h"
+#include "TopoOneTrial.h"
 
 using namespace std;
 
@@ -149,15 +150,59 @@ void test_analy(){
 	cout << endl;
 }
 
+void test_no_zero_start_alg(const string& fn){
+	int time_window = 100, amp2ms = 10;
+	int time_start = 0, period = 1000;
+	for(int idx = 1; idx < 3; ++idx){
+		SecondAlg alg(time_window * amp2ms,
+			amp2ms*(time_start + idx*period),
+			amp2ms*(time_start + (idx + 1)*period), fn);
+		alg.set_mpps(0.5);
+		alg.set_ps_by_mpps();
+		alg.output_ps(cout);
+	}
+}
+
+void test_trial(const string& fn){
+	TopoOneTrial tot(fn, 0, 3000, 1000, 100, 10);
+	tot.set_param(0.95);
+	cout << tot.size() << endl;
+	tot.go();
+	for(size_t i = 0; i < tot.size(); i++){
+		auto&& struc = tot.get_structure(i);
+		cout << "Structure at " << i << endl;
+		for(size_t p = 0; p < struc.size(); ++p){
+			cout << p << " :";
+			for(auto& t : struc[p])
+				cout << " " << t;
+			cout << endl;
+		}
+	}
+	tot.gen_static_structure();
+	cout << "Static structure:" << endl;
+	auto&& struc = tot.get_static_structure();
+	for(size_t p = 0; p < struc.size(); ++p){
+		cout << p << " :";
+		for(auto& t : struc[p])
+			cout << " " << t;
+		cout << endl;
+	}
+}
 
 void test(const string base_dir){
-//	test_bin_cor(base_dir+"mparent_st.txt");
-//	test_first_mpps(base_dir + "mparent_st.txt");
-//	test_first_ps(base_dir + "indirect1_st.txt");
-	test_second(base_dir + "mparent_st.txt");
-//	test_cmp(base_dir + "indirect2.txt", "_st_if");
-//	test_cmp(base_dir + "big10.txt", "_st2_if");
-//	test_regex();
-//	test_analy();
+	try{
+		//test_bin_cor(base_dir+"mparent_st.txt");
+		//test_first_mpps(base_dir + "mparent_st.txt");
+		//test_first_ps(base_dir + "indirect1_st.txt");
+		//test_second(base_dir + "mparent_st.txt");
+		//test_cmp(base_dir + "indirect2.txt", "_st_if");
+		//test_cmp(base_dir + "big10.txt", "_st2_if");
+		//test_regex();
+		//test_analy();
+		//test_no_zero_start_alg(base_dir + "real/st3-6/cue1_0.txt");
+		test_trial(base_dir + "real/st3-6/cue1_0.txt");
+	} catch(exception e){
+		cout << e.what() << endl;
+	}
 }
 
