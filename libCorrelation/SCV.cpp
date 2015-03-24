@@ -44,12 +44,20 @@ bool SCV::set_vec(std::vector<value_type>&& v){
 void SCV::_init(const SpikeTrains::SpikeTrain& st){
 	set_length();
 	vec.resize(length, 0);
-	for(const auto& t : st){
-		size_t idx = cal_idx(t);
-		if(idx >= length)
-			break;
+	auto it_beg = lower_bound(st.begin(), st.end(), start);
+	auto it_end = upper_bound(st.begin(), st.end(), end);
+	while(it_beg != it_end){
+		size_t idx = cal_idx(*it_beg++);
 		++vec[idx];
 	}
+/*	for(const auto& t : st){
+		if(t < start)
+			continue;
+		else if(t > end)
+			break;
+		size_t idx = cal_idx(t);
+		++vec[idx];
+	}*/
 }
 
 SCV SCV::union_v(const std::vector<std::reference_wrapper<const SCV>>& org){
