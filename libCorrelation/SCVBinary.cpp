@@ -23,7 +23,7 @@ void SCVBinary::_init(const SpikeTrains::SpikeTrain& st){
 	set_length();
 	vec.resize(length, 0);
 	auto it_beg = lower_bound(st.begin(), st.end(), start);
-	auto it_end = upper_bound(st.begin(), st.end(), end);
+	auto it_end = lower_bound(st.begin(), st.end(), end);
 	while(it_beg != it_end){
 		size_t idx = cal_idx(*it_beg++);
 		vec[idx]=1;
