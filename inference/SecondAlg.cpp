@@ -1,16 +1,17 @@
 #include "SecondAlg.h"
 //#include <iostream>
-//#include <iomanip>
+#include <iomanip>
+#include <fstream>
 
 using namespace std;
 
 SecondAlg::SecondAlg(const tp_t window_size, const tp_t start, const tp_t end, const std::string& fn)
 	:AlgBase(), dh(window_size, start, end, fn)
 {
-	_init();
+	_init_to_delta();
 }
 
-void SecondAlg::_init(){
+void SecondAlg::_init_to_delta(){
 	vector<SCV>& temp=dh.get_cont();
 	size_t l = temp[0].get_length();
 	size_t w = dh.get_window_size();
@@ -53,21 +54,31 @@ void SecondAlg::set_ps_by_mpps(){
 		}
 	}
 }
-
+//ofstream cout("dsc.txt");
+//ofstream fout("cor.txt");
 SecondAlg::ppm_t SecondAlg::cal_by_cor(const double threshold){
 	size_t n = dh.size();
 	ppm_t res;
 	res.reserve(n);
+//	cout << endl;
 	for(size_t i = 0; i < n; ++i){
+		//cout << i << " delta spike count:" << endl;
+		//for(size_t j = 0; j < dh[i].get_length();++j){
+		//	cout <<" "<< dh[i][j];
+		//}
+		//cout << endl;
 		ppm_t::value_type temp(n, false);
 		for(size_t j = 0; j < n; ++j){
 			if(i == j)
 				temp[j] = false;
-			else if(dh.pearson_correlation(i, j) >= threshold)
+			else if(abs(dh.pearson_correlation(i, j)) >= threshold)
 				temp[j] = true;
+			//fout << " " <<fixed<< dh.pearson_correlation(i, j);
 		}
+		//fout << endl;
 		res.push_back(move(temp));
 	}
+	//fout << endl;
 	return res;
 }
 

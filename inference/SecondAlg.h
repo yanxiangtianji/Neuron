@@ -27,7 +27,7 @@ public:	//interface
 
 private:	//helper fun
 	//update dh to delta spike count vector
-	void _init();
+	void _init_to_delta();
 
 	//cor_th: minimum correlation
 	ppm_t cal_by_cor(const double cor_th);
