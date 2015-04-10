@@ -3,7 +3,7 @@ function [time,class]=mergeWithDelay(rawData,idx,D)
 time=[];
 class=[];
 
-n=size(rawData,1);
+n=length(rawData);
 %prepare
 t=sum(size(D)==[n n]);
 if(t==2)
@@ -11,7 +11,7 @@ if(t==2)
 elseif(t==1 && isvector(D))
   delay=D;
 else
-  error("Error dimension of D");
+  error(sprintf("Error dimension of D: (%d %d)",size(D,1),size(D,2)));
   return
 end
 delay(idx)=0;
@@ -21,7 +21,6 @@ len=zeros(n,1);
 cls=cell(n,1);
 for i=1:n
   if(i==idx)
-    disp('equal')
     rawData(i)=cell(1);
     %rawData(i)=[] will delete i-th item and move the rest backward
     continue;
