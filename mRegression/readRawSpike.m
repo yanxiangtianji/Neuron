@@ -10,6 +10,7 @@ while(ischar(line))
   line=fgetl(fin);
 end
 fclose(fin);
+count-=1;
 
 end
 

@@ -12,6 +12,7 @@ while(size(t,1)!=0)
   t=fscanf(fin,'%d',2);
 end
 fclose(fin);
+count-=1;
 
 end
 
