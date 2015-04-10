@@ -14,7 +14,9 @@ for i=1:nr
     %y(p)=0;   %y is initialized with 0
     ++p;
   end
-  y(p-1)=1;
+  if(p>1)
+    y(p-1)=1;
+  end
 end
 
 %if(p!=m)
