@@ -1,4 +1,10 @@
 function [vec,cls]=_merge2(vec1,cls1,vec2,cls2)
+
+if(iscell(vec1))    vec1=cell2mat(vec1);    end
+if(iscell(cls1))    cls1=cell2mat(cls1);    end
+if(iscell(vec2))    vec2=cell2mat(vec2);    end
+if(iscell(cls2))    cls2=cell2mat(cls2);    end
+
 n=length(vec1);
 m=length(vec2);
 vec=zeros(1,n+m);
@@ -10,12 +16,12 @@ while(i<=n && j<=m)
     vec(p)=vec1(i);
     cls(p)=cls1(i);
     ++i;
-   else
+  else
     vec(p)=vec2(j);
     cls(p)=cls2(j);
     ++j;
-   end
-   ++p;
+  end
+  ++p;
 end
 
 if(i<=n)

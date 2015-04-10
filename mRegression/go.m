@@ -9,7 +9,7 @@ W=rand(n,n);
 D=initDelay(n,dMin,dUnit,'pl');
 for idx=1:n
   [seq,cls]=mergeWithDelay(rData,idx,D);
-  [X,y]=genData(n,seq,cls,rData(idx));
+  [X,y]=genDatabyRef(n,seq,cls,rData(idx));
   [W(:,i),D(:,i)]=train(n,X,y,W(:,i),D(:,i));
 end
 
