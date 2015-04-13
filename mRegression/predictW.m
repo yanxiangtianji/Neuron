@@ -1,4 +1,4 @@
-function p = predict(W, X)
+function p = predictW(W, X)
 %m=size(X,1);
 %n=size(X,2);
 %size(W)==[n n];
