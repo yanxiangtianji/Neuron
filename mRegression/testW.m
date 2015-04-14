@@ -1,6 +1,6 @@
-function testW(W,X,y)
+function testW(Wvec,X,y)
 
-p=predictW(W,X);
+p=predictW(Wvec,X);
 cm=test(p,y);
 showCM(cm);
 
