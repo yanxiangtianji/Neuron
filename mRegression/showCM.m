@@ -1,8 +1,8 @@
 function showCM(cm)
 
 tp=cm(1);
-fp=cm(2);
-fn=cm(3);
+fn=cm(2);
+fp=cm(3);
 tn=cm(4);
 
 real_1=tp+fn;   real_0=fp+tn;
@@ -24,7 +24,7 @@ end
 if(real_1!=0)   rec=tp/real_1;
 else    rec=0;
 end
-if(tp+neg!=0)   f1=2*tp/(2*tp+neg);
+if(tp+neg!=0)   f1=2*tp/(2*tp+false);
 else    f1=0;
 end
 disp(sprintf("Accurancy=%f",acc));
