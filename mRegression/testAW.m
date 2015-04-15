@@ -1,4 +1,4 @@
-function testAW(Avec,Wvec,X,y)
+function cm=testAW(Avec,Wvec,X,y)
 
 p=predictAW(Avec,Wvec,X);
 cm=test(p,y);
