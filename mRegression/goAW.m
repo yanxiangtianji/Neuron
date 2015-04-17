@@ -16,37 +16,34 @@ n=19;
 
 %dMin=0.0001;    dUnit=0.0001;  %for readRawSpike
 dMin=1; dUnit=1;    %readRaw
-%D=initDelay(n,dMin,dUnit,'pl');
-A=initAdjacency(n);
-%W=initWeight(n);
-lambda=100;
+%[D,~,W]=init(n,dMin,dUnit);
+lambda=1;
+
+function [stat]=whole_cue_AW(fn_list,n,D,Ainit,Winit,lambda)
+  n_cue=length(fn_list);
+  stat=zeros(n_cue,n);  %overall accuarncy of all neuron
+  for i=1:n_cue
+    %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
+    rData=readRaw(cell2mat(fn_list(i)));   dMin=1; dUnit=1;
+    %n=length(rData);
+    [~,~,CM]=learnAW(rData,D,lambda,Ainit,Winit);
+  %  showCM(sum(CM));
+    acc=(CM(:,1)+CM(:,4))./sum(CM,2);
+    stat(i,:)=acc';
+  end
+end
+
+function [overallAcc,nValid,normalizedAcc]=desc_stat(stat,thr)
+  n=size(stat,2);
+  overallAcc=mean(stat,2);
+  nValid=sum(stat>=thr,2);
+  normalizedAcc=overallAcc./nValid*n;
+end
 
 disp('Cue1:');
-Acc1=zeros(n_c1,1);
-Nworks1=zeros(n_c1,1);
-for i=1:n_c1
-  %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
-  rData=readRaw(cell2mat(fn_c1(i)));   dMin=1; dUnit=1;
-  %n=length(rData);
-  [~,~,CM]=learnAW(rData,D,lambda,W);
-%  showCM(sum(CM));
-  acc=(CM(:,1)+CM(:,4))./sum(CM,2);
-  Nworks1(i)=sum(acc>=0.6);
-  Acc1(i)=mean(acc);
-end
+stat1=whole_cue_AW(fn_c1,n,D,W,lambda);
 
 disp('Cue2:');
-Acc2=zeros(n_c2,1);
-Nworks2=zeros(n_c2,1);
-for i=1:n_c2
-  %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
-  rData=readRaw(cell2mat(fn_c2(i)));   dMin=1; dUnit=1;
-  %n=length(rData);
-  [~,~,CM]=learnAW(rData,D,lambda,W);
-%  showCM(sum(CM));
-  acc=(CM(:,1)+CM(:,4))./sum(CM,2);
-  Nworks2(i)=sum(acc>=0.6);
-  Acc2(i)=mean(acc);
-end
+stat2=whole_cue_AW(fn_c2,n,D,W,lambda);
 
-save(['full_aw',num2str(step),'.mat'],'Acc1','Nworks1','Acc2','Nworks2');
+save(['full_aw',num2str(step),'.mat'],'stat1','stat2');
