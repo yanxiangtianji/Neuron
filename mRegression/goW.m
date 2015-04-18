@@ -26,7 +26,7 @@ function [stat]=whole_cue_W(fn_list,n,D,Winit,lambda)
     %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
     rData=readRaw(cell2mat(fn_list(i)));   dMin=1; dUnit=1;
     %n=length(rData);
-    [~,CM]=learnW(rData,D,lambda,Winit);
+    [~,CM]=trainW(rData,D,lambda,Winit);
   %  showCM(sum(CM));
     acc=(CM(:,1)+CM(:,4))./sum(CM,2);
     stat(i,:)=acc';

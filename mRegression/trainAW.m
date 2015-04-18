@@ -1,13 +1,26 @@
-function [adj, weight,J]=trainAW(idx,X,y,adj,weight,lambda)
+function [A,W,CM]=trainAW(rData,D,lambda,A=0,W=0)
+n=length(rData);
 
-n=length(adj);
-options = optimset('GradObj', 'on', 'MaxIter', 400);
-
-[t,J,exit_flag]=fminunc(@(t)(costFunctionAW(X,y,t(1:n),t(n+1:end),lambda)), [adj;weight], options);
-
-adj=(t(1:n)>=0.5);
-adj(idx)=0;
-weight=t(n+1:end);
-weight(idx)=0;
+if(sum(size(A)==[n n])!=2)
+  A=initAdjacency(n);
+end
+if(sum(size(W)==[n n])!=2)
+  W=initWeight(n);
+end
+if(nargout==3)
+  CM=zeros(n,4);
+end
+for i=1:n
+%  disp(sprintf('Working idx=%d',i));
+  [seq,cls]=mergeWithDelay(rData,i,D);
+  [X,y]=genDataByRef(n,seq,cls,rData(i));
+  [A(:,i),W(:,i),J]=trainOneAW(i,X,y,A(:,i),W(:,i),lambda);
+  if(nargout==3)
+    CM(i,:)=testOneAW(A(:,i),W(:,i),X,y);
+  end
+%  disp(sprintf('  error=%f\taccurancy=%f',J,(CM(i,1)+CM(i,4))/sum(CM(i,:))));
+%  showCM(CM(i,:));
+end
+%showCM(sum(CM));
 
 end

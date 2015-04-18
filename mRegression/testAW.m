@@ -1,7 +1,11 @@
-function cm=testAW(Avec,Wvec,X,y)
+function CMmat=testAW(A,W,rData,D)
 
-p=predictAW(Avec,Wvec,X);
-cm=test(p,y);
-%showCM(cm);
+n=length(W);
+CMmat=zeros(n,4);
+for i=1:n
+  [seq,cls]=mergeWithDelay(rData,i,D);
+  [X,y]=genDataByRef(n,seq,cls,rData(i));
+  CMmat(i)=testOneAW(A(:,i),W(:,i),X,y);
+end
 
 end
