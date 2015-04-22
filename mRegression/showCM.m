@@ -1,4 +1,7 @@
 function showCM(cm)
+if(sum(size(cm)==[1 4])!=2 && sum(size(cm)==[4 1])!=2)
+  return;
+end
 
 tp=cm(1);
 fn=cm(2);
