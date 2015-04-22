@@ -17,33 +17,27 @@ n=19;
 %dMin=0.0001;    dUnit=0.0001;  %for readRawSpike
 dMin=1; dUnit=1;    %readRaw
 %[D,~,W]=init(n,dMin,dUnit);
-lambda=1;
+lambdaA=1;
+lambdaW=1;
 
-function [stat]=whole_cue_AW(fn_list,n,D,Ainit,Winit,lambda)
+function [accMat]=whole_cue_AW(fn_list,n,D,Ainit,Winit,lambdaA,lambdaW)
   n_cue=length(fn_list);
-  stat=zeros(n_cue,n);  %overall accuarncy of all neuron
+  accMat=zeros(n_cue,n);  %overall accuarncy of all neuron
   for i=1:n_cue
     %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
     rData=readRaw(cell2mat(fn_list(i)));   dMin=1; dUnit=1;
     %n=length(rData);
-    [~,~,CM]=trainAW(rData,D,lambda,Ainit,Winit);
+    [~,~,CM]=trainAW(rData,D,lambdaA,lambdaW,Ainit,Winit);
   %  showCM(sum(CM));
     acc=(CM(:,1)+CM(:,4))./sum(CM,2);
-    stat(i,:)=acc';
+    accMat(i,:)=acc';
   end
 end
 
-function [overallAcc,nValid,normalizedAcc]=desc_stat(stat,thr)
-  n=size(stat,2);
-  overallAcc=mean(stat,2);
-  nValid=sum(stat>=thr,2);
-  normalizedAcc=overallAcc./nValid*n;
-end
-
 disp('Cue1:');
-stat1=whole_cue_AW(fn_c1,n,D,W,lambda);
+stat1=whole_cue_AW(fn_c1,n,D,W,lambdaA,lambdaW);
 
 disp('Cue2:');
-stat2=whole_cue_AW(fn_c2,n,D,W,lambda);
+stat2=whole_cue_AW(fn_c2,n,D,W,lambdaA,lambdaW);
 
 save(['full_aw',num2str(step),'.mat'],'stat1','stat2');

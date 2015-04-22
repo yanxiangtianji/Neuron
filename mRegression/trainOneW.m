@@ -1,4 +1,4 @@
-function [weight,J]=trainW(idx,X,y,weight,lambda)
+function [weight,J]=trainOneW(idx,X,y,weight,lambda)
 
 options = optimset('GradObj', 'on', 'MaxIter', 400);
 
