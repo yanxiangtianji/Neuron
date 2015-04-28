@@ -1,43 +1,55 @@
 #################
 #get data
 
-function [Aarr,Warr,CMarr,SCmat]=whole_list_AW(fn_list,n_cue,n,D,Ainit,Winit,lambdaA,lambdaW)
+function [Aarr,Warr,CMarr,SCarr]=whole_list_AW(fn_list,n_trial,n,D,Ainit,Winit,lambdaA,lambdaW)
   n_cue=length(fn_list);
-  Aarr=cell(n_cue,1);   #Adjacent
-  Warr=cell(n_cue,1);   #Weight
-  CMarr=cell(n_cue,1);  #Confusion Matrix
-  SCmat=zeros(n_cue,n); #Spike Count
-  for i=1:n_cue
+  Aarr=cell(1,n_trial);   #Adjacent (n*n)
+  Warr=cell(1,n_trial);   #Weight (n*n)
+  CMarr=cell(1,n_trial);  #Confusion Matrix (n*4)
+  SCarr=cell(1,n_trial); #Spike Count (n)
+  for i=1:n_trial
     %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
     rData=readRaw(cell2mat(fn_list(i)));   %dMin=1; dUnit=1;
+    sc=zeros(n,1);
     for j=1:n
-      SCmat(i,j)=length(cell2mat(rData(j)));
+      sc(j)=length(cell2mat(rData(j)));
     end
+    SCarr(i)=sc;
     [A,W,CM]=trainAW(rData,D,lambdaA,lambdaW,Ainit,Winit);
-    showCM(sum(CM));
     Aarr(i)=A;
     Warr(i)=W;
     CMarr(i)=CM;
   end
 end
 
-idx=randperm(40,20);
+m=20;
 n=19;
-[Aarr1,Warr1,CMmat1,SCmat1]=whole_list_AW(fn_c1(idx),20,n,D,Ainit,Winit,1,1);
-[Aarr2,Warr2,CMmat2,SCmat2]=whole_list_AW(fn_c2(idx),20,n,D,Ainit,Winit,1,1);
-[Aarr3,Warr3,CMmat3,SCmat3]=whole_list_AW(fn_r1(idx),20,n,D,Ainit,Winit,1,1);
-[Aarr4,Warr4,CMmat4,SCmat4]=whole_list_AW(fn_r2(idx),20,n,D,Ainit,Winit,1,1);
 
-save('from_cue1.mat','idx','D','Ainit','Winit','Aarr1','Warr1','CMarr1','SCmat1')
-save('from_cue2.mat','idx','D','Ainit','Winit','Aarr2','Warr2','CMarr2','SCmat2')
-save('from_rest1.mat','idx','D','Ainit','Winit','Aarr3','Warr3','CMarr3','SCmat3')
-save('from_rest2.mat','idx','D','Ainit','Winit','Aarr4','Warr4','CMarr4','SCmat4')
+%idx=randperm(40,m);
+%[Aarr1,Warr1,CMarr1,SCmat1]=whole_list_AW(fn_c1(idx),m,n,D,Ainit,Winit,1,1);
+%[Aarr2,Warr2,CMarr2,SCmat2]=whole_list_AW(fn_c2(idx),m,n,D,Ainit,Winit,1,1);
+%[Aarr3,Warr3,CMarr3,SCmat3]=whole_list_AW(fn_r1(idx),m,n,D,Ainit,Winit,1,1);
+%[Aarr4,Warr4,CMarr4,SCmat4]=whole_list_AW(fn_r2(idx),m,n,D,Ainit,Winit,1,1);
+%
+%save('from_cue1.mat','idx','D','Ainit','Winit','Aarr1','Warr1','CMarr1','SCmat1')
+%save('from_cue2.mat','idx','D','Ainit','Winit','Aarr2','Warr2','CMarr2','SCmat2')
+%save('from_rest1.mat','idx','D','Ainit','Winit','Aarr3','Warr3','CMarr3','SCmat3')
+%save('from_rest2.mat','idx','D','Ainit','Winit','Aarr4','Warr4','CMarr4','SCmat4')
+
+m=40;
+Aarr=cell(4,m);Warr=cell(4,m);CMarr=cell(4,m);SCarr=cell(4,m);
+fnlist=cell(4,m);
+fnlist(1,:)=fn_c1(1:m);fnlist(2,:)=fn_c2(1:m);fnlist(3,:)=fn_r1(1:m);fnlist(4,:)=fn_r2(1:m);
+for i=1:4
+  tic;[Aarr(i,:),Warr(i,:),CMarr(i,:),SCarr(i,:)]=whole_list_AW(fnlist(i,:),m,n,D,Ainit,Winit,1,1);toc;
+end
+save('from_data.mat','D','Ainit','Winit','Aarr','Warr','CMarr','SCarr')
 
 #################
 #Adj and weight
 
 function [avgM,stdM]=statMat(arr)
-  l=length(arr);
+  l=length(arr(:));
   t=cell2mat(arr(1));
   sum1=t;
   sum2=t.^2;
@@ -50,13 +62,47 @@ function [avgM,stdM]=statMat(arr)
   stdM=sqrt(max(0,sum2/l-avgM.^2));    %handle float error
 end
 
-[Aa1,As1]=statMat(Aarr1);   [Aa2,As2]=statMat(Aarr2);
-[Aa3,As3]=statMat(Aarr3);   [Aa4,As4]=statMat(Aarr4);
-Aa=(Aa1+Aa2+Aa3+Aa4)/4; As=(As1+As2+As3+As4)/4;
-[Wa1,Ws1]=statMat(Warr1);   [Wa2,Ws2]=statMat(Warr2);
-[Wa3,Ws3]=statMat(Warr3);   [Wa4,Ws4]=statMat(Warr4);
-Wa=(Wa1+Wa2+Wa3+Wa4)/4; Ws=(Ws1+Ws2+Ws3+Ws4)/4;
+%[Aa1,As1]=statMat(Aarr1);   [Aa2,As2]=statMat(Aarr2);
+%[Aa3,As3]=statMat(Aarr3);   [Aa4,As4]=statMat(Aarr4);
+%Aat=(Aa1+Aa2+Aa3+Aa4)/4; Ast=(As1+As2+As3+As4)/4;
+%[Wa1,Ws1]=statMat(Warr1);   [Wa2,Ws2]=statMat(Warr2);
+%[Wa3,Ws3]=statMat(Warr3);   [Wa4,Ws4]=statMat(Warr4);
+%Wat=(Wa1+Wa2+Wa3+Wa4)/4; Wst=(Ws1+Ws2+Ws3+Ws4)/4;
+%save('statA.mat','Aa1','As1','Aa2','As2','Aa3','As3','Aa4','As4','Aa','As')
+%save('statW.mat','Wa1','Ws1','Wa2','Ws2','Wa3','Ws3','Wa4','Ws4','Wa','Ws')
+%
+%subplot(2,2,1);imagesc(Aa1);title('Avarge Adj. of cue 1');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,2);imagesc(Aa2);title('Avarge Adj. of cue 2');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,3);imagesc(Aa3);title('Avarge Adj. of rest 1');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,4);imagesc(Aa4);title('Avarge Adj. of rest 2');caxis([0 1]);colorbar;colormap(gray);
+%
+%subplot(2,2,1);imagesc(Aa);title('Avarge Adj. overall');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,2);imagesc(As);title('STD Adj. overall');caxis([0 1]);colorbar;colormap(gray);
+%
+%
+%subplot(2,2,1);imagesc(Ws1);title('STD weight of cue 1');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,2);imagesc(Ws2);title('STD weight of cue 2');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,3);imagesc(Ws3);title('STD weight of rest 1');caxis([0 1]);colorbar;colormap(gray);
+%subplot(2,2,4);imagesc(Ws4);title('STD weight of rest 2');caxis([0 1]);colorbar;colormap(gray);
+%
+%subplot(2,2,1);imagesc(Wa);title('AVG weight overall');caxis([-1 1]);colorbar;colormap(gray);
+%subplot(2,2,2);imagesc(Ws);title('STD weight overall');caxis([0 1]);colorbar;colormap(gray);
 
+
+Aa=cell(4,1); As=cell(4,1);
+for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(i,:));   end
+[Aat,Ast]=statMat(Aarr(:));
+save('statAW.mat','Aa','As','Aat','Ast')
+
+for i=1:4; subplot(2,2,i);imagesc(Aa(i));title(['Avarged Adj. of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);end
+for i=1:4; subplot(2,2,i);imagesc(Aa(i));title(['STD Adj. of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);end
+for i=1:4; subplot(2,2,i);imagesc(Wa(i));title(['Avarged weight. of cue ',num2str(i)]);caxis([-1 1]);colorbar;colormap(gray);end
+for i=1:4; subplot(2,2,i);imagesc(Wa(i));title(['STD Adj. of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);end
+
+#distribution of weight
+
+
+#pairwise over trial:
 x=[mean(mean(Wa1)),mean(mean(Wa2)),mean(mean(Wa3)),mean(mean(Wa4)),mean(mean(Wa))]
 y=[mean(mean(Ws1)),mean(mean(Ws2)),mean(mean(Ws3)),mean(mean(Ws4)),mean(mean(Ws))]
 y2=[max(max(Wa1)),max(max(Wa2)),max(max(Wa3)),max(max(Wa4)),max(max(Wa))
@@ -65,25 +111,7 @@ y3=(y2(1,:)-y2(2,:))
 y./x
 y./y3*100
 
-save('statA.mat','Aa1','As1','Aa2','As2','Aa3','As3','Aa4','As4','Aa','As')
-save('statW.mat','Wa1','Ws1','Wa2','Ws2','Wa3','Ws3','Wa4','Ws4','Wa','Ws')
 
-subplot(2,2,1);imagesc(Aa1);title('Avarge Adj. of cue 1');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,2);imagesc(Aa2);title('Avarge Adj. of cue 2');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,3);imagesc(Aa3);title('Avarge Adj. of rest 1');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,4);imagesc(Aa4);title('Avarge Adj. of rest 2');caxis([0 1]);colorbar;colormap(gray);
-
-subplot(2,2,1);imagesc(Aa);title('Avarge Adj. overall');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,2);imagesc(As);title('STD Adj. overall');caxis([0 1]);colorbar;colormap(gray);
-
-
-subplot(2,2,1);imagesc(Ws1);title('STD weight of cue 1');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,2);imagesc(Ws2);title('STD weight of cue 2');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,3);imagesc(Ws3);title('STD weight of rest 1');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,4);imagesc(Ws4);title('STD weight of rest 2');caxis([0 1]);colorbar;colormap(gray);
-
-subplot(2,2,1);imagesc(Wa);title('AVG weight overall');caxis([-1 1]);colorbar;colormap(gray);
-subplot(2,2,2);imagesc(Ws);title('STD weight overall');caxis([0 1]);colorbar;colormap(gray);
 
 #pairwise cue difference
 m=zeros(4);
@@ -97,7 +125,7 @@ end;end
 #valid:
 
 function [valid_prob,valid_prob_std]=statCMmat(CMarr)
-  l=length(CMarr);
+  l=length(CMarr(:));
   x=cell2mat(CMarr(1));
   t=(x(:,1)+x(:,4))./sum(x,2)>0.5;
   sum1=t;
@@ -112,15 +140,20 @@ function [valid_prob,valid_prob_std]=statCMmat(CMarr)
   valid_prob_std=sqrt(max(0,sum2/l-valid_prob.^2)); %handle float error
 end
 
-[valid1,vs1]=statCMmat(CMarr1);   [valid2,vs2]=statCMmat(CMarr2);
-[valid3,vs3]=statCMmat(CMarr3);   [valid4,vs4]=statCMmat(CMarr4);
-valid=(valid1+valid2+valid3+valid4)/4;
-vs=(vs1+vs2+vs3+vs4)/4;
-vidx=valid>0.5;
+%[valid1,vs1]=statCMmat(CMarr1);   [valid2,vs2]=statCMmat(CMarr2);
+%[valid3,vs3]=statCMmat(CMarr3);   [valid4,vs4]=statCMmat(CMarr4);
+%valid=(valid1+valid2+valid3+valid4)/4;
+%vs=(vs1+vs2+vs3+vs4)/4;
+%vidx=valid>0.5;
+%
+%valid_all=[valid1 valid2 valid3 valid4 valid]';
+%vs_all=[vs1 vs2 vs3 vs4 vs]';
+%save('valid.mat','valid1','vs1','valid2','vs2','valid3','vs3','valid4','vs4')
 
-valid_all=[valid1 valid2 valid3 valid4 valid]';
-vs_all=[vs1 vs2 vs3 vs4 vs]';
-save('valid.mat','valid1','vs1','valid2','vs2','valid3','vs3','valid4','vs4')
+Va=cell(4,1); Vs=cell(4,1);
+for i=1:4;  [Va(i),Vs(i)]=statCMmat(CMarr(i,:));    end
+[Vat,Vst]=statCMmat(CM(:));
+save('valid.mat',Va,Vs,Vat,Vst)
 
 subplot(4,1,1);imagesc(valid_all);title('Prob.(AVG) of a neuron being valid');caxis([0 1]);colorbar;colormap(gray);
 set(gca,'yticklabel',['dummy';'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'; 'all'])
