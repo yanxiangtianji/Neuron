@@ -3,8 +3,11 @@ function [J, grad] = costFunctionW(X, y, weight, lambda)
 m = length(y);
 
 % You need to return the following variables correctly 
-%J = 0;
-%grad = zeros(size(weight));
+if(m==0)
+  J = 0;
+  grad = zeros(size(weight));
+  return;
+end
 
 h=sigmoid(X*weight);
 J=sum(-y.*log(h)-(1-y).*log(1-h))/m + lambda/2/m*sum(weight.^2);

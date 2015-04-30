@@ -3,8 +3,11 @@ function [J, grad] = costFunctionAW(X, y, adj, weight, lambdaA, lambdaW)
 m = length(y);
 n=length(adj);  %length(adj)==length(weight)
 
-J = 0;
-grad = zeros(2*n,1);
+if(m==0)
+  J = 0;
+  grad = zeros(2*n,1);
+  return;
+end
 
 sa=sigmoid(adj);
 ea=exp(-adj.^2/2);
