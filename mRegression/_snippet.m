@@ -8,8 +8,10 @@ function [Aarr,Warr,CMarr,SCarr]=whole_list_AW(fn_list,n_trial,n,D,Ainit,Winit,l
   CMarr=cell(1,n_trial);  #Confusion Matrix (n*4)
   SCarr=cell(1,n_trial); #Spike Count (n)
   for i=1:n_trial
+    %disp(fn_list(i))
     %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
     rData=readRaw(cell2mat(fn_list(i)));   %dMin=1; dUnit=1;
+    %rData=pickDataByTime(rData,30000,60000);
     sc=zeros(n,1);
     for j=1:n
       sc(j)=length(cell2mat(rData(j)));
@@ -30,11 +32,6 @@ n=19;
 %[Aarr2,Warr2,CMarr2,SCmat2]=whole_list_AW(fn_c2(idx),m,n,D,Ainit,Winit,1,1);
 %[Aarr3,Warr3,CMarr3,SCmat3]=whole_list_AW(fn_r1(idx),m,n,D,Ainit,Winit,1,1);
 %[Aarr4,Warr4,CMarr4,SCmat4]=whole_list_AW(fn_r2(idx),m,n,D,Ainit,Winit,1,1);
-%
-%save('from_cue1.mat','idx','D','Ainit','Winit','Aarr1','Warr1','CMarr1','SCmat1')
-%save('from_cue2.mat','idx','D','Ainit','Winit','Aarr2','Warr2','CMarr2','SCmat2')
-%save('from_rest1.mat','idx','D','Ainit','Winit','Aarr3','Warr3','CMarr3','SCmat3')
-%save('from_rest2.mat','idx','D','Ainit','Winit','Aarr4','Warr4','CMarr4','SCmat4')
 
 m=40;
 Aarr=cell(4,m);Warr=cell(4,m);CMarr=cell(4,m);SCarr=cell(4,m);
@@ -62,64 +59,93 @@ function [avgM,stdM]=statMat(arr)
   stdM=sqrt(max(0,sum2/l-avgM.^2));    %handle float error
 end
 
-%[Aa1,As1]=statMat(Aarr1);   [Aa2,As2]=statMat(Aarr2);
-%[Aa3,As3]=statMat(Aarr3);   [Aa4,As4]=statMat(Aarr4);
-%Aat=(Aa1+Aa2+Aa3+Aa4)/4; Ast=(As1+As2+As3+As4)/4;
-%[Wa1,Ws1]=statMat(Warr1);   [Wa2,Ws2]=statMat(Warr2);
-%[Wa3,Ws3]=statMat(Warr3);   [Wa4,Ws4]=statMat(Warr4);
-%Wat=(Wa1+Wa2+Wa3+Wa4)/4; Wst=(Ws1+Ws2+Ws3+Ws4)/4;
-%save('statA.mat','Aa1','As1','Aa2','As2','Aa3','As3','Aa4','As4','Aa','As')
-%save('statW.mat','Wa1','Ws1','Wa2','Ws2','Wa3','Ws3','Wa4','Ws4','Wa','Ws')
-%
-%subplot(2,2,1);imagesc(Aa1);title('Avarge Adj. of cue 1');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,2);imagesc(Aa2);title('Avarge Adj. of cue 2');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,3);imagesc(Aa3);title('Avarge Adj. of rest 1');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,4);imagesc(Aa4);title('Avarge Adj. of rest 2');caxis([0 1]);colorbar;colormap(gray);
-%
-%subplot(2,2,1);imagesc(Aa);title('Avarge Adj. overall');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,2);imagesc(As);title('STD Adj. overall');caxis([0 1]);colorbar;colormap(gray);
-%
-%
-%subplot(2,2,1);imagesc(Ws1);title('STD weight of cue 1');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,2);imagesc(Ws2);title('STD weight of cue 2');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,3);imagesc(Ws3);title('STD weight of rest 1');caxis([0 1]);colorbar;colormap(gray);
-%subplot(2,2,4);imagesc(Ws4);title('STD weight of rest 2');caxis([0 1]);colorbar;colormap(gray);
-%
-%subplot(2,2,1);imagesc(Wa);title('AVG weight overall');caxis([-1 1]);colorbar;colormap(gray);
-%subplot(2,2,2);imagesc(Ws);title('STD weight overall');caxis([0 1]);colorbar;colormap(gray);
-
 
 Aa=cell(4,1); As=cell(4,1);
 for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(i,:));   end
 [Aat,Ast]=statMat(Aarr(:));
-save('statAW.mat','Aa','As','Aat','Ast')
+Wa=cell(4,1); Ws=cell(4,1);
+for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(i,:));   end
+[Wat,Wst]=statMat(Warr(:));
+save('statAW.mat','Aa','As','Aat','Ast','Wa','Ws','Wat','Wst')
 
-for i=1:4; subplot(2,2,i);imagesc(Aa(i));title(['Avarged Adj. of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);end
-for i=1:4; subplot(2,2,i);imagesc(Aa(i));title(['STD Adj. of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);end
-for i=1:4; subplot(2,2,i);imagesc(Wa(i));title(['Avarged weight. of cue ',num2str(i)]);caxis([-1 1]);colorbar;colormap(gray);end
-for i=1:4; subplot(2,2,i);imagesc(Wa(i));title(['STD Adj. of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);end
+for i=1:4;
+  temp=cell2mat(Aa(i));
+  subplot(2,2,i);imagesc(temp);title(['AVG adjacency of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
+end
+for i=1:4;
+  temp=cell2mat(As(i));
+  subplot(2,2,i);imagesc(temp);title(['STD adjacency of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
+end
+subplot(2,2,1);imagesc(Aat);title('AVG adjacency overall');caxis([0 1]);colorbar;colormap(gray);
+subplot(2,2,2);imagesc(Ast);title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
+
+for i=1:4;
+  temp=cell2mat(Wa(i)); tit='AVG weight of cue ';
+  temp=(cell2mat(Aa(i))>0).*temp;   tit='valid AVG weight of cue ';
+  subplot(2,2,i);imagesc(temp);title([tit,num2str(i)]);caxis([-1 1]);colorbar;colormap(jet);
+end
+for i=1:4;
+  temp=cell2mat(Ws(i)); tit='STD weight of cue ';
+  temp=(cell2mat(Aa(i))>0).*temp;   tit='valid STD weight of cue ';
+  subplot(2,2,i);imagesc(temp);title([tit,num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
+end
+temp=Wat.*(Aat>0);
+subplot(2,2,1);imagesc(temp);title('valid AVG weight overall');caxis([-1 1]);colorbar;colormap(gray);
+temp=Wst.*(Aat>0);
+subplot(2,2,2);imagesc(temp);title('valid STD weight overall');caxis([0 1]);colorbar;colormap(gray);
+
+#weight statistics:
+x=zeros(1,4); x2=zeros(2,4); %averaged weight 
+y=zeros(1,4); y2=zeros(2,4); %stardard derivation of weight
+for i=1:4
+  temp=cell2mat(Wa(i));
+  x(i)=mean(mean(temp));
+  x2(:,i)=[max(max(temp)); min(min(temp))];
+  temp=cell2mat(Ws(i));
+  y(i)=mean(mean(temp));
+  y2(:,i)=[max(max(temp)); min(min(temp))];
+end
+x   %avg weight on different cues
+y   %std weight on different cues
+(y-y2(2,:))./(y2(1,:)-y2(2,:))*100  %normalized std weight
+
+
+#pairwise cue difference/similarity
+pw_a=zeros(4);
+for i=1:4;for j=1:4;
+  if(i==j)continue;end
+  pw_a(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
+  %pw_a(i,j)=sum(sum( (cell2mat(Aa(i)>0) != (cell2mat(Aa(j))>0) ));
+  %pw_a(i,j)=sum(sum( cell2mat(Aa(i)) != cell2mat(Aa(j)) ));
+end;end
+
+pw_w=zeros(4);
+for i=1:4;for j=1:4;
+  if(i==j)continue;end
+  pw_w(i,j)=sum(sum(abs( cell2mat(Wa(i)) - cell2mat(Wa(j)) )));
+end;end
 
 #distribution of weight
 
+function dis=distriMat(arr)
+  l=length(arr(:));
+  n=size(cell2mat(arr(1)),1);
+  dis=zeros(n,n,l);
+  for i=1:l
+    dis(:,:,i)=cell2mat(arr(i));
+  end
+end
 
-#pairwise over trial:
-x=[mean(mean(Wa1)),mean(mean(Wa2)),mean(mean(Wa3)),mean(mean(Wa4)),mean(mean(Wa))]
-y=[mean(mean(Ws1)),mean(mean(Ws2)),mean(mean(Ws3)),mean(mean(Ws4)),mean(mean(Ws))]
-y2=[max(max(Wa1)),max(max(Wa2)),max(max(Wa3)),max(max(Wa4)),max(max(Wa))
-min(min(Wa1)),min(min(Wa2)),min(min(Wa3)),min(min(Wa4)),min(min(Wa))]
-y3=(y2(1,:)-y2(2,:))
-y./x
-y./y3*100
+Wdis=distriMat(Warr'(:));
 
+dis_idx1=randperm(19,9); dis_idx2=randperm(19,9);
+cue_id=1;
+for i=1:9;
+  subplot(3,3,i);hist(Wdis(dis_idx1(i),dis_idx2(i),(cue_id-1)*40+1:cue_id*40));
+  title(['W distrib. ',num2str(dis_idx1(i)),'-',num2str(dis_idx2(i)), ...
+    ', A=',num2str(cell2mat(Aa(cue_id))(dis_idx1(i),dis_idx2(i)))]);
+end
 
-
-#pairwise cue difference
-m=zeros(4);
-w(1)=Wa1;w(2)=Wa2;w(3)=Wa3;w(4)=Wa4;
-for i=1:4;for j=1:4;
-  if(i==j)continue;end
-  m(i,j)=sum(sum(abs(cell2mat(w(i))-cell2mat(w(j)) )));
-end;end
 
 ##################
 #valid:
@@ -193,7 +219,7 @@ Ss=(Ss1+Ss2+Ss3+Ss4)/4;
 Sa_all=[Sa1; Sa2; Sa3; Sa4; Sa];
 Ss_all=[Ss1; Ss2; Ss3; Ss4; Ss];
 
-save('count.mat','Sa1','Ss1','Sa2','Ss2','Sa3','Ss3','Sa3','Ss3')
+save('count.mat','Sa1','Ss1','Sa2','Ss2','Sa3','Ss3','Sa3','Ss3','Sa4','Ss4')
 
 %subplot(3,1,2);imagesc(Sa_all);title('AVG fraction of spikes');caxis([0 0.25]);colorbar;colormap(gray);
 subplot(4,1,3);imagesc(log10(Sa_all));title('Log10 of AVG fraction of spikes');colorbar;colormap(gray);
