@@ -9,8 +9,9 @@ if(nargout==2)
 end
 for i=1:n
 %  disp(sprintf('Working idx=%d',i));
-  [seq,cls]=mergeWithDelay(rData,i,D);
-  [X,y]=genDataByRef(n,seq,cls,rData(i));
+  %[seq,cls]=mergeWithDelay(rData,i,D);
+  %[X,y]=genDataByRef(n,seq,cls,rData(i));
+  [X,y]=genDataFromRaw(rData,D,i);
   [W(:,i),J]=trainOneW(i,X,y,W(:,i),lambda);
   if(nargout==2)
     CM(i,:)=testOneW(W(:,i),X,y);
