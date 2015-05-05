@@ -1,4 +1,4 @@
-fn_spike='../data/real/all.txt';
+fn_spike='../data/real/st/all.txt';
 fn_processed='../data/real/st/all.txt';
 fn_processed='../data/real/st/cue1_0.txt';
 

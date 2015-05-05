@@ -163,6 +163,7 @@ function plotValidNCount(Va,Vs,Ca)
   set(gca,'yticklabel',['dummy';'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'; 'all'])
   set(gca,'xtick',[1:19])
 end
+plotValidNCount(Va,Vs,Ca)
 
 #################
 #Adj and weight
