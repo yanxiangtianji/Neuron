@@ -1,5 +1,6 @@
 function showCM(cm)
 if(sum(size(cm)==[1 4])!=2 && sum(size(cm)==[4 1])!=2)
+  error('error size of CM.')
   return;
 end
 
