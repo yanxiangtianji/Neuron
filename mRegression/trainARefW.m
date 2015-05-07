@@ -1,18 +1,18 @@
-function [A,W,CM]=trainAgivenW(rData,D,lambdaA,panW,Ainit,Wgiven)
+function [A,W,CM]=trainARefW(rData,D,lambdaA,panW,Ainit,Wref)
 n=length(rData);
 
-if(sum(size(W)==[n n])!=2)
-  W=initWeight(n);
+if(sum(size(Ainit)==[n n])!=2)
+  Ainit=initAdjacency(n);
 end
 if(nargout==3)
   CM=zeros(n,4);
 end
-A=Ainit; W=Wgiven;
+A=Ainit; W=Wref;
 for i=1:n
 %  disp(sprintf('Working idx=%d',i));
   [X,y]=genDataFromRaw(rData,D,i);
-  [A(:,i),W(:,i),J]=trainOneAgivenW(i,X,y,Ainit(:,i),Wgiven(:,i),lambdaA,panW);
-  if(nargout==2)
+  [A(:,i),W(:,i),J]=trainOneARefW(i,X,y,Ainit(:,i),Wref(:,i),lambdaA,panW);
+  if(nargout==3)
     CM(i,:)=testOneAW(A(:,i),W(:,i),X,y);
   end
 %  disp(sprintf('  error=%f\taccurancy=%f',J,(CM(i,1)+CM(i,4))/sum(CM(i,:))));
@@ -23,7 +23,7 @@ end
 end
 
 
-function [adj, weight,J]=trainOneAgivenW(idx,X,y,adjInit,weightRef,lambdaA,panW)
+function [adj, weight,J]=trainOneARefW(idx,X,y,adjInit,weightRef,lambdaA,panW)
 adj=adjInit; weight=weightRef;
 n=length(adj);
 cf=@(t)(costFunctionAWCore(X,y,t(1:n),t(n+1:2*n),lambdaA,0, 1,1, 0,panW,0,weightRef));
