@@ -24,19 +24,18 @@ function [Aarr,Warr,CMarr,SCarr]=whole_list_AW(fn_list,n_trial,n,D,Ainit,Winit,l
   end
 end
 
-m=20;
 n=19;
+m=40;
+fnlist=cell(m,4);
+fnlist(:,1)=fn_c1(1:m);fnlist(:,2)=fn_c2(1:m);fnlist(:,3)=fn_r1(1:m);fnlist(:,4)=fn_r2(1:m);
 
-%idx=randperm(40,m);
+%m=20; idx=randperm(40,m);
 %[Aarr1,Warr1,CMarr1,SCmat1]=whole_list_AW(fn_c1(idx),m,n,D,Ainit,Winit,1,1);
 %[Aarr2,Warr2,CMarr2,SCmat2]=whole_list_AW(fn_c2(idx),m,n,D,Ainit,Winit,1,1);
 %[Aarr3,Warr3,CMarr3,SCmat3]=whole_list_AW(fn_r1(idx),m,n,D,Ainit,Winit,1,1);
 %[Aarr4,Warr4,CMarr4,SCmat4]=whole_list_AW(fn_r2(idx),m,n,D,Ainit,Winit,1,1);
 
-m=40;
 Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);SCarr=cell(m,4);
-fnlist=cell(m,4);
-fnlist(:,1)=fn_c1(1:m);fnlist(:,2)=fn_c2(1:m);fnlist(:,3)=fn_r1(1:m);fnlist(:,4)=fn_r2(1:m);
 for i=1:4
   tic;[Aarr(:,i),Warr(:,i),CMarr(:,i),SCarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,Ainit,Winit,1,1);toc;
 end
@@ -296,5 +295,7 @@ function plotWeightDis(Wdis,vld_idx)
   subplot(2,2,4);plotcdf(t,50,'CDF of all weights','','CDF');
 end
 plotWeightDis(Wdis,cell2mat(vld_idx(5)))
+
+
 
 
