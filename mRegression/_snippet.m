@@ -28,6 +28,7 @@ n=19;
 m=40;
 fnlist=cell(m,4);
 fnlist(:,1)=fn_c1(1:m);fnlist(:,2)=fn_c2(1:m);fnlist(:,3)=fn_r1(1:m);fnlist(:,4)=fn_r2(1:m);
+cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
 
 %m=20; idx=randperm(40,m);
 %[Aarr1,Warr1,CMarr1,SCmat1]=whole_list_AW(fn_c1(idx),m,n,D,Ainit,Winit,1,1);
@@ -188,29 +189,36 @@ for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(i,:));   end
 Wa=cell(1,5); Ws=cell(1,5);
 for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(i,:));   end
 [Wa(5),Ws(5)]=statMat(Warr(:));
+
 save('statAW.mat','Aa','As','Wa','Ws')
 
+%%figures of A
 for i=1:4;
   temp=cell2mat(Aa(i));
-  subplot(2,2,i);imagesc(temp);title(['AVG adjacency of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
+  subplot(2,2,i);imagesc(temp);title(['AVG adjacency of ',cell2mat(cue_name(i))]);caxis([0 1]);colorbar;colormap(gray);
 end
+
 for i=1:4;
   temp=cell2mat(As(i));
-  subplot(2,2,i);imagesc(temp);title(['STD adjacency of cue ',num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
+  subplot(2,2,i);imagesc(temp);title(['STD adjacency of ',cell2mat(cue_name(i))]);caxis([0 1]);colorbar;colormap(gray);
 end
+
 subplot(2,2,1);imagesc(cell2mat(Aa(5)));title('AVG adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 subplot(2,2,2);imagesc(cell2mat(As(5)));title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 
+%%figures of W
 for i=1:4;
   temp=cell2mat(Wa(i)); tit='AVG weight of cue ';
   temp=(cell2mat(Aa(i))>0).*temp;   tit='valid AVG weight of cue ';
   subplot(2,2,i);imagesc(temp);title([tit,num2str(i)]);caxis([-1 1]);colorbar;colormap(jet);
 end
+
 for i=1:4;
   temp=cell2mat(Ws(i)); tit='STD weight of cue ';
   temp=(cell2mat(Aa(i))>0).*temp;   tit='valid STD weight of cue ';
   subplot(2,2,i);imagesc(temp);title([tit,num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
 end
+
 temp=cell2mat(Wa(5)).*(cell2mat(Aa(5))>0);
 subplot(2,2,1);imagesc(temp);title('valid AVG weight overall');caxis([-1 1]);colorbar;colormap(gray);
 temp=Ws(5).*(cell2mat(Aa(5))>0);
@@ -246,18 +254,20 @@ showWeightXtrial(Wa,Ws,vld_idx);
 
 
 #pairwise cue difference/similarity
-pw_a=zeros(4);
+pw_a1=zeros(4);pw_a2=zeros(4);pw_a3=zeros(4);
 for i=1:4;for j=1:4;
   if(i==j)continue;end
-  pw_a(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
-  %pw_a(i,j)=sum(sum( (cell2mat(Aa(i)>0) != (cell2mat(Aa(j))>0) ));
-  %pw_a(i,j)=sum(sum( cell2mat(Aa(i)) != cell2mat(Aa(j)) ));
+  pw_a1(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
+  pw_a2(i,j)=sum(sum( (cell2mat(Aa(i))>0) != (cell2mat(Aa(j))>0) ));
+  pw_a3(i,j)=sum(sum( cell2mat(Aa(i)) != cell2mat(Aa(j)) ));
 end;end
 
 pw_w=zeros(4);
-for i=1:4;for j=1:4;
+for i=1:4;
+_t=cell2mat(Wa(i));_s=sum(sum(abs(_t)));
+for j=1:4;
   if(i==j)continue;end
-  pw_w(i,j)=sum(sum(abs( cell2mat(Wa(i)) - cell2mat(Wa(j)) )));
+  pw_w(i,j)=sum(sum(abs( _t - cell2mat(Wa(j)) )))/_s;
 end;end
 
 #distribution of weight
