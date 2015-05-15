@@ -46,14 +46,17 @@ p=1;
 for i=1:nr
   key=ref(i);
   t=zeros(1,n);
-  lastTime=zeros(1,n)+key;
+  %lastTime=zeros(1,n)+key;
+  lastTime=seq(p);
   while(p<=m && seq(p)<=key)
-    class=cls(p);
-    deltaTime=seq(p)-lastTime(class);
-    t(class)=t(class)*exp(-fRep*deltaTime)+1;
+    %class=cls(p);
+    %deltaTime=seq(p)-lastTime(class);
+    %t(class)=t(class)*exp(-fRep*deltaTime)+1;
+    t*=exp(-fRep*(seq(p)-lastTime));
+    ++t(cls(p));
     X(p,:)=t;
-    %y(p)=0;   %y is initialized with 0
     ++p;
+    lastTime=seq(p);
   end
   if(p>1)
     y(p-1)=1;
