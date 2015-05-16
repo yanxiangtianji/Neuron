@@ -30,7 +30,7 @@ cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
 
 lambdaA=1;
 lambdaW=1;
-fRep=1;
+fRep=-log(0.05)/2000;   %it takes 200ms(time unit in data file is 0.1ms) to degrade 95%.
 %m=20; idx=randperm(40,m);
 
 Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);SCarr=cell(m,4);
