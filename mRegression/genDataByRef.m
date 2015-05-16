@@ -1,4 +1,6 @@
 function [X,y]=genDataByRef(n,seq,cls,ref,fRep=0)
+%require: *ref* is not in *seq*
+
 if(iscell(ref)) ref=cell2mat(ref);  end
 m=length(seq);
 nr=length(ref);
@@ -43,11 +45,10 @@ X=zeros(m,n);
 y=zeros(m,1);
 
 p=1;
+lastTime=seq(p);
 for i=1:nr
   key=ref(i);
   t=zeros(1,n);
-  %lastTime=zeros(1,n)+key;
-  lastTime=seq(p);
   while(p<=m && seq(p)<=key)
     %class=cls(p);
     %deltaTime=seq(p)-lastTime(class);
@@ -55,16 +56,14 @@ for i=1:nr
     t*=exp(-fRep*(seq(p)-lastTime));
     ++t(cls(p));
     X(p,:)=t;
-    ++p;
+    %y(p)=0;   %y is initialized with 0
     lastTime=seq(p);
+    ++p;
   end
   if(p>1)
+    X(p-1)*=exp(-fRep*(key-lastTime));
     y(p-1)=1;
   end
 end
-%if(p!=m)
-%  X=X(1:p-1,:);
-%  y=y(1:p-1);
-%end
 
 end
