@@ -8,6 +8,7 @@ function [CMarr]=test_list_AW(fn_list,n_trial,D,A,W)
 end
 
 function acc=cm2acc(CM)
+  if(iscell(CM))  CM=cell2mat(CM);  end;
   acc=(CM(:,1)+CM(:,4))./sum(CM,2);
 end
 

@@ -1,12 +1,13 @@
 #################
 #get data
 
-function [Aarr,Warr,CMarr,SCarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRep,Ainit,Winit)
+%function [Aarr,Warr,CMarr,SCarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRep,Ainit,Winit)
+function [Aarr,Warr,CMarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRep,Ainit,Winit)
   n_cue=length(fn_list);
   Aarr=cell(n_trial,1);   #Adjacent (n*n)
   Warr=cell(n_trial,1);   #Weight (n*n)
   CMarr=cell(n_trial,1);  #Confusion Matrix (n*4)
-  SCarr=cell(n_trial,1);  #Spike Count (n)
+%  SCarr=cell(n_trial,1);  #Spike Count (n)
   for i=1:n_trial
     %disp(fn_list(i))
     %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
@@ -30,12 +31,14 @@ cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
 
 lambdaA=1;
 lambdaW=1;
-fRep=-log(0.05)/2000;   %it takes 200ms(time unit in data file is 0.1ms) to degrade 95%.
+vanishTime95=2000;   %it takes 200ms(time unit in data file is 0.1ms) to degrade 95%.
+fRep=-log(0.05)/vanishTime95;
 %m=20; idx=randperm(40,m);
 
 Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);SCarr=cell(m,4);
 for i=1:4
-  tic;[Aarr(:,i),Warr(:,i),CMarr(:,i),SCarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
+%  tic;[Aarr(:,i),Warr(:,i),CMarr(:,i),SCarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
+  tic;[Aarr(:,i),Warr(:,i),CMarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
 end
 save('data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr','SCarr')
 
@@ -45,7 +48,11 @@ save('data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr','SCarr')
 #accurancy:
 function disAcc=distriCMmat_acc(CMarr)
   l=length(CMarr(:));
-  n=size(cell2mat(CMarr(1)),1);
+  if(l!=0)
+    n=size(cell2mat(CMarr(1)),1);
+  else
+    n=0;
+  end
   disAcc=zeros(n,l);
   for i=1:l
     x=cell2mat(CMarr(i));
@@ -69,16 +76,16 @@ end
 save('acc.mat','AccD','AccAvg','AccStd');
 
 %statistics of Accurancy
-subplot(2,1,1);imagesc(AccAvg');title('AVG accurancy');caxis([0 1]);colorbar;colormap(gray);
-set(gca,'yticklabel',['dummy';'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'; 'all'])
-set(gca,'xtick',[1:19])
-subplot(2,1,2);imagesc(AccStd');title('STD accurancy');caxis([0 1]);colorbar;colormap(gray);
-set(gca,'yticklabel',['dummy';'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'; 'all'])
-set(gca,'xtick',[1:19])
+subplot(3,1,1);imagesc(AccAvg');title('AVG accurancy');caxis([0 1]);colorbar;colormap(gray);
+set(gca,'yticklabel',['dummy';'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'; 'all'],'xtick',[1:19])
+subplot(3,1,2);imagesc(AccStd');title('STD accurancy');caxis([0 1]);colorbar;colormap(gray);
+set(gca,'yticklabel',['dummy';'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'; 'all'],'xtick',[1:19])
+subplot(3,1,3);hist(AccD(:),50);title('Distribution of accurancy');
+set(gca,'xtick',[0:0.1:1]);
 
 %distribution of accurancy
 for i=1:19;
-  subplot(4,5,i);hist(AccD(i,:),20);title(['Acc. distr. on N',num2str(i)]);set(gca,'xtick',[0 0.5 1]);
+  subplot(5,4,i);hist(AccD(i,:),20);title(['Acc. distr. on N',num2str(i)]);xlim([0,1]);set(gca,'xtick',[0 0.5 1]);
 end
 
 function plotAccDis(AccD)
@@ -203,6 +210,17 @@ end
 subplot(2,2,1);imagesc(cell2mat(Aa(5)));title('AVG adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 subplot(2,2,2);imagesc(cell2mat(As(5)));title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 
+#A pairwise cue difference/similarity
+pw_a1=zeros(4);pw_a2=zeros(4);pw_a3=zeros(4);
+for i=1:4;for j=1:4;
+  if(i==j)continue;end
+  pw_a1(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
+  pw_a2(i,j)=sum(sum( (cell2mat(Aa(i))>0) != (cell2mat(Aa(j))>0) ));
+  pw_a3(i,j)=sum(sum( cell2mat(Aa(i)) != cell2mat(Aa(j)) ));
+end;end
+pw_a1,pw_a2,pw_a3
+
+
 %%figures of W
 for i=1:4;
   temp=cell2mat(Wa(i)); tit='AVG weight of cue ';
@@ -241,8 +259,8 @@ function showWeightXtrial(Wa,Ws,varargin)
     y(i)=mean(mean(temp));
     y2(:,i)=[max(max(temp)); min(min(temp))];
   end
-  x   %avg weight on different cues
-  y   %std weight on different cues
+  x   %avg weight on each cue
+  y   %std weight on each cue
   (y-y2(2,:))./(y2(1,:)-y2(2,:))*100  %normalized std weight
 end
 
@@ -250,24 +268,16 @@ showWeightXtrial(Wa,Ws);
 showWeightXtrial(Wa,Ws,vld_idx);
 
 
-#pairwise cue difference/similarity
-pw_a1=zeros(4);pw_a2=zeros(4);pw_a3=zeros(4);
-for i=1:4;for j=1:4;
-  if(i==j)continue;end
-  pw_a1(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
-  pw_a2(i,j)=sum(sum( (cell2mat(Aa(i))>0) != (cell2mat(Aa(j))>0) ));
-  pw_a3(i,j)=sum(sum( cell2mat(Aa(i)) != cell2mat(Aa(j)) ));
-end;end
-
+#weight pairwise cue difference/similarity
 pw_w=zeros(4);
 for i=1:4;
-_t=cell2mat(Wa(i));_s=sum(sum(abs(_t)));
-for j=1:4;
-  if(i==j)continue;end
-  pw_w(i,j)=sum(sum(abs( _t - cell2mat(Wa(j)) )))/_s;
+  _t=cell2mat(Wa(i));_s=sum(sum(abs(_t)));
+  for j=1:4;
+    if(i==j)continue;end
+    pw_w(i,j)=sum(sum(abs( _t - cell2mat(Wa(j)) )))/_s;
 end;end
 
-#distribution of weight
+#weight distribution
 
 function dis=distriMat(arr)
   l=length(arr(:));
@@ -296,10 +306,12 @@ end
 
 function plotWeightDis(Wdis,vld_idx)
   subplot(2,2,1);hist(Wdis(:),100);title('Distribution of all weights');ylabel('frequency');
-  subplot(2,2,2);plotcdf(Wdis(:),50,'CDF of all weights','','CDF');
+  subplot(2,2,2);plotcdf(Wdis(:),50);
+  title('CDF of all weights');ylabel('CDF');
   t=Wdis(vld_idx,vld_idx,:)(:);
   subplot(2,2,3);hist(t,100);title('Distribution of all valid weights');ylabel('frequency');
-  subplot(2,2,4);plotcdf(t,50,'CDF of all weights','','CDF');
+  subplot(2,2,4);plotcdf(t,50);
+  title('CDF of all weights');ylabel('CDF');
 end
 plotWeightDis(Wdis,cell2mat(vld_idx(5)))
 
