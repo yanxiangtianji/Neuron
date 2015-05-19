@@ -118,15 +118,13 @@ end
 %valid_avg_all=[cell2mat(Va), Vat]; valid_std_all=[cell2mat(Vs), Vst];
 
 Va=zeros(n,5); Vs=zeros(n,5);
-for i=1:4;
-  [Va(:,i),Vs(:,i)]=acc2vld(AccD(:,m*(i-1)+1:m*i));
-end
-[Va(:,5),Vs(:,5)]=acc2vld(AccD);
-
 vld_idx=cell(1,5);
-for i=1:5;
+for i=1:4
+  [Va(:,i),Vs(:,i)]=acc2vld(AccD(:,m*(i-1)+1:m*i));
   vld_idx(i)=find(Va(:,i)>0.5)';
 end
+[Va(:,5),Vs(:,5)]=acc2vld(AccD);
+vld_idx(5)=find(Va(:,5)>0.5)';
 
 save('valid.mat','Va','Vs','vld_idx')
 
@@ -290,6 +288,25 @@ end
 
 Wdis=distriMat(Warr(:));
 
+for i=1:4
+  _t=Wdis(:,:,m*(i-1)+1:m*i);
+%  _t=Wdis(cell2mat(vld_idx(i)),cell2mat(vld_idx(i)),m*(i-1)+1:m*i);
+  subplot(4,2,2*i-1);hist(_t(:),20);title(['Dist. on ',cell2mat(cue_name(i))]);ylabel('frequency');
+  subplot(4,2,2*i);plotcdf(_t(:),50);title(['CDF on ',cell2mat(cue_name(i))]);ylabel('CDF');
+end
+
+%figure on overall data
+function plotWeightDisCmp(Wdis,vld_idx)
+  subplot(2,2,1);hist(Wdis(:),100);title('Distribution of all weights');ylabel('frequency');
+  subplot(2,2,2);plotcdf(Wdis(:),50);title('CDF of all weights');ylabel('CDF');
+  t=Wdis(vld_idx,vld_idx,:)(:);
+  subplot(2,2,3);hist(t,100);title('Distribution of all valid weights');ylabel('frequency');
+  subplot(2,2,4);plotcdf(t,50);title('CDF of all weights');ylabel('CDF');
+end
+plotWeightDisCmp(Wdis,cell2mat(vld_idx(5)))
+
+
+%distribution on some edges
 dis_idx1=randperm(19,9); dis_idx2=randperm(19,9);
 cue_id=1;
 for i=1:9; %distribution of 9 edges on the same cue
@@ -303,18 +320,5 @@ for i=1:4; %distribution of 1 edge on 4 cues
   title(['W dist. ',num2str(dis_idx1(i)),'-',num2str(dis_idx2(i)), ...
     ' on cue ',num2str(cue_id),', A=',num2str(cell2mat(Aa(cue_id))(dis_idx1(i),dis_idx2(i)))]);
 end
-
-function plotWeightDis(Wdis,vld_idx)
-  subplot(2,2,1);hist(Wdis(:),100);title('Distribution of all weights');ylabel('frequency');
-  subplot(2,2,2);plotcdf(Wdis(:),50);
-  title('CDF of all weights');ylabel('CDF');
-  t=Wdis(vld_idx,vld_idx,:)(:);
-  subplot(2,2,3);hist(t,100);title('Distribution of all valid weights');ylabel('frequency');
-  subplot(2,2,4);plotcdf(t,50);
-  title('CDF of all weights');ylabel('CDF');
-end
-plotWeightDis(Wdis,cell2mat(vld_idx(5)))
-
-
 
 
