@@ -1,9 +1,9 @@
 function [value,class]=serialize(rawData)
-%input parameter *rawData* is a cell vector. Each cell, represent a class, is a vector.
+%input parameter *rawData* is a cell vector. Each cell, represents a class, is a row vector.
 %return one row vector of sorted values,
 %   together with non-negative number indicating each one's original class.
 
-if(nargout<2)
+if(nargout<2)   %special case for returning values only
   if(size(rawData,1)==1)    %row vector
     value=sort(cell2mat(rawData));
   else  %colomn vector
@@ -17,7 +17,7 @@ n=length(rawData);
 value=[];
 class=[];
 len=zeros(1,n);
-
+%simple serialize with out sort and class, store length for each class
 t=0;
 for i=1:n
   v=cell2mat(rawData(i));
@@ -29,7 +29,9 @@ for i=1:n
   t+=len(i);
 end
 
+%sort
 [value,class]=sort(value);
+%class
 t=0;
 for i=1:n
   class(find(class>t & class<=t+len(i) ))=i;
