@@ -1,6 +1,7 @@
 function [value,class]=serialize(rawData)
-%return row vector of sorted values together with its original class
 %input parameter *rawData* is a cell vector. Each cell, represent a class, is a vector.
+%return one row vector of sorted values,
+%   together with non-negative number indicating each one's original class.
 
 if(nargout<2)
   if(size(rawData,1)==1)    %row vector
