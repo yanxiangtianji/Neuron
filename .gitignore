@@ -190,3 +190,9 @@ ModelManifest.xml
 
 # data file:
 data/
+
+# matlab mat files:
+*.mat
+
+# figure files:
+*.png

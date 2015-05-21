@@ -163,9 +163,9 @@ void test_no_zero_start_alg(const string& fn){
 	}
 }
 
-void test_trial(const string& fn){
+void test_trial(const string& fn,const double cor_th){
 	TopoOneTrial tot(fn, 0, 3000, 1000, 100, 10);
-	tot.set_param(0.95);
+	tot.set_param(cor_th);
 	cout << tot.size() << endl;
 	tot.go();
 	for(size_t i = 0; i < tot.size(); i++){
@@ -200,7 +200,7 @@ void test(const string base_dir){
 		//test_regex();
 		//test_analy();
 		//test_no_zero_start_alg(base_dir + "real/st3-6/cue1_0.txt");
-		test_trial(base_dir + "real/st3-6/cue1_0.txt");
+		test_trial(base_dir + "real/st3-6/cue1_0.txt",0.6);
 	} catch(exception e){
 		cout << e.what() << endl;
 	}

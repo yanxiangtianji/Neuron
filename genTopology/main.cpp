@@ -3,6 +3,7 @@
 #include <random>
 #include <map>
 #include <string>
+#include <algorithm>
 #include "AdjGraph.h"
 #include "AdjGraphSec.h"
 #include "generate.h"
@@ -122,10 +123,18 @@ void go3(const size_t n, const string& fn){
 void go4(const size_t n, const string& fn){
 	GeneratorDegree gend(n, GeneratorDegree::DegreeType::OUTDEGREE, false);
 	mt19937 rg;
-	auto nng = normal_distribution<double>(0, n*(n-1)/2/5);
+	auto nng = normal_distribution<double>(0, n/4.0);
 	function<size_t()> int_dis = [&](){
-		return static_cast<size_t>(abs(nng(rg)));
+		return min(n-1, static_cast<size_t>(abs(nng(rg))));
 	};
+	//map<size_t, size_t> m;
+	//for(size_t i = 0; i < 100000; i++){
+	//	++m[int_dis()];
+	//}
+	//for(auto& p : m){
+	//	cout << p.first << '\t' << p.second << endl;
+	//}
+//	return;
 	AdjGraph g = gend.gen(int_dis, true);
 	ofstream fout(fn);
 	fout << g.sort_up();

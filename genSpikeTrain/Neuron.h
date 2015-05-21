@@ -54,11 +54,17 @@ public:
 	fun_delay_fire_t get_fun_delay_f()const{ return fun_delay_fire; }
 	fun_delay_prog_t get_fun_delay_p(const ptr_t& p)const{ return children.at(p); }
 	const std::map<ptr_t, fun_delay_prog_t>& get_children() const { return children; }
+	double get_weight(const ptr_t& p) const { return weight.at(p); }
+	const std::map<ptr_t,double> get_weight() const { return weight; }
+
 	void set_fire_shreshold(const signal_t& t){ fire_shreshold = t; }
 	void set_fire_shreshold(signal_t&& t){ fire_shreshold = t; }
 	void set_fun_delay_f(const fun_delay_fire_t& f){ fun_delay_fire = f; }
 	void set_fun_delay_f(fun_delay_fire_t&& f){ fun_delay_fire = f; }
 	void set_fun_delay_p(const ptr_t& p, const fun_delay_prog_t& f){ children.find(p)->second = f; }
+	void set_weight(ptr_t p, const double w){ weight[p] = w; }
+	void set_weight(const std::map<ptr_t, double>& w){ weight = w; }
+	void set_weight(std::map<ptr_t, double>&& w){ weight = w; }
 private:
 	const nid_t id;
 	signal_t fire_shreshold;
@@ -67,6 +73,7 @@ private:
 	//delays:
 	fun_delay_fire_t fun_delay_fire;
 	std::map<ptr_t, fun_delay_prog_t> children;//child neuron and the propagation delay to it.
+	std::map<ptr_t, double> weight;
 
 	cb_fire_t cb_fire;
 
