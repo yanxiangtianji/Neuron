@@ -7,11 +7,12 @@ end
 if(nargout==2)
   CM=zeros(n,4);
 end
+
+[seq0,cls0]=serialize(rData);
 for i=1:n
 %  disp(sprintf('Working idx=%d',i));
-  %[seq,cls]=mergeWithDelay(rData,i,D);
-  %[X,y]=genDataByRef(n,seq,cls,rData(i));
-  [X,y]=genDataFromRaw(rData,D,i);
+  %[X,y]=genDataFromRaw(rData,D,i);
+  [X,y]=genDataFromSnC(n,seq0,cls0,D,i,fRep);
   [W(:,i),J]=trainOneW(i,X,y,W(:,i),lambda);
   if(nargout==2)
     CM(i,:)=testOneW(W(:,i),X,y);

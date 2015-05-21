@@ -21,11 +21,12 @@ W=Winit;
 if(nargout==3)
   CM=zeros(n,4);
 end
+
+[seq0,cls0]=serialize(rData);
 for i=1:n
 %  disp(sprintf('Working idx=%d',i));
-  %[seq,cls]=mergeWithDelay(rData,i,D);
-  %[X,y]=genDataByRef(n,seq,cls,rData(i));
-  [X,y]=genDataFromRaw(rData,D,i,fRep);
+  %[X,y]=genDataFromRaw(rData,D,i,fRep);
+  [X,y]=genDataFromSnC(n,seq0,cls0,D,i,fRep);
   [A(:,i),W(:,i),J]=trainOneAW(i,X,y,Ainit(:,i),Winit(:,i),lambdaA,lambdaW);
   if(nargout==3)
     CM(i,:)=testOneAW(A(:,i),W(:,i),X,y);
