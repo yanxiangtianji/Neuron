@@ -1,21 +1,58 @@
 #################
+#statistics functions (distri. & stat.):
+
+#for vector
+function dis=distriVec(arr)
+  l=length(arr(:));
+  n=size(cell2mat(arr(1)),1);
+  disAcc=zeros(n,l);
+  for i=1:l
+    dis(:,i)=cell2mat(arr(i));
+  end
+end
+
+function [avgV,stdV]=statVec(dis)
+  avgV=mean(dis,2);
+  stdV=std(dis,1,2);
+end
+
+#for matrix
+function dis=distriMat(arr)
+  l=length(arr(:));
+  n=size(cell2mat(arr(1)),1);
+  dis=zeros(n,n,l);
+  for i=1:l
+    dis(:,:,i)=cell2mat(arr(i));
+  end
+end
+
+function [avgM,stdM]=statMat(arr)
+  l=length(arr(:));
+  t=cell2mat(arr(1));
+  sum1=t;
+  sum2=t.^2;
+  for i=2:l
+    t=cell2mat(arr(i));
+    sum1+=t;
+    sum2+=t.^2;
+  end
+  avgM=sum1/l;
+  stdM=sqrt(max(0,sum2/l-avgM.^2));    %handle float error
+end
+
+
+#################
 #get data
 
-%function [Aarr,Warr,CMarr,SCarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRep,Ainit,Winit)
 function [Aarr,Warr,CMarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRep,Ainit,Winit)
-  n_cue=length(fn_list);
   Aarr=cell(n_trial,1);   #Adjacent (n*n)
   Warr=cell(n_trial,1);   #Weight (n*n)
   CMarr=cell(n_trial,1);  #Confusion Matrix (n*4)
-%  SCarr=cell(n_trial,1);  #Spike Count (n)
   for i=1:n_trial
     %disp(fn_list(i))
     %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
     rData=readRaw(cell2mat(fn_list(i)));   %dMin=1; dUnit=1;
     %rData=pickDataByTime(rData,30000,60000);
-%    sc=zeros(n,1);
-%    for j=1:n;  sc(j)=length(cell2mat(rData(j)));  end
-%    SCarr(i)=sc;
     [A,W,CM]=trainAW(rData,D,lambdaA,lambdaW,fRep,Ainit,Winit);
     Aarr(i)=A;
     Warr(i)=W;
@@ -23,24 +60,42 @@ function [Aarr,Warr,CMarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRe
   end
 end
 
-n=19;
 m=40;
-fnlist=cell(m,4);
-fnlist(:,1)=fn_c1(1:m);fnlist(:,2)=fn_c2(1:m);fnlist(:,3)=fn_r1(1:m);fnlist(:,4)=fn_r2(1:m);
-cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
-
-lambdaA=1;
-lambdaW=1;
-vanishTime95=2000;   %it takes 200ms(time unit in data file is 0.1ms) to degrade 95%.
-fRep=-log(0.05)/vanishTime95;
 %m=20; idx=randperm(40,m);
 
-Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);SCarr=cell(m,4);
+Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);
 for i=1:4
-%  tic;[Aarr(:,i),Warr(:,i),CMarr(:,i),SCarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
   tic;[Aarr(:,i),Warr(:,i),CMarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
 end
-save('data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr','SCarr')
+save('data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr')
+
+#################
+#num of spike:
+
+function Carr=countSpikes(fn_list,n_trial,n)
+  Carr=cell(n_trial,1); #Spike Count (n*1)
+  for i=1:n_trial
+    rData=readRaw(cell2mat(fn_list(i)));
+    sc=zeros(n,1);
+    for j=1:n;  sc(j)=length(cell2mat(rData(j)));  end
+    Carr(i)=sc;
+  end
+end
+
+Carr=cell(m,4);
+for i=1:4
+  Carr(:,i)=countSpikes(fnlist(:,i),m,n);
+end
+
+Cdis=distriVec(SCarr);
+
+Ca=zeros(n,5);  Cs=zeros(n,5);
+for i=1:4
+  [Ca(:,i),Cs(:,i)]=statVec(Cdis(:,m*(i-1)+1:m*i));
+end
+[Ca(:,5),Cs(:,5)]=statVec(Cdis);
+
+save('count.mat','Carr','Cdis','Ca','Cs')
 
 ##################
 #accurancy & valid:
@@ -61,11 +116,6 @@ function disAcc=distriCMmat_acc(CMarr)
 end
 
 AccD=distriCMmat_acc(CMarr(:));
-
-function [avgV,stdV]=statVec(dis)
-  avgV=mean(dis,2);
-  stdV=std(dis,1,2);
-end
 
 AccAvg=zeros(n,5);  AccStd=zeros(n,5);
 for cue_id=1:4;
@@ -128,30 +178,6 @@ vld_idx(5)=find(Va(:,5)>0.5)';
 
 save('valid.mat','Va','Vs','vld_idx')
 
-
-#################
-#num of spike:
-
-function dis=distriVec(arr)
-  l=length(arr(:));
-  n=size(cell2mat(arr(1)),1);
-  disAcc=zeros(n,l);
-  for i=1:l
-    dis(:,i)=cell2mat(arr(i));
-  end
-end
-
-Cdis=distriVec(SCarr);
-
-Ca=zeros(n,5);  Cs=zeros(n,5);
-for i=1:4
-  [Ca(:,i),Cs(:,i)]=statVec(Cdis(:,m*(i-1)+1:m*i));
-end
-[Ca(:,5),Cs(:,5)]=statVec(Cdis);
-
-save('count.mat','Cdis','Ca','Cs')
-
-
 %relation between being valid and number of spikes
 function plotValidNCount(Va,Vs,Ca)
   subplot(3,1,1);imagesc(Va');title('Prob.(AVG) of a neuron being valid');caxis([0 1]);colorbar;colormap(gray);
@@ -169,21 +195,6 @@ plotValidNCount(Va,Vs,Ca)
 
 #################
 #Adj and weight
-
-function [avgM,stdM]=statMat(arr)
-  l=length(arr(:));
-  t=cell2mat(arr(1));
-  sum1=t;
-  sum2=t.^2;
-  for i=2:l
-    t=cell2mat(arr(i));
-    sum1+=t;
-    sum2+=t.^2;
-  end
-  avgM=sum1/l;
-  stdM=sqrt(max(0,sum2/l-avgM.^2));    %handle float error
-end
-
 
 Aa=cell(1,5); As=cell(1,5);
 for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(i,:));   end
@@ -276,15 +287,6 @@ for i=1:4;
 end;end
 
 #weight distribution
-
-function dis=distriMat(arr)
-  l=length(arr(:));
-  n=size(cell2mat(arr(1)),1);
-  dis=zeros(n,n,l);
-  for i=1:l
-    dis(:,:,i)=cell2mat(arr(i));
-  end
-end
 
 Wdis=distriMat(Warr(:));
 
