@@ -62,3 +62,6 @@ stat2aw=whole_cue_AW(fn_c2,n,D,Ainit,Winit,lambdaA,lambdaW);
 %save(['full_aw',num2str(step),'.mat'],'stat1aw','stat2aw');
 
 save(['cmp',num2str(step),'.mat'],'stat2w','stat2aw');
+
+[Aarr,W,CMarr]=goTogether(fnlist,19,D,fRep,0.01,1,1,Ainit,Winit);
+save('dataTGH.mat','D','fRep','Ainit','Winit','alpha','lambdaA','lambdaW','Aarr','W','CMarr')
