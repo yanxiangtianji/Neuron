@@ -44,7 +44,7 @@ function [Aarr,W,CMarr]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW
   if(nargout==3)
     CMarr=cell(n,m);
     for i=1:n; for j=1:m;
-      CMarr(i,j)=testAW(cell2mat(Aarr(i,j)),W,readRaw(cell2mat(fn_lists(i,j))),D,fRep)
+      CMarr(i,j)=testAW(cell2mat(Aarr(i,j)),W,readRaw(cell2mat(fn_lists(i,j))),D,fRep);
     end;end;
   end
 end
