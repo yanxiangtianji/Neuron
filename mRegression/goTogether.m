@@ -1,4 +1,4 @@
-function [Aarr,W]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit,Winit)
+function [Aarr,W,CMarr]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit,Winit)
 %fn_lists:      cell matrix of data file name
 %nNeuron:       number of neuron
 %D:             delay matrix
@@ -22,6 +22,7 @@ function [Aarr,W]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit
     for i=1:n; for j=1:m;
       [Xcell(i,j),ycell(i,j)]=genDataFromSnC(nNeuron,cell2mat(seq0s(i,j)),cell2mat(cls0s(i,j)),D,idx,fRep);
     end;end;
+    tic;
     for iter=1:400;
       [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,As,W,lambdaA,lambdaW);
       As(:,:,:,idx)-=alpha*gA;
@@ -30,13 +31,22 @@ function [Aarr,W]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit
         break;
       end
     end;%iteration
+    toc;
   end;%neuron
 
-  %reshape result
+  %reshape result of A
   Aarr=cell(n,m);
   for i=1:n; for j=1:m;
     Aarr(i,j)=reshape(As(i,j,:,:)(:),nNeuron,nNeuron) >0;
   end;end;
+  
+  %CMarr
+  if(nargout==3)
+    CMarr=cell(n,m);
+    for i=1:n; for j=1:m;
+      CMarr(i,j)=testAW(cell2mat(Aarr(i,j)),W,readRaw(cell2mat(fn_lists(i,j))),D,fRep)
+    end;end;
+  end
 end
 
 ###############
