@@ -9,13 +9,13 @@ function [Aarr,W]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit
 
   [n,m]=size(fn_lists);
 %  nNeuron
-  Aarr=zeros(n,m,nNeuron,nNeuron);
-  for i=1:n;for j=1:m;    Aarr(i,j,:,:)=Ainit;  end;end;
+  As=zeros(n,m,nNeuron,nNeuron);
+  for i=1:n;for j=1:m;    As(i,j,:,:)=Ainit;  end;end;
   W=Winit;
   [seq0s,cls0s]=loadDatas(fn_lists);
   
-  stopEplison=1e-8;
-  
+  %main work
+  stopEplison=1e-7;
   for idx=1:nNeuron;
     Xcell=cell(n,m);
     ycell=cell(n,m);
@@ -23,12 +23,20 @@ function [Aarr,W]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit
       [Xcell(i,j),ycell(i,j)]=genDataFromSnC(nNeuron,cell2mat(seq0s(i,j)),cell2mat(cls0s(i,j)),D,idx,fRep);
     end;end;
     for iter=1:400;
-      [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,Aarr(:,:,idx,:),W(idx,:),lambdaA,lambdaW);
-      Aarr(:,:,idx,:)-=alpha*gA;
-      W-=alpha*gW;
-    end;
-  end
+      [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,As,W,lambdaA,lambdaW);
+      As(:,:,:,idx)-=alpha*gA;
+      W(:,idx)-=alpha*gW;
+      if(meansq(gA(:))<stopEplison && meansq(gW)<stopEplison)
+        break;
+      end
+    end;%iteration
+  end;%neuron
 
+  %reshape result
+  Aarr=cell(n,m);
+  for i=1:n; for j=1:m;
+    Aarr(i,j)=reshape(As(i,j,:,:)(:),nNeuron,nNeuron) >0;
+  end;end;
 end
 
 ###############
@@ -45,12 +53,13 @@ function [seq0s,cls0s]=loadDatas(fn_lists)
   end;end;
 end
 
-function [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,adj,weight,lambdaA,lambdaW)
-  gA=zeros(n,m,nNeuron);
+function [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,Aarr,W,lambdaA,lambdaW)
+  gA=zeros(n,m,nNeuron,1);
   gW=zeros(nNeuron,1);
   for i=1:n; for j=1:m;
-    [~,grad]=costFunctionAW(cell2mat(Xcell(i,j)),cell2mat(ycell(i,j)),adj(i,j,:),weight,lambdaA,lambdaW);
-    gA(i,j,:)=grad(1:nNeuron);
+    X=cell2mat(Xcell(i,j));y=cell2mat(ycell(i,j));
+    [~,grad]=costFunctionAW(X,y,Aarr(i,j,:,idx)(:),W(:,idx),lambdaA,lambdaW);
+    gA(i,j,:,1)=grad(1:nNeuron);
     gW+=grad(nNeuron+1:2*nNeuron);
   end;end;
   gW/=n*m;
