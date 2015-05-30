@@ -14,7 +14,7 @@ end
 
 function accMat=cm2accMat(CMarr)
   [n,m]=size(CMarr);
-  accMat=zeros(n,m);
+  accMat=cell(n,m);
   for i=1:n; for j=1:m;
     accMat(i,j)=cm2acc(CMarr(i,j));
   end;end;
