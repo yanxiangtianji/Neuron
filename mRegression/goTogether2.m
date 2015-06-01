@@ -1,4 +1,4 @@
-function [Aarr,W,CMarr]=goTogether2(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW,Ainit,Winit)
+function [Aarr,W,CMarr]=goTogether2(fn_lists,nNeuron,D,fRep,lambdaA,lambdaW,Ainit,Winit)
 %fn_lists:      cell matrix of data file name
 %nNeuron:       number of neuron
 %D:             delay matrix
@@ -9,35 +9,41 @@ function [Aarr,W,CMarr]=goTogether2(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambda
 
   [n,m]=size(fn_lists);
 %  nNeuron
-  As=zeros(n,m,nNeuron,nNeuron);
-  for i=1:n;for j=1:m;    As(i,j,:,:)=Ainit;  end;end;
+  As=zeros(nNeuron,nNeuron,n*m);
+  for i=1:n*m;  As(:,:,i)=Ainit;  end;
   W=Winit;
   [seq0s,cls0s]=loadDatas(fn_lists);
   
+  options = optimset('GradObj', 'on', 'MaxIter', 400);
   %main work
   stopEplison=1e-7;
   for idx=1:nNeuron;
     Xcell=cell(n,m);
     ycell=cell(n,m);
+    len=zeros(n,m);
     for i=1:n; for j=1:m;
-      [Xcell(i,j),ycell(i,j)]=genDataFromSnC(nNeuron,cell2mat(seq0s(i,j)),cell2mat(cls0s(i,j)),D,idx,fRep);
+      [Xcell(i,j),t]=genDataFromSnC(nNeuron,cell2mat(seq0s(i,j)),cell2mat(cls0s(i,j)),D,idx,fRep);
+      ycell(i,j)=t;
+      len(i,j)=length(t);
     end;end;
+    clear t;
     tic;
-    for iter=1:400;
-      [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,As,W,lambdaA,lambdaW);
-      As(:,:,:,idx)-=alpha*gA;
-      W(:,idx)-=alpha*gW;
-      if(meansq(gA(:))<stopEplison && meansq(gW)<stopEplison)
-        break;
-      end
-    end;%iteration
+    X=cell2mat(Xcell(:));
+    y=cell2mat(ycell(:));
+    len=len(:);
+    [t,J]=fminunc(@(t)(costFunctionMASW(X,y,len,t(1:n*m*nNeuron),t(n*m*nNeuron+1:end),lambdaA,lambdaW)),
+      [As(:,idx,:)(:);W(:,idx)], options);
+    W(:,idx)=t(n*m*nNeuron+1:end);
+    for i=1:n*m;
+      As(:,idx,i)=t((i-1)*nNeuron+1:i*nNeuron);
+    end;
     toc;
   end;%neuron
 
   %reshape result of A
   Aarr=cell(n,m);
-  for i=1:n; for j=1:m;
-    Aarr(i,j)=reshape(As(i,j,:,:)(:),nNeuron,nNeuron) >0;
+  for j=1:m; for i=1:n;
+    Aarr(i,j)=As(:,:,(j-1)*n+i)>0;
   end;end;
   
   %CMarr
@@ -76,16 +82,3 @@ function [X,y,l]=prepareData(n,m,nNeuron,seq0s,cls0s,idx,D,fRep)
     l(i,j)=length(yt);
   end;end;
 end
-
-function [gA,gW]=gradientOneColumn(n,m,nNeuron,idx,Xcell,ycell,Aarr,W,lambdaA,lambdaW)
-  gA=zeros(n,m,nNeuron,1);
-  gW=zeros(nNeuron,1);
-  for i=1:n; for j=1:m;
-    X=cell2mat(Xcell(i,j));y=cell2mat(ycell(i,j));
-    [~,grad]=costFunctionAW(X,y,Aarr(i,j,:,idx)(:),W(:,idx),lambdaA,lambdaW);
-    gA(i,j,:,1)=grad(1:nNeuron);
-    gW+=grad(nNeuron+1:2*nNeuron);
-  end;end;
-  gW/=n*m;
-end
-
