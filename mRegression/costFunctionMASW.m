@@ -1,9 +1,11 @@
 function [J, grad] = costFunctionMASW(X, y, len, adjs, weight, lambdaA, lambdaW)
 %cost function for multi A sigle W case
 nw=length(weight);
+if(iscell(len)) len=cell2mat(len);  end
 nGroup=length(len);
 if(length(adjs(:))/nw!=nGroup)
-  error('Number of element in *adjs* does not match length of *len*');
+  error(['Number of element in *adjs* (',num2str(length(adjs(:))),...
+    ') does not match length of *len*(',num2str(length(nGroup(:))),')']);
   return;
 end
 adjs=reshape(adjs,nw,nGroup);
