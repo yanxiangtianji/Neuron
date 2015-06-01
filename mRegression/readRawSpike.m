@@ -2,6 +2,7 @@ function [data,count]=readRawSpike(fn)
 data=cell();
 count=1;
 
+if(iscell(fn))  fn=cell2mat(fn);  end;
 fin=fopen(fn,'r');
 line=fgetl(fin);
 while(ischar(line))

@@ -2,6 +2,7 @@ function [data,count]=readRaw(fn)
 data=cell();
 count=1;
 
+if(iscell(fn)) fn=cell2mat(fn); end;
 fin=fopen(fn,'r');
 t=fscanf(fin,'%d',2);
 while(size(t,1)!=0)
