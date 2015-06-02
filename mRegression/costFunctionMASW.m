@@ -38,6 +38,6 @@ for i=1:nGroup
   %grad-weight
   gw+=temp + lambdaW/mt*weight;
 end
-grad(nGroup*nw+1:end)=gw;
+grad(nGroup*nw+1:end)=gw/nGroup;
 
 end
