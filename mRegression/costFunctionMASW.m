@@ -34,7 +34,7 @@ for i=1:nGroup
   %grad
   temp=Xt'*(ht-yt).*sat/mt;
   %grad-adj
-  grad((i-1)*nw+1:i*nw)=temp.*(1-sat) + lambdaA/mt*adjs(:,i).*eat;
+  grad((i-1)*nw+1:i*nw)=temp.*weight.*(1-sat) - lambdaA/mt*adjs(:,i).*eat;
   %grad-weight
   gw+=temp + lambdaW/mt*weight;
 end

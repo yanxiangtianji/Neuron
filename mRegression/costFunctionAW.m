@@ -18,7 +18,7 @@ J+=lambdaA/m*sum(ea);
 %grad
 temp=X'*(h-y).*sa/m;
 %grad-adj
-grad(1:n)=temp.*(1-sa) + lambdaA/m*adj.*ea;
+grad(1:n)=temp.*weight.*(1-sa) - lambdaA/m*adj.*ea;
 %grad-weight
 grad(n+1:2*n)=temp + lambdaW/m*weight;
 

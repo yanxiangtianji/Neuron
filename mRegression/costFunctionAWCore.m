@@ -29,7 +29,7 @@ J/=m;
 %grad
 temp=X'*(h-y).*sa;
 %grad-adj
-grad(1:n)=gdFctA/m*(temp.*(1-sa) + lambdaA*adj.*ea + penA*(sa.*(1-sa)-refA));
+grad(1:n)=gdFctA/m*(temp.*weight.*(1-sa) - lambdaA/m*adj.*ea + penA*(sa.*(1-sa)-refA));
 %grad-weight
 grad(n+1:2*n)=gdFctW/m*(temp + lambdaW*weight + penW*(weight-refW));
 
