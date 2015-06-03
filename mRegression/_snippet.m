@@ -192,8 +192,7 @@ for i=1:4;for j=1:4;
   [~,_t]=statMat([Aarr(:,i);Aarr(:,j)]);
   pw_std(i,j)=sum(sum(_t));
 end;end
-pw_a1,pw_a2,pw_a3,pw_std,
-
+pw_a1,pw_a2,pw_a3,pw_std,sum(sum(cell2mat(As(5))))
 
 %%figures of W
 for i=1:4;
