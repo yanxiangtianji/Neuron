@@ -1,12 +1,11 @@
 ##################
 #for test:
-function [CMarr]=test_list_AW(fn_list,n_trial,D,A,W)
-  CMarr=cell(n_trial,1);
-  for i=1:n_trial
-    CMarr(i)=testAW(A,W,readRaw(fn_list(i)),D);
-  end
+function _for_test()
+  assignin('base','cm2acc',@cm2acc);
+  assignin('base','cm2accMat',@cm2accMat);
 end
 
+%basic reusable functions:
 function acc=cm2acc(CM)
   if(iscell(CM))  CM=cell2mat(CM);  end;
   acc=(CM(:,1)+CM(:,4))./sum(CM,2);
@@ -19,3 +18,12 @@ function accMat=cm2accMat(CMarr)
     accMat(i,j)=cm2acc(CMarr(i,j));
   end;end;
 end
+
+%batch functions:
+function [CMarr]=test_list_AW(fn_list,n_trial,D,A,W)
+  CMarr=cell(n_trial,1);
+  for i=1:n_trial
+    CMarr(i)=testAW(A,W,readRaw(fn_list(i)),D);
+  end
+end
+

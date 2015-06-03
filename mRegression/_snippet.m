@@ -1,45 +1,8 @@
 #################
-#statistics functions (distri. & stat.):
+#basic:
 
-#for vector
-function dis=distriVec(arr)
-  l=length(arr(:));
-  n=size(cell2mat(arr(1)),1);
-  disAcc=zeros(n,l);
-  for i=1:l
-    dis(:,i)=cell2mat(arr(i));
-  end
-end
-
-function [avgV,stdV]=statVec(dis)
-  avgV=mean(dis,2);
-  stdV=std(dis,1,2);
-end
-
-#for matrix
-function dis=distriMat(arr)
-  l=length(arr(:));
-  n=size(cell2mat(arr(1)),1);
-  dis=zeros(n,n,l);
-  for i=1:l
-    dis(:,:,i)=cell2mat(arr(i));
-  end
-end
-
-function [avgM,stdM]=statMat(arr)
-  l=length(arr(:));
-  t=cell2mat(arr(1));
-  sum1=t;
-  sum2=t.^2;
-  for i=2:l
-    t=cell2mat(arr(i));
-    sum1+=t;
-    sum2+=t.^2;
-  end
-  avgM=sum1/l;
-  stdM=sqrt(max(0,sum2/l-avgM.^2));    %handle float error
-end
-
+basicParameters
+basicStatFuns
 
 #################
 #get data
@@ -220,14 +183,16 @@ subplot(2,2,1);imagesc(cell2mat(Aa(5)));title('AVG adjacency overall');caxis([0 
 subplot(2,2,2);imagesc(cell2mat(As(5)));title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 
 #A pairwise cue difference/similarity
-pw_a1=zeros(4);pw_a2=zeros(4);pw_a3=zeros(4);
+pw_a1=zeros(4);pw_a2=zeros(4);pw_a3=zeros(4);pw_std=zeros(4);
 for i=1:4;for j=1:4;
-  if(i==j)continue;end
+  %if(i==j)continue;end
   pw_a1(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
   pw_a2(i,j)=sum(sum( (cell2mat(Aa(i))>0) != (cell2mat(Aa(j))>0) ));
   pw_a3(i,j)=sum(sum( cell2mat(Aa(i)) != cell2mat(Aa(j)) ));
+  [~,_t]=statMat([Aarr(:,i);Aarr(:,j)]);
+  pw_std(i,j)=sum(sum(_t));
 end;end
-pw_a1,pw_a2,pw_a3
+pw_a1,pw_a2,pw_a3,pw_std,
 
 
 %%figures of W
