@@ -22,6 +22,7 @@ function [Aarr,W,CMarr]=goTogether2(fn_lists,nNeuron,D,fRep,lambdaA,lambdaW,Aini
       [As(:,idx,:)(:);W(:,idx)], options);
     for i=1:n*m;
       As(:,idx,i)=t((i-1)*nNeuron+1:i*nNeuron);
+      As(idx,idx,i)=0;
     end;
     W(:,idx)=t(n*m*nNeuron+1:end);
     toc;

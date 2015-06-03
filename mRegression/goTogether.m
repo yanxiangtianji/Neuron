@@ -37,7 +37,9 @@ function [Aarr,W,CMarr]=goTogether(fn_lists,nNeuron,D,fRep,alpha,lambdaA,lambdaW
   %reshape result of A
   Aarr=cell(n,m);
   for i=1:n; for j=1:m;
-    Aarr(i,j)=reshape(As(i,j,:,:)(:),nNeuron,nNeuron) >0;
+    t=reshape(As(i,j,:,:)(:),nNeuron,nNeuron) >0;
+    t.*=1-eye(nNeuron); %remove elements on diagonal
+    Aarr(i,j)=t;
   end;end;
   
   %CMarr
