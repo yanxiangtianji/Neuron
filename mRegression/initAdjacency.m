@@ -1,3 +1,3 @@
 function A=initAdjacency(n)
-  A=20*rand(n,n)-10;
+  A=2*rand(n,n)-1;
 end
