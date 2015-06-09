@@ -1,8 +1,8 @@
 #################
 #basic:
 
-basicParameters
-basicStatFuns
+basicParameters()
+basicStatFuns()
 
 #################
 #get data
@@ -168,16 +168,16 @@ for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(i,:));   end
 
 save('statAW.mat','Aa','As','Wa','Ws')
 
-%%figures of A
-for i=1:4;
-  temp=cell2mat(Aa(i));
-  subplot(2,2,i);imagesc(temp);title(['AVG adjacency of ',cell2mat(cue_name(i))]);caxis([0 1]);colorbar;colormap(gray);
+%%figures of A (statistics data)
+function show4A(Adata,titlePre,titleVar,titleSuf)
+  for i=1:4;
+    temp=cell2mat(Adata(i));
+    subplot(2,2,i);imagesc(temp);title(['AVG adjacency of ',cell2mat(titleVar(i))]);caxis([0 1]);colorbar;colormap(gray);
+  end
 end
 
-for i=1:4;
-  temp=cell2mat(As(i));
-  subplot(2,2,i);imagesc(temp);title(['STD adjacency of ',cell2mat(cue_name(i))]);caxis([0 1]);colorbar;colormap(gray);
-end
+show4A(Aa,'AVG adjacency of ',cue_name,'')
+show4A(As,'STD adjacency of ',cue_name,'')
 
 subplot(2,2,1);imagesc(cell2mat(Aa(5)));title('AVG adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 subplot(2,2,2);imagesc(cell2mat(As(5)));title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
@@ -193,6 +193,41 @@ for i=1:4;for j=1:4;
   pw_std(i,j)=sum(sum(_t));
 end;end
 pw_a1,pw_a2,pw_a3,pw_std,sum(sum(cell2mat(As(5))))
+
+#individual difference check of A
+function boneA=findBoneA(Aa,thrd=0.5)
+  boneA=cell(size(Aa));
+  for i=1:length(Aa(:)); boneA(i)=cell2mat(Aa(i))>thrd; end;
+end
+function difMat=showBoneDiff(bone)
+  difMat=zeros(4);
+  for i=1:4;for j=1:4;
+    difMat(i,j)=sum(sum( cell2mat(bone(i)) != cell2mat(bone(j)) ));
+  end;end
+end
+
+bone50=findBoneA(Aa,0.5);
+show4A(bone50,'Core Connectivity of ',cue_name,'')
+showBoneDiff(bone50)
+
+bone75=findBoneA(Aa,0.75);
+show4A(bone75,'Core Connectivity of ',cue_name,'')
+showBoneDiff(bone75);
+
+%%figures of A (individual data)
+function showIndividualA(Aarr,bone)
+  if(iscell(bone)) bone=cell2mat(bone); end
+  for i=1:9
+    temp=cell2mat(Aarr(i))-0.5*bone;
+    %-0.5 -> miss; 0 -> common unconnected; 0.5 -> common connected; 1 -> new
+    subplot(3,3,i);imagesc(temp);caxis([-0.5 1]);colorbar;colormap(jet(4));%title(['adjacency']);
+  end;
+  cbh = findobj( gcf(), 'tag', 'colorbar');
+  set(cbh,'ytick',-.5:.5:1,'yticklabel',{'miss','c-unc','c-con','new'})
+end
+
+cue_id=1;
+showIndividualA(Aarr(randperm(m,9),cue_id),bone50(cue_id));
 
 %%figures of W
 for i=1:4;
