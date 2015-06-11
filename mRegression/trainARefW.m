@@ -1,22 +1,21 @@
-function [A,W,CM]=trainARefW(rData,D,lambdaA,panW,Ainit,Wref)
+function [A,W,CM]=trainARefW(rData,D,lambdaA,fRep,panW,Ainit,Wref)
 n=length(rData);
 
 if(sum(size(Ainit)==[n n])!=2)
   Ainit=initAdjacency(n);
 end
-if(nargout==3)
-  CM=zeros(n,4);
-end
 A=Ainit; W=Wref;
+
+[seq0,cls0]=serialize(rData);
 for i=1:n
 %  disp(sprintf('Working idx=%d',i));
-  [X,y]=genDataFromRaw(rData,D,i);
+  %[X,y]=genDataFromRaw(rData,D,i,fRep);
+  [X,y]=genDataFromSnC(n,seq0,cls0,D,i,fRep);
   [A(:,i),W(:,i),J]=trainOneARefW(i,X,y,Ainit(:,i),Wref(:,i),lambdaA,panW);
-  if(nargout==3)
-    CM(i,:)=testOneAW(A(:,i),W(:,i),X,y);
-  end
-%  disp(sprintf('  error=%f\taccurancy=%f',J,(CM(i,1)+CM(i,4))/sum(CM(i,:))));
-%  showCM(CM(i,:));
+end
+clear seq0 cls0;
+if(nargout==3)
+  CM=testAW(A,W,rData,fRep);
 end
 %showCM(sum(CM));
 

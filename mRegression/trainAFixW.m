@@ -1,22 +1,23 @@
-function [A,CM]=trainAFixW(rData,D,lambdaA,Ainit,Wgiven)
+function [A,CM]=trainAFixW(rData,D,lambdaA,fRep,Ainit,Wgiven)
 n=length(rData);
 
 if(sum(size(Ainit)==[n n])!=2)
   Ainit=initAdjacency(n);
 end
-if(nargout==2)
-  CM=zeros(n,4);
-end
 A=Ainit;
+
+[seq0,cls0]=serialize(rData);
 for i=1:n
 %  disp(sprintf('Working idx=%d',i));
-  [X,y]=genDataFromRaw(rData,D,i);
+  %[X,y]=genDataFromRaw(rData,D,i,fRep);
+  [X,y]=genDataFromSnC(n,seq0,cls0,D,i,fRep);
   [A(:,i),J]=trainOneAFixW(i,X,y,Ainit(:,i),Wgiven(:,i),lambdaA);
-  if(nargout==2)
-    CM(i,:)=testOneAW(A(:,i),Wgiven(:,i),X,y);
-  end
 %  disp(sprintf('  error=%f\taccurancy=%f',J,(CM(i,1)+CM(i,4))/sum(CM(i,:))));
 %  showCM(CM(i,:));
+end
+clear seq0 cls0;
+if(nargout==2)
+  CM=testAW(A,Wgiven,rData,fRep);
 end
 %showCM(sum(CM));
 

@@ -18,9 +18,6 @@ if(sum(size(Winit)==[n n])!=2)
   Winit=initWeight(n);
 end
 W=Winit;
-if(nargout==3)
-  CM=zeros(n,4);
-end
 
 [seq0,cls0]=serialize(rData);
 for i=1:n
@@ -28,11 +25,12 @@ for i=1:n
   %[X,y]=genDataFromRaw(rData,D,i,fRep);
   [X,y]=genDataFromSnC(n,seq0,cls0,D,i,fRep);
   [A(:,i),W(:,i),J]=trainOneAW(i,X,y,Ainit(:,i),Winit(:,i),lambdaA,lambdaW);
-  if(nargout==3)
-    CM(i,:)=testOneAW(A(:,i),W(:,i),X,y);
-  end
 %  disp(sprintf('  error=%f\taccurancy=%f',J,(CM(i,1)+CM(i,4))/sum(CM(i,:))));
 %  showCM(CM(i,:));
+end
+clear seq0 cls0;
+if(nargout==3)
+  CM=testAW(A,W,rData,fRep);
 end
 %showCM(sum(CM));
 
