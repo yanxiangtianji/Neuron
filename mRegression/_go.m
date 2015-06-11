@@ -15,9 +15,9 @@ for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
 
 n=19;
 
-%dMin=0.0001;    dUnit=0.0001;  %for readRawSpike
-dMin=1; dUnit=1;    %readRaw
-[D,Ainit,Winit]=init(n,dMin,dUnit);
+%dUnit=0.0001;  dMean=0.001; dMin=0;  %for readRawSpike
+dUnit=1;  dMean=10; dMin=0;    %readRaw
+[D,Ainit,Winit]=init(n,dUnit,dMean,Dmin);
 lambdaA=1;
 lambdaW=1;
 
@@ -25,8 +25,8 @@ function [accMat]=whole_cue_W(fn_list,n,D,Winit,lambda)
   n_cue=length(fn_list);
   accMat=zeros(n_cue,n);  %overall accuarncy of all neuron
   for i=1:n_cue
-    %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
-    rData=readRaw(cell2mat(fn_list(i)));   dMin=1; dUnit=1;
+    %rData=readRawSpike(fn_spike);
+    rData=readRaw(cell2mat(fn_list(i)));
     %n=length(rData);
     [~,CM]=trainW(rData,D,lambdaW,Winit);
   %  showCM(sum(CM));
@@ -39,8 +39,8 @@ function [accMat]=whole_cue_AW(fn_list,n,D,Ainit,Winit,lambdaA,lambdaW)
   n_cue=length(fn_list);
   accMat=zeros(n_cue,n);  %overall accuarncy of all neuron
   for i=1:n_cue
-    %rData=readRawSpike(fn_spike);   dMin=0.0001;    dUnit=0.0001;
-    rData=readRaw(cell2mat(fn_list(i)));   dMin=1; dUnit=1;
+    %rData=readRawSpike(fn_spike);
+    rData=readRaw(cell2mat(fn_list(i)));
     %n=length(rData);
     [~,~,CM]=trainAW(rData,D,lambdaA,lambdaW,Ainit,Winit);
   %  showCM(sum(CM));

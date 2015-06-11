@@ -1,21 +1,34 @@
-function D=initDelay(n,minimal,unit,method='constant')
+function D=initDelay(n,method,unit,meanValue,minimal=0)
+
+if(meanValue<minimal)
+  error('Invalid parameters: meanValue<minimal');
+end
 
 switch(method)
   case {'const','constant'}
-  %constant at minimal:
-    D=zeros(n,n)+minimal;
+  %constant at meanValue:
+    D=zeros(n,n)+meanValue;
   case {'uni','uniform'}
-  %uniform in [minimal,minimal+9*unit]:
-    D=floor(rand(n,n)*10)*unit+minimal;
+  %uniform in [minimal, 2*meanValue-minimal]:
+    x=meanValue-minimal;
+    D=rand(n,n)*2*x;
+    D=round(D/unit)*unit+minimal;
   case {'normal','gaussian'}
-  %normal distribution i.e., N(minimal+10*unit,(3*unit)^2), bound those<minimal to minimal
-    D=max(0,ceil(randn(n,n)*3+10))*unit+minimal;
+  %normal distribution i.e., N(meanValue,sigma^2), 3*sigma=meanValue-minimal
+  %bound those<minimal to minimal
+    D=randn(n,n)*(meanValue-minimal)/3+meanValue;
+    D=max(minimal,round(D/unit)*unit);
   case {'pl','powerlaw','power-law'}
-  %power-law distribution i.e., PL(2)+minimal
-    D=ceil(randpl(n,n,1,2))*unit+minimal;
+  %power-law distribution i.e., PL(alpha=2.5, Xmin=1)+minimal
+    alpha=2.5;
+    %mean=(alpha-1)/(alpha-2)*Xmin
+    scale=meanValue/(alpha-1)*(alpha-2);
+    D=randpl(n,n,1,alpha)*scale;
+    D=round(D/unit)*unit+minimal;
   case {'exp','exponential'}
-  %exponential distribution i.e., E(1)+minimal
-    D=ceil(rande(n,n))*unit+minimal;
+  %exponential distribution i.e., Exp(meanValue-minimal)+minimal
+    D=exprnd(meanValue-minimal,n,n);
+    D=round(D/unit)*unit+minimal;
   otherwise
     error(['Unknown method: ',method]);
 end
