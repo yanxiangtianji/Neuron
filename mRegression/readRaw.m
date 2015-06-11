@@ -1,20 +1,22 @@
 function [data,count]=readRaw(fn)
+%read data with summary of neuron id and number of spikes
 data=cell();
-count=1;
+count=0;
 
 if(iscell(fn)) fn=cell2mat(fn); end;
 fin=fopen(fn,'r');
+if(fin==-1)
+  error(['cannot open file: ',fn]);
+end;
+
 t=fscanf(fin,'%d',2);
 while(size(t,1)!=0)
   id=t(1)+1;
   num=t(2);
   data(id)=fscanf(fin,'%d',num)';
-  count+=1;
+  ++count;
   t=fscanf(fin,'%d',2);
 end
 fclose(fin);
-count-=1;
 
 end
-
-%cell2mat(c(1))
