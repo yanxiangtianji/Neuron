@@ -4,9 +4,9 @@ data=cell();
 count=0;
 
 if(iscell(fn)) fn=cell2mat(fn); end;
-fin=fopen(fn,'r');
-if(fin==-1)
-  error(['cannot open file: ',fn]);
+[fin,msg]=fopen(fn,'r');
+if(fin<0)
+  error(msg);
 end;
 
 t=fscanf(fin,'%d',2);

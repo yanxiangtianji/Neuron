@@ -1,9 +1,9 @@
 function writeRawNoTitle(data,fn)
 %write data with no summarry (spikes of same neuron is on the same line)
 if(iscell(fn)) fn=cell2mat(fn); end;
-fout=fopen(fn,'w');
-if(fout==-1)
-  error(['cannot open file: ',fn]);
+[fout,msg]=fopen(fn,'w');
+if(fout<0)
+  error(msg);
 end;
 
 n=length(data);
