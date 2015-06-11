@@ -1,4 +1,4 @@
-function writeRaw(data,fname)
+function writeRaw(data,fn)
 %write data with summary of neuron id and number of spikes
 if(iscell(fn)) fn=cell2mat(fn); end;
 fout=fopen(fn,'w');
@@ -9,10 +9,10 @@ end;
 n=length(data);
 for i=1:n
   t=cell2mat(data(i));
-  fprintf(fout,'%d %d\r\n',[i,length(t)]);
+  fprintf(fout,'%d %d\r\n',[i-1,length(t)]);
   fprintf(fout,' %d',t);
   fprintf(fout,'\r\n');
 end
-fclose(fin);
+fclose(fout);
 
 end

@@ -1,4 +1,4 @@
-function writeRawNoTitle(data,fname)
+function writeRawNoTitle(data,fn)
 %write data with no summarry (spikes of same neuron is on the same line)
 if(iscell(fn)) fn=cell2mat(fn); end;
 fout=fopen(fn,'w');
