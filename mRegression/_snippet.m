@@ -30,7 +30,7 @@ Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);
 for i=1:4
   tic;[Aarr(:,i),Warr(:,i),CMarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
 end
-save('data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr')
+save('../data/data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr')
 
 #################
 #num of spike:
@@ -58,7 +58,7 @@ for i=1:4
 end
 [Ca(:,5),Cs(:,5)]=statVec(Cdis);
 
-save('count.mat','Carr','Cdis','Ca','Cs')
+save('../data/count.mat','Carr','Cdis','Ca','Cs')
 
 ##################
 #accurancy & valid:
@@ -86,7 +86,7 @@ for cue_id=1:4;
 end
 [AccAvg(:,5),AccStd(:,5)]=statVec(AccD);
 
-save('acc.mat','AccD','AccAvg','AccStd');
+save('../data/acc.mat','AccD','AccAvg','AccStd');
 
 %statistics of Accurancy
 subplot(3,1,1);imagesc(AccAvg');title('AVG accurancy');caxis([0 1]);colorbar;colormap(gray);
@@ -139,7 +139,7 @@ end
 [Va(:,5),Vs(:,5)]=acc2vld(AccD);
 vld_idx(5)=find(Va(:,5)>0.5)';
 
-save('valid.mat','Va','Vs','vld_idx')
+save('../data/valid.mat','Va','Vs','vld_idx')
 
 %relation between being valid and number of spikes
 function plotValidNCount(Va,Vs,Ca)
@@ -166,7 +166,7 @@ Wa=cell(1,5); Ws=cell(1,5);
 for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(i,:));   end
 [Wa(5),Ws(5)]=statMat(Warr(:));
 
-save('statAW.mat','Aa','As','Wa','Ws')
+save('../data/statAW.mat','Aa','As','Wa','Ws')
 
 %%figures of A (statistics data)
 function show4A(Adata,titlePre,titleVar,titleSuf)
@@ -195,24 +195,31 @@ end;end
 pw_a1,pw_a2,pw_a3,pw_std,sum(sum(cell2mat(As(5))))
 
 #individual difference check of A
-function boneA=findBoneA(Aa,thrd=0.5)
-  boneA=cell(size(Aa));
-  for i=1:length(Aa(:)); boneA(i)=cell2mat(Aa(i))>thrd; end;
+function bone=findBoneAvg(Aa,thrd=0.5)
+  bone=cell(size(Aa));
+  for i=1:length(Aa(:)); bone(i)=cell2mat(A(i))>thrd; end;
 end
-function difMat=showBoneDiff(bone)
-  difMat=zeros(4);
-  for i=1:4;for j=1:4;
-    difMat(i,j)=sum(sum( cell2mat(bone(i)) != cell2mat(bone(j)) ));
+function bone=findBoneStd(Aa,As,thrd=0.5)
+  %0 -> not connected, 1 -> connected, 0.5 -> not sure
+  bone=cell(size(As));
+  for i=1:length(As(:))
+    mask=cell2mat(As(i))>thrd;
+    bone(i)=cell2mat(Aa(i)).*mask+(zeros(size(mask))+0.5).*(1-mask);
+  end;
+end
+
+function [dif_10]=boneDiff(bone)
+  n=length(bone(:));
+  dif_10=zeros(n);
+  for i=1:n;for j=1:n;
+    dif_10(i,j)=sum(sum( (cell2mat(bone(i))==1)+(cell2mat(bone(j))==0)==2 ));
   end;end
 end
 
-bone50=findBoneA(Aa,0.5);
+bone50=findBoneAvg(Aa(1:4),0.5);
 show4A(bone50,'Core Connectivity of ',cue_name,'')
-showBoneDiff(bone50)
-
-bone75=findBoneA(Aa,0.75);
-show4A(bone75,'Core Connectivity of ',cue_name,'')
-showBoneDiff(bone75);
+dif_10=boneDiff(bone50(1:4))
+dif_01=dif_10'
 
 %%figures of A (individual data)
 function showIndividualA(Aarr,bone)
@@ -227,7 +234,36 @@ function showIndividualA(Aarr,bone)
 end
 
 cue_id=1;
-showIndividualA(Aarr(randperm(m,9),cue_id),bone50(cue_id));
+rndidx=randperm(m,9);
+showIndividualA(Aarr(rndidx,cue_id),bone50(cue_id));
+
+%distribution of plus/miss compared with bone
+function [disPlus,disMiss]=distriPlusMiss(Aarr,bones)
+  if(size(Aarr,2)>length(bone)) error('length of bone is too small'); end;
+  [n,m]=size(Aarr);
+  disPlus=zeros(n,m);  disMiss=zeros(n,m);
+  for j=1:m
+    b=cell2mat(bones(j));
+    for i=1:n
+      temp=cell2mat(Aarr(i,j))-b;
+      %-1 -> miss(0-1); 0 -> same(0-0,1-1); 1 -> plus(1-0)
+      disPlus(i,j)=sum(sum(temp==1));
+      disMiss(i,j)=sum(sum(temp==-1));
+    end
+  end
+end
+
+[disPlus,disMiss]=distriPlusMiss(Aarr,bone50);
+
+for i=1:4;
+  [h,v]=hist([disPlus(:,i),disMiss(:,i)],8);
+  subplot(2,2,i);bar(v,h/m);legend('+','-',"location",'northeast');colormap('summer');
+  xlabel('number');ylabel('percentage');title(['Dis. of +/- edges on ',cell2mat(cue_name(i))]);
+end
+
+[h,v]=hist([disPlus(:),disMiss(:)],12);
+subplot(2,2,1);bar(v,h/4/m);legend('+','-',"location",'northeast');colormap('summer');
+xlabel('number');ylabel('percentage');title('Dis. of +/- edges on all trials');
 
 %%figures of W
 for i=1:4;
