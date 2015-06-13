@@ -4,7 +4,7 @@ data=cell(size(rData));
 
 for i=1:n
   m=cell2mat(rData(i));
-  data(i)=m(m>=s_time & m<e_time);
+  data(i)=m(find(m>=s_time & m<e_time));
 end
 
 end
