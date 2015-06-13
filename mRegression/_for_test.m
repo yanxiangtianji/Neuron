@@ -34,6 +34,7 @@ function [auroc,roc]=calROC(CM,draw=0)
   roc(:,1)=CM(:,3)./(CM(:,3)+CM(:,4));  %fpRate
   roc(:,2)=CM(:,1)./(CM(:,1)+CM(:,2));  %tpRate
   idx=union(find(isnan(roc(:,1))),find(isnan(roc(:,2))));%remove NaN entries
+%  idx=find(isnan(roc(:,1)) | isnan(roc(:,2)));
   roc(idx,:)=[];
   roc=[0,0;sortrows(roc);1,1];
   if(draw)
