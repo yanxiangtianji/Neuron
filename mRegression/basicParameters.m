@@ -19,7 +19,9 @@ cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
 %dMin=1; dUnit=1;    %readRaw
 %[D,Ainit,Winit]=init(n,dMin,dUnit);
 
+timeUnit2ms=10;
+
 lambdaA=1;
 lambdaW=1;
-vanishTime95=2000;   %it takes 200ms(time unit in data file is 0.1ms) to degrade 95%.
+vanishTime95=200*timeUnit2ms;   %it takes 200ms(time unit in data file is 0.1ms) to degrade 95%.
 fRep=-log(0.05)/vanishTime95;
