@@ -160,10 +160,10 @@ plotValidNCount(Va,Vs,Ca)
 #Adj and weight
 
 Aa=cell(1,5); As=cell(1,5);
-for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(i,:));   end
+for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(:,i));   end
 [Aa(5),As(5)]=statMat(Aarr(:));
 Wa=cell(1,5); Ws=cell(1,5);
-for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(i,:));   end
+for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(:,i));   end
 [Wa(5),Ws(5)]=statMat(Warr(:));
 
 save('../data/statAW.mat','Aa','As','Wa','Ws')
@@ -197,7 +197,7 @@ pw_a1,pw_a2,pw_a3,pw_std,sum(sum(cell2mat(As(5))))
 #individual difference check of A
 function bone=findBoneAvg(Aa,thrd=0.5)
   bone=cell(size(Aa));
-  for i=1:length(Aa(:)); bone(i)=cell2mat(A(i))>thrd; end;
+  for i=1:length(Aa(:)); bone(i)=cell2mat(Aa(i))>thrd; end;
 end
 function bone=findBoneStd(Aa,As,thrd=0.5)
   %0 -> not connected, 1 -> connected, 0.5 -> not sure
@@ -238,32 +238,54 @@ rndidx=randperm(m,9);
 showIndividualA(Aarr(rndidx,cue_id),bone50(cue_id));
 
 %distribution of plus/miss compared with bone
-function [disPlus,disMiss]=distriPlusMiss(Aarr,bones)
-  if(size(Aarr,2)>length(bone)) error('length of bone is too small'); end;
-  [n,m]=size(Aarr);
-  disPlus=zeros(n,m);  disMiss=zeros(n,m);
-  for j=1:m
+function [numPlus,numMiss,matPlus,matMiss]=distriPlusMiss(Aarr,bones)
+  if(size(Aarr,2)>length(bones)) error('length of bones is too small'); end;
+  [m,n]=size(Aarr);
+  numPlus=zeros(m,n);  numMiss=zeros(m,n);%on each trial
+  matPlus=cell(1,n);  matMiss=cell(1,n);%on each neuron pair
+  for j=1:n
     b=cell2mat(bones(j));
-    for i=1:n
+    mp=zeros(size(b)); mm=zeros(size(b));
+    for i=1:m
       temp=cell2mat(Aarr(i,j))-b;
       %-1 -> miss(0-1); 0 -> same(0-0,1-1); 1 -> plus(1-0)
-      disPlus(i,j)=sum(sum(temp==1));
-      disMiss(i,j)=sum(sum(temp==-1));
+      tp=temp==1; tm=temp==-1;
+      mp+=tp;
+      mm+=tm;
+      numPlus(i,j)=sum(sum(tp));
+      numMiss(i,j)=sum(sum(tm));
     end
+    matPlus(j)=mp;  matMiss(j)=mm;
   end
 end
 
-[disPlus,disMiss]=distriPlusMiss(Aarr,bone50);
+[numPlus,numMiss,matPlus,matMiss]=distriPlusMiss(Aarr,bone50);
 
+%figure for # distribution on cues
 for i=1:4;
-  [h,v]=hist([disPlus(:,i),disMiss(:,i)],8);
+  [h,v]=hist([numPlus(:,i),numMiss(:,i)],8);
   subplot(2,2,i);bar(v,h/m);legend('+','-',"location",'northeast');colormap('summer');
-  xlabel('number');ylabel('percentage');title(['Dis. of +/- edges on ',cell2mat(cue_name(i))]);
+  xlabel('number');ylabel('percentage');title(['Dis. of +/- edges # on ',cell2mat(cue_name(i))]);
 end
-
-[h,v]=hist([disPlus(:),disMiss(:)],12);
+[h,v]=hist([numPlus(:),numMiss(:)],12);
 subplot(2,2,1);bar(v,h/4/m);legend('+','-',"location",'northeast');colormap('summer');
-xlabel('number');ylabel('percentage');title('Dis. of +/- edges on all trials');
+xlabel('number');ylabel('percentage');title('Dis. of +/- edges # on all trials');
+
+%figure for # distribution on neuron pairs
+for i=1:4;
+  subplot(2,2,i);imagesc(cell2mat(matPlus(i))/m);colorbar;caxis([0,1]);title(['+ dis. for all pairs on ',cell2mat(cue_name(i))]);
+end;
+for i=1:4;
+  subplot(2,2,i);imagesc(cell2mat(matMiss(i))/m);colorbar;caxis([0,1]);title(['- dis. for all pairs on ',cell2mat(cue_name(i))]);
+end;
+
+for i=1:4; sum(sum(cell2mat(matPlus(i))!=0 & cell2mat(matMiss(i))!=0)) end;
+%the results are all 0, so the 2 figures can be merged
+for i=1:4;
+  subplot(2,2,i);imagesc(cell2mat(matPlus(i))/m-cell2mat(matMiss(i))/m);colorbar;caxis([-1,1]);
+  title(['+/- dis. for all pairs on ',cell2mat(cue_name(i))]);colormap(jet);
+end;
+
 
 %%figures of W
 for i=1:4;
