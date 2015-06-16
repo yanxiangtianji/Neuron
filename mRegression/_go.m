@@ -17,7 +17,7 @@ n=19;
 
 %dUnit=0.0001;  dMean=0.001; dMin=0;  %for readRawSpike
 dUnit=1;  dMean=10; dMin=0;    %readRaw
-[D,Ainit,Winit]=init(n,dUnit,dMean,Dmin);
+[D,Ainit,Winit]=init(n,dUnit,dMean,dMin);
 lambdaA=1;
 lambdaW=1;
 
