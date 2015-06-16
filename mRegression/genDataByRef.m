@@ -45,7 +45,11 @@ X=zeros(m,n);
 y=zeros(m,1);
 
 p=1;
-lastTime=seq(p);
+if(p<=m)
+  lastTime=seq(p);
+else
+  lastTime=0;
+end
 for i=1:nr
   key=ref(i);
   t=zeros(1,n);
