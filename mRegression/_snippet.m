@@ -212,7 +212,7 @@ function [dif_10]=boneDiff(bone)
   n=length(bone(:));
   dif_10=zeros(n);
   for i=1:n;for j=1:n;
-    dif_10(i,j)=sum(sum( (cell2mat(bone(i))==1)+(cell2mat(bone(j))==0)==2 ));
+    dif_10(i,j)=sum(sum( (cell2mat(bone(i))==1) & (cell2mat(bone(j))==0) ));
   end;end
 end
 
