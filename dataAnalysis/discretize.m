@@ -1,24 +1,58 @@
-function result=discretize(value,binSize=1,offset=0,resLength=0)
+function result=discretize(value,binSize=1,offset=0,resLength=0,type='count')
+%type can be either 'count' or 'binary'
 
 if(iscell(value)) value=cell2mat(value)(:); end
-
 value=ceil((value-offset)./binSize);
-[idx,~,j]=unique(value(:)); %make idx and j to be column vectors
-if(resLength!=0 && idx(end)>resLength)
-  maxIDX=min(find(idx>resLength))-1;
-  idx=idx(range);
+
+
+if(type=='count')
+  [idx,~,j]=unique(value(:)); %make idx and j to be column vectors
+  count=accumarray(j,1);
+  if(resLength==0)  resLength=length(idx);  end;
+  result=zeros(resLength,1);
+
+  if(idx(1)>0 && idx(end)<=resLength)
+    result(idx)=count;  %to speed up
+  else
+    rng=_pick_rng(idx,resLength);
+    result(idx(rng))=count(rng);
+  end
 else
-  maxIDX=length(idx);
-end
-count=accumarray(j,1);
+  [idx]=unique(value(:));
+  if(resLength==0)  resLength=length(idx);  end;
+  result=zeros(resLength,1);
 
-if(idx(1)==0)
-  rng=[2:maxIDX];
-else
-  rng=[1:maxIDX];
+  result(_pick_rng(idx,resLength))=1;
 end
 
-result=zeros(resLength,1);
-result(idx(rng))=count(rng);
-
 end
+
+%helper function
+function rng=_pick_rng(idx,resLength)
+  if(length(idx)==0)
+    rng=[0:0];
+  else
+    rng=[_pick_min(idx,resLength):_pick_max(idx,resLength)];
+  end
+end
+
+function idxMin=_pick_min(idx,resLength)
+  %assume idx is not empty
+  idxMin=1;
+  if(idx(1)==0)
+    idxMin=2;
+  elseif(idx(1)<0)
+    t=min(resLength,-idx(1));
+    idxMin=max(find(idx(1:t)<1))+1;
+  end
+end
+
+function idxMax=_pick_max(idx,resLength)
+  l=length(idx);
+  idxMax=l;
+  if(resLength!=0 && idx(end)>resLength)
+    t=min(l,idx(end)-resLength);
+    idxMax=l-t+min(find(idx(end-t+1:end)>resLength))-1;
+  end
+end
+
