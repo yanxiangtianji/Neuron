@@ -10,6 +10,7 @@ if(type=='count')
   count=accumarray(j,1);
   if(resLength==0)  resLength=length(idx);  end;
   result=zeros(resLength,1);
+  if(length(idx)==0)  return; end;
 
   if(idx(1)>0 && idx(end)<=resLength)
     result(idx)=count;  %to speed up
@@ -21,6 +22,7 @@ else
   [idx]=unique(value(:));
   if(resLength==0)  resLength=length(idx);  end;
   result=zeros(resLength,1);
+  if(length(idx)==0)  return; end;
 
   result(_pick_rng(idx,resLength))=1;
 end
