@@ -14,13 +14,13 @@ end
 
 window_size=10.^[1:9]*timeUnit2ms;
 window_size=[10:10:50, 100:50:300, 400:100:1000, 2000:1000:10000]*timeUnit2ms;
-mi=zeros(n,n,length(window_size));
+mi=zeros(nNeu,nNeu,length(window_size));
 for i=1:length(window_size);
   tic;
   ws=window_size(i);
   vecLength=ceil(maxTime/ws);
-  data=zeros(vecLength,n);
-  for j=1:n;
+  data=zeros(vecLength,nNeu);
+  for j=1:nNeu;
     data(:,j)=discretize(cell2mat(rData(j)),ws,0,vecLength);
   end;
   mi(:,:,i)=mutual_info_all(data);
@@ -34,14 +34,14 @@ plot(window_size/timeUnit2ms,mi(i,j,:)(:));xlabel('windows size(ms)');ylabel('mu
 title(['MI between ',num2str(i),' and ',num2str(j)]);
 
 hold on
-for i=1:19;for j=i+1:19;plot(window_size/timeUnit2ms,mi(i,j,:)(:));end;end;
+for i=1:nNeu;for j=i+1:nNeu;plot(window_size/timeUnit2ms,mi(i,j,:)(:));end;end;
 hold off
 
 idx=find(mi(:,:,1));
 mi2=zeros(length(window_size),length(idx));
 for i=1:length(idx);
-  ii=mod(idx(i)-1,n)+1;
-  jj=ceil(idx(i)/n);
+  ii=mod(idx(i)-1,nNeu)+1;
+  jj=ceil(idx(i)/nNeu);
   mi2(:,i)=mi(ii,jj,:)(:);
 end;
 plot(log10(window_size/timeUnit2ms),mi2)
@@ -58,10 +58,10 @@ function rData=_readList(flist,n,fn_prefix)
     rData(i,:)=readRaw([fn_prefix,cell2mat(flist(i))]);
   end
 end
-rData_c1=_readList(fn_c1,n,fn_prefix);
-rData_c2=_readList(fn_c2,n,fn_prefix);
-rData_r1=_readList(fn_r1,n,fn_prefix);
-rData_r2=_readList(fn_r2,n,fn_prefix);
+rData_c1=_readList(fn_c1,nNeu,fn_prefix);
+rData_c2=_readList(fn_c2,nNeu,fn_prefix);
+rData_r1=_readList(fn_r1,nNeu,fn_prefix);
+rData_r2=_readList(fn_r2,nNeu,fn_prefix);
 rmpath('../mRegression/')
 
 function maxTime=findMaxTime(rDataList,n)
@@ -95,7 +95,7 @@ function mi=calMI_xt(rDataList,n,window_size)
   end
 end
 
-%type: mi=cell(n,length(window_size)); mi(1)=zeros(length(rDataList));
+%type: mi=cell(nNeu,length(window_size)); mi(1)=zeros(length(rDataList));
 mi_c1=rDataList(rData_c1,window_size);
 mi_c2=rDataList(rData_c2,window_size);
 mi_r1=rDataList(rData_r1,window_size);
@@ -132,10 +132,10 @@ maxTime(2)=findMaxTime(rData_c2);
 maxTime(3)=findMaxTime(rData_r1);
 maxTime(4)=findMaxTime(rData_r2);
 
-mi=cell(n,length(window_size));
+mi=cell(nNeu,length(window_size));
 for i=1:length(window_size);
   ws=window_size(i);
-  for idx=1:n;
+  for idx=1:nNeu;
    t=zeros(4,4);
    t(1,2)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([1,2]),ws);
    t(1,3)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([1,3]),ws);

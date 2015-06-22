@@ -4,30 +4,21 @@ fn_processed='../data/real/st/cue1_0.txt';
 
 disp('Initial:');
 
-n_c1=54;    n_c2=52;
-fn_c1=cell(n_c1,1);   fn_c2=cell(n_c2,1);
-fn_r1=cell(n_c1,1);   fn_r2=cell(n_c2,1);
-fn_prefix='../data/real/st/';   %fn_prefix='../data/real/st3-6/';
-for i=1:n_c1    fn_c1(i)=[fn_prefix,'cue1_',num2str(i-1),'.txt']; end
-for i=1:n_c2    fn_c2(i)=[fn_prefix,'cue2_',num2str(i-1),'.txt']; end
-for i=1:n_c1    fn_r1(i)=[fn_prefix,'rest1_',num2str(i-1),'.txt'];    end
-for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
-
-n=19;
+basicParameters()
 
 %dUnit=0.0001;  dMean=0.001; dMin=0;  %for readRawSpike
 dUnit=1;  dMean=10; dMin=0;    %readRaw
-[D,Ainit,Winit]=init(n,dUnit,dMean,dMin);
+[D,Ainit,Winit]=init(nNeu,dUnit,dMean,dMin);
 lambdaA=1;
 lambdaW=1;
 
-function [accMat]=whole_cue_W(fn_list,n,D,Winit,lambda)
+function [accMat]=whole_cue_W(fn_list,nNeu,D,Winit,lambda)
   n_cue=length(fn_list);
-  accMat=zeros(n_cue,n);  %overall accuarncy of all neuron
+  accMat=zeros(n_cue,nNeu);  %overall accuarncy of all neuron
   for i=1:n_cue
     %rData=readRawSpike(fn_spike);
     rData=readRaw(cell2mat(fn_list(i)));
-    %n=length(rData);
+    %nNeu=length(rData);
     [~,CM]=trainW(rData,D,lambdaW,Winit);
   %  showCM(sum(CM));
     acc=(CM(:,1)+CM(:,4))./sum(CM,2);
@@ -35,13 +26,13 @@ function [accMat]=whole_cue_W(fn_list,n,D,Winit,lambda)
   end
 end
 
-function [accMat]=whole_cue_AW(fn_list,n,D,Ainit,Winit,lambdaA,lambdaW)
+function [accMat]=whole_cue_AW(fn_list,nNeu,D,Ainit,Winit,lambdaA,lambdaW)
   n_cue=length(fn_list);
-  accMat=zeros(n_cue,n);  %overall accuarncy of all neuron
+  accMat=zeros(n_cue,nNeu);  %overall accuarncy of all neuron
   for i=1:n_cue
     %rData=readRawSpike(fn_spike);
     rData=readRaw(cell2mat(fn_list(i)));
-    %n=length(rData);
+    %nNeu=length(rData);
     [~,~,CM]=trainAW(rData,D,lambdaA,lambdaW,Ainit,Winit);
   %  showCM(sum(CM));
     acc=(CM(:,1)+CM(:,4))./sum(CM,2);
@@ -50,15 +41,15 @@ function [accMat]=whole_cue_AW(fn_list,n,D,Ainit,Winit,lambdaA,lambdaW)
 end
 
 disp('W Cue1:');
-%stat1w=whole_cue_W(fn_c1,n,D,W,lambda);
+%stat1w=whole_cue_W(fn_c1,nNeu,D,W,lambda);
 disp('W Cue2:');
-stat2w=whole_cue_W(fn_c2,n,D,Winit,lambdaW);
+stat2w=whole_cue_W(fn_c2,nNeu,D,Winit,lambdaW);
 %save(['full_w',num2str(step),'.mat'],'stat1w','stat2w');
 
 disp('AW Cue1:');
-%stat1aw=whole_cue_AW(fn_c1,n,D,A,W,lambda);
+%stat1aw=whole_cue_AW(fn_c1,nNeu,D,A,W,lambda);
 disp('AW Cue2:');
-stat2aw=whole_cue_AW(fn_c2,n,D,Ainit,Winit,lambdaA,lambdaW);
+stat2aw=whole_cue_AW(fn_c2,nNeu,D,Ainit,Winit,lambdaA,lambdaW);
 %save(['full_aw',num2str(step),'.mat'],'stat1aw','stat2aw');
 
 save(['cmp',num2str(step),'.mat'],'stat2w','stat2aw');

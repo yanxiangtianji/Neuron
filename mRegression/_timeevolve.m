@@ -1,19 +1,19 @@
 #W for whole trial
 
-[~,W]=goTogether2(fnlist,19,D,fRep,1,1,Ainit,Winit);
+[~,W]=goTogether2(fnlist,nNeu,D,fRep,1,1,Ainit,Winit);
 %load '../data/dataTGH.mat'
 
 #Aarr for each small period given W
 
 nPeriod=9;
 periodLength=10*timeUnit2ms;
-Aarr=cell(m,4,nPeriod);
-for i=1:m; for j=1:4;
+Aarr=cell(nTri,nCue,nPeriod);
+for i=1:nTri; for j=1:nCue;
   rData=readRaw(fnlist(i,j));
   for k=1:nPeriod;
     data=pickDataByTime(rData,k*periodLength,(k+1)*periodLength);
     t=trainAFixW(data,D,lambdaA,fRep,Ainit,W);
-    for l=1:n;
+    for l=1:nNeu;
       if(length(data(l))==0)
         t(:,l)=0;
       end;
@@ -25,8 +25,8 @@ end;end;
 save('../data/dataPer.mat','D','lambdaA','lambdaW','fRep','Ainit','Winit','nPeriod','W','Aarr','Aa','As')
 
 #backbone of each period
-Aa=cell(4,nPeriod); As=cell(4,nPeriod);
-for i=1:4;for j=1:nPeriod;  [Aa(i,j),As(i,j)]=statMat(Aarr(:,i,j));   end;end;
+Aa=cell(nCUe,nPeriod); As=cell(nCue,nPeriod);
+for i=1:nCue;for j=1:nPeriod;  [Aa(i,j),As(i,j)]=statMat(Aarr(:,i,j));   end;end;
 
 bone=findBoneAvg(Aa,0.5);
 

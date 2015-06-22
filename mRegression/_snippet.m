@@ -23,12 +23,12 @@ function [Aarr,Warr,CMarr]=whole_list_AW(fn_list,n_trial,n,D,lambdaA,lambdaW,fRe
   end
 end
 
-m=40;
-%m=20; idx=randperm(40,m);
+nTri=40;
+%nTri=20; idx=randperm(40,nTri);
 
-Aarr=cell(m,4);Warr=cell(m,4);CMarr=cell(m,4);
-for i=1:4
-  tic;[Aarr(:,i),Warr(:,i),CMarr(:,i)]=whole_list_AW(fnlist(:,i),m,n,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
+Aarr=cell(nTri,nCue);Warr=cell(nTri,nCue);CMarr=cell(nTri,nCue);
+for i=1:nCue
+  tic;[Aarr(:,i),Warr(:,i),CMarr(:,i)]=whole_list_AW(fnlist(:,i),nTri,nNeu,D,lambdaA,lambdaW,fRep,Ainit,Winit);toc;
 end
 save('../data/data1.mat','D','Ainit','Winit','Aarr','Warr','CMarr')
 
@@ -45,18 +45,18 @@ function Carr=countSpikes(fn_list,n_trial,n)
   end
 end
 
-Carr=cell(m,4);
-for i=1:4
-  Carr(:,i)=countSpikes(fnlist(:,i),m,n);
+Carr=cell(nTri,nCue);
+for i=1:nCue
+  Carr(:,i)=countSpikes(fnlist(:,i),nTri,nNeu);
 end
 
 Cdis=distriVec(SCarr);
 
-Ca=zeros(n,5);  Cs=zeros(n,5);
-for i=1:4
-  [Ca(:,i),Cs(:,i)]=statVec(Cdis(:,m*(i-1)+1:m*i));
+Ca=zeros(nNeu,nCue+1);  Cs=zeros(nNeu,nCue+1);
+for i=1:nCue
+  [Ca(:,i),Cs(:,i)]=statVec(Cdis(:,nTri*(i-1)+1:nTri*i));
 end
-[Ca(:,5),Cs(:,5)]=statVec(Cdis);
+[Ca(:,nCue+1),Cs(:,nCue+1)]=statVec(Cdis);
 
 save('../data/count.mat','Carr','Cdis','Ca','Cs')
 
@@ -80,11 +80,11 @@ end
 
 AccD=distriCMmat_acc(CMarr(:));
 
-AccAvg=zeros(n,5);  AccStd=zeros(n,5);
-for cue_id=1:4;
-  [AccAvg(:,cue_id),AccStd(:,cue_id)]=statVec(AccD(:,m*(cue_id-1)+1:m*cue_id));
+AccAvg=zeros(nNeu,nCue+1);  AccStd=zeros(nNeu,nCue+1);
+for cue_id=1:nCue;
+  [AccAvg(:,cue_id),AccStd(:,cue_id)]=statVec(AccD(:,nTri*(cue_id-1)+1:nTri*cue_id));
 end
-[AccAvg(:,5),AccStd(:,5)]=statVec(AccD);
+[AccAvg(:,nCue+1),AccStd(:,nCue+1)]=statVec(AccD);
 
 save('../data/acc.mat','AccD','AccAvg','AccStd');
 
@@ -125,19 +125,19 @@ function [nValid_avg,nValid_std]=acc2vld(accDis,thrd=0.5)
   vmat=accDis>=thrd;
   [nValid_avg,nValid_std]=statVec(vmat,1,2);
 end
-%Va=cell(1,4); Vs=cell(1,4);
-%for i=1:4;  [Va(i),Vs(i)]=statCMmat_vld(CMarr(i,:));    end
+%Va=cell(1,nCue); Vs=cell(1,nCue);
+%for i=1:nCue;  [Va(i),Vs(i)]=statCMmat_vld(CMarr(i,:));    end
 %[Vat,Vst]=statCMmat_vld(CMarr(:));
 %valid_avg_all=[cell2mat(Va), Vat]; valid_std_all=[cell2mat(Vs), Vst];
 
-Va=zeros(n,5); Vs=zeros(n,5);
-vld_idx=cell(1,5);
-for i=1:4
-  [Va(:,i),Vs(:,i)]=acc2vld(AccD(:,m*(i-1)+1:m*i));
+Va=zeros(nNeu,nCue+1); Vs=zeros(nNeu,nCue+1);
+vld_idx=cell(1,nCue+1);
+for i=1:nCue
+  [Va(:,i),Vs(:,i)]=acc2vld(AccD(:,nTri*(i-1)+1:nTri*i));
   vld_idx(i)=find(Va(:,i)>0.5)';
 end
 [Va(:,5),Vs(:,5)]=acc2vld(AccD);
-vld_idx(5)=find(Va(:,5)>0.5)';
+vld_idx(nCue+1)=find(Va(:,nCue+1)>0.5)';
 
 save('../data/valid.mat','Va','Vs','vld_idx')
 
@@ -159,12 +159,12 @@ plotValidNCount(Va,Vs,Ca)
 #################
 #Adj and weight
 
-Aa=cell(1,5); As=cell(1,5);
-for i=1:4;  [Aa(i),As(i)]=statMat(Aarr(:,i));   end
-[Aa(5),As(5)]=statMat(Aarr(:));
-Wa=cell(1,5); Ws=cell(1,5);
-for i=1:4;  [Wa(i),Ws(i)]=statMat(Warr(:,i));   end
-[Wa(5),Ws(5)]=statMat(Warr(:));
+Aa=cell(1,nCue+1); As=cell(1,nCue+1);
+for i=1:nCue;  [Aa(i),As(i)]=statMat(Aarr(:,i));   end
+[Aa(nCue+1),As(nCue+1)]=statMat(Aarr(:));
+Wa=cell(1,nCue+1); Ws=cell(1,nCue+1);
+for i=1:nCue;  [Wa(i),Ws(i)]=statMat(Warr(:,i));   end
+[Wa(nCue+1),Ws(nCue+1)]=statMat(Warr(:));
 
 save('../data/statAW.mat','Aa','As','Wa','Ws')
 
@@ -179,12 +179,12 @@ end
 show4A(Aa,'AVG adjacency of ',cue_name,'')
 show4A(As,'STD adjacency of ',cue_name,'')
 
-subplot(2,2,1);imagesc(cell2mat(Aa(5)));title('AVG adjacency overall');caxis([0 1]);colorbar;colormap(gray);
-subplot(2,2,2);imagesc(cell2mat(As(5)));title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
+subplot(2,2,1);imagesc(cell2mat(Aa(nCue+1)));title('AVG adjacency overall');caxis([0 1]);colorbar;colormap(gray);
+subplot(2,2,2);imagesc(cell2mat(As(nCue+1)));title('STD adjacency overall');caxis([0 1]);colorbar;colormap(gray);
 
 #A pairwise cue difference/similarity
-pw_a1=zeros(4);pw_a2=zeros(4);pw_a3=zeros(4);pw_std=zeros(4);
-for i=1:4;for j=1:4;
+pw_a1=zeros(nCue);pw_a2=zeros(nCue);pw_a3=zeros(nCue);pw_std=zeros(nCue);
+for i=1:nCue;for j=1:nCue;
   %if(i==j)continue;end
   pw_a1(i,j)=sum(sum( (cell2mat(Aa(i))==1) != (cell2mat(Aa(j))==1) ));
   pw_a2(i,j)=sum(sum( (cell2mat(Aa(i))>0) != (cell2mat(Aa(j))>0) ));
@@ -192,7 +192,7 @@ for i=1:4;for j=1:4;
   [~,_t]=statMat([Aarr(:,i);Aarr(:,j)]);
   pw_std(i,j)=sum(sum(_t));
 end;end
-pw_a1,pw_a2,pw_a3,pw_std,sum(sum(cell2mat(As(5))))
+pw_a1,pw_a2,pw_a3,pw_std,sum(sum(cell2mat(As(nCue+1))))
 
 #individual difference check of A
 function bone=findBoneAvg(Aa,thrd=0.5)
@@ -216,9 +216,9 @@ function [dif_10]=boneDiff(bone)
   end;end
 end
 
-bone50=findBoneAvg(Aa(1:4),0.5);
+bone50=findBoneAvg(Aa(1:nCue),0.5);
 show4A(bone50,'Core Connectivity of ',cue_name,'')
-dif_10=boneDiff(bone50(1:4))
+dif_10=boneDiff(bone50(1:nCue))
 dif_01=dif_10'
 
 %%figures of A (individual data)
@@ -234,7 +234,7 @@ function showIndividualA(Aarr,bone)
 end
 
 cue_id=1;
-rndidx=randperm(m,9);
+rndidx=randperm(nTri,9);
 showIndividualA(Aarr(rndidx,cue_id),bone50(cue_id));
 
 %distribution of plus/miss compared with bone
@@ -264,25 +264,25 @@ end
 %figure for # distribution on cues
 for i=1:4;
   [h,v]=hist([numPlus(:,i),numMiss(:,i)],8);
-  subplot(2,2,i);bar(v,h/m);legend('+','-',"location",'northeast');colormap('summer');
+  subplot(2,2,i);bar(v,h/nTri);legend('+','-',"location",'northeast');colormap('summer');
   xlabel('number');ylabel('percentage');title(['Dis. of +/- edges # on ',cell2mat(cue_name(i))]);
 end
 [h,v]=hist([numPlus(:),numMiss(:)],12);
-subplot(2,2,1);bar(v,h/4/m);legend('+','-',"location",'northeast');colormap('summer');
+subplot(2,2,1);bar(v,h/nCue/nTri);legend('+','-',"location",'northeast');colormap('summer');
 xlabel('number');ylabel('percentage');title('Dis. of +/- edges # on all trials');
 
 %figure for # distribution on neuron pairs
 for i=1:4;
-  subplot(2,2,i);imagesc(cell2mat(matPlus(i))/m);colorbar;caxis([0,1]);title(['+ dis. for all pairs on ',cell2mat(cue_name(i))]);
+  subplot(2,2,i);imagesc(cell2mat(matPlus(i))/nTri);colorbar;caxis([0,1]);title(['+ dis. for all pairs on ',cell2mat(cue_name(i))]);
 end;
 for i=1:4;
-  subplot(2,2,i);imagesc(cell2mat(matMiss(i))/m);colorbar;caxis([0,1]);title(['- dis. for all pairs on ',cell2mat(cue_name(i))]);
+  subplot(2,2,i);imagesc(cell2mat(matMiss(i))/nTri);colorbar;caxis([0,1]);title(['- dis. for all pairs on ',cell2mat(cue_name(i))]);
 end;
 
-for i=1:4; sum(sum(cell2mat(matPlus(i))!=0 & cell2mat(matMiss(i))!=0)) end;
+for i=1:nCue; sum(sum(cell2mat(matPlus(i))!=0 & cell2mat(matMiss(i))!=0)) end;
 %the results are all 0, so the 2 figures can be merged
 for i=1:4;
-  subplot(2,2,i);imagesc(cell2mat(matPlus(i))/m-cell2mat(matMiss(i))/m);colorbar;caxis([-1,1]);
+  subplot(2,2,i);imagesc(cell2mat(matPlus(i))/nTri-cell2mat(matMiss(i))/nTri);colorbar;caxis([-1,1]);
   title(['+/- dis. for all pairs on ',cell2mat(cue_name(i))]);colormap(jet);
 end;
 
@@ -300,9 +300,9 @@ for i=1:4;
   subplot(2,2,i);imagesc(temp);title([tit,num2str(i)]);caxis([0 1]);colorbar;colormap(gray);
 end
 
-temp=cell2mat(Wa(5)).*(cell2mat(Aa(5))>0);
+temp=cell2mat(Wa(nCue+1)).*(cell2mat(Aa(nCue+1))>0);
 subplot(2,2,1);imagesc(temp);title('valid AVG weight overall');caxis([-1 1]);colorbar;colormap(gray);
-temp=Ws(5).*(cell2mat(Aa(5))>0);
+temp=Ws(nCue+1).*(cell2mat(Aa(nCue+1))>0);
 subplot(2,2,2);imagesc(temp);title('valid STD weight overall');caxis([0 1]);colorbar;colormap(gray);
 
 #weight statistics:
@@ -335,10 +335,10 @@ showWeightXtrial(Wa,Ws,vld_idx);
 
 
 #weight pairwise cue difference/similarity
-pw_w=zeros(4);
-for i=1:4;
+pw_w=zeros(nCue);
+for i=1:nCue;
   _t=cell2mat(Wa(i));_s=sum(sum(abs(_t)));
-  for j=1:4;
+  for j=1:nCue;
     if(i==j)continue;end
     pw_w(i,j)=sum(sum(abs( _t - cell2mat(Wa(j)) )))/_s;
 end;end
@@ -348,8 +348,8 @@ end;end
 Wdis=distriMat(Warr(:));
 
 for i=1:4
-  _t=Wdis(:,:,m*(i-1)+1:m*i);
-%  _t=Wdis(cell2mat(vld_idx(i)),cell2mat(vld_idx(i)),m*(i-1)+1:m*i);
+  _t=Wdis(:,:,nTri*(i-1)+1:nTri*i);
+%  _t=Wdis(cell2mat(vld_idx(i)),cell2mat(vld_idx(i)),nTri*(i-1)+1:nTri*i);
   subplot(4,2,2*i-1);hist(_t(:),20);title(['Dist. on ',cell2mat(cue_name(i))]);ylabel('frequency');
   subplot(4,2,2*i);plotcdf(_t(:),50);title(['CDF on ',cell2mat(cue_name(i))]);ylabel('CDF');
 end
@@ -362,7 +362,7 @@ function plotWeightDisCmp(Wdis,vld_idx)
   subplot(2,2,3);hist(t,100);title('Distribution of all valid weights');ylabel('frequency');
   subplot(2,2,4);plotcdf(t,50);title('CDF of all weights');ylabel('CDF');
 end
-plotWeightDisCmp(Wdis,cell2mat(vld_idx(5)))
+plotWeightDisCmp(Wdis,cell2mat(vld_idx(nCue+1)))
 
 
 %distribution on some edges

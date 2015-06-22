@@ -7,17 +7,18 @@ for i=1:n_c2    fn_c2(i)=[fn_prefix,'cue2_',num2str(i-1),'.txt']; end
 for i=1:n_c1    fn_r1(i)=[fn_prefix,'rest1_',num2str(i-1),'.txt'];    end
 for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
 
-n=19;
-m=40;
+nCue=4;
+nNeu=19;
+nTri=40;
 
-fnlist=cell(m,4);
-fnlist(:,1)=fn_c1(1:m);fnlist(:,2)=fn_c2(1:m);fnlist(:,3)=fn_r1(1:m);fnlist(:,4)=fn_r2(1:m);
+fnlist=cell(nTri,nCue);
+fnlist(:,1)=fn_c1(1:nTri);fnlist(:,2)=fn_c2(1:nTri);fnlist(:,3)=fn_r1(1:nTri);fnlist(:,4)=fn_r2(1:nTri);
 cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
 
 
 %dMin=0.0001;    dUnit=0.0001;  %for readRawSpike
 %dMin=1; dUnit=1;    %readRaw
-%[D,Ainit,Winit]=init(n,dMin,dUnit);
+%[D,Ainit,Winit]=init(nNeu,dMin,dUnit);
 
 timeUnit2ms=10;
 
