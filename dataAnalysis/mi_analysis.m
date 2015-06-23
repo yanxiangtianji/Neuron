@@ -7,10 +7,17 @@ basicParameters
 rData=readRaw([fn_prefix,'all.txt']);
 rmpath('../mRegression/')
 
-maxTime=0;
-for i=1:length(rData);
-  maxTime=max(maxTime,cell2mat(rData(i))(end));
+function maxTime=findMaxTime(rDataList)
+  maxTime=0;
+  [l1,l2]=size(rDataList);
+  for i=1:l1;for j=1:l2;
+    if(isempty(t=cell2mat(rDataList(i,j)))==0)
+      maxTime=max(maxTime,t(end));
+    end;
+  end;end;
 end
+
+maxTime=findMaxTime(rData);
 
 window_size=10.^[1:9]*timeUnit2ms;
 window_size=[10:10:50, 100:50:300, 400:100:1000, 2000:1000:10000]*timeUnit2ms;
@@ -27,7 +34,7 @@ for i=1:length(window_size);
   toc;
 end;
 
-save('xneu.mat','window_size','mi');
+save('Xneu.mat','window_size','mi');
 
 i=6;j=14;
 plot(window_size/timeUnit2ms,mi(i,j,:)(:));xlabel('windows size(ms)');ylabel('mutual information');
@@ -48,67 +55,70 @@ plot(log10(window_size/timeUnit2ms),mi2)
 
 
 ###################
-#cross TRIAL mutual information on identical neuron
+#cross TRIAL mutual information on identical neuron and identical cue
 
 addpath('../mRegression/')
-basicParameters
-function rData=_readList(flist,n,fn_prefix)
+function rData=_readList(flist,n)
   rData=cell(length(flist),n);
   for i=1:length(flist)
-    rData(i,:)=readRaw([fn_prefix,cell2mat(flist(i))]);
+    rData(i,:)=readRaw(flist(i));
   end
 end
-rData_c1=_readList(fn_c1,nNeu,fn_prefix);
-rData_c2=_readList(fn_c2,nNeu,fn_prefix);
-rData_r1=_readList(fn_r1,nNeu,fn_prefix);
-rData_r2=_readList(fn_r2,nNeu,fn_prefix);
-rmpath('../mRegression/')
+basicParameters
+nTri=50;
+fnlist=cell(nTri,nCue);
+fnlist(:,1)=fn_c1(1:nTri);fnlist(:,2)=fn_c2(1:nTri);fnlist(:,3)=fn_r1(1:nTri);fnlist(:,4)=fn_r2(1:nTri);
 
-function maxTime=findMaxTime(rDataList,n)
-  maxTime=0;
-  for i=1:length(rDataList);for j=1:n;
-    maxTime=max(maxTime,cell2mat(rDataList(i,j))(end));
-  end;end;
-end
+rDataList=cell(nTri,nNeu,nCue);
+for i=1:nCue;  rDataList(:,:,i)=_readList(fnlist(:,i),nNeu);  end;
+rmpath('../mRegression/')
 
 window_size=10.^[1:9]*timeUnit2ms;
 window_size=[10:10:50, 100:50:300, 400:100:1000, 2000:1000:10000]*timeUnit2ms;
 
 function mi=calMI_xt_one(rDataList,idx,maxTime,ws)
-  l=length(rDataList);
+  nTri=size(rDataList,1);
   vecLength=ceil(maxTime/ws);
-  data=zeros(vecLength,l);
-  for i=1:l;
+  data=zeros(vecLength,nTri);
+  for i=1:nTri;
     data(:,i)=discretize(cell2mat(rDataList(i,idx)),ws,0,vecLength);
   end;
   mi=mutual_info_all(data);
 end
-function mi=calMI_xt(rDataList,n,window_size)
-  maxTime=findMaxTime(rDataList,n);
-  mi=cell(n,length(window_size));
-  for i=length(window_size)
-    tic;
-    for idx=1:n
-      mi(idx,i)=calMIOne_xt(rDataList,idx,maxTime,window_size(i));
+function mi=calMI_xt(rDataList,window_size)
+  nNeu=size(rDataList,2);
+  maxTime=findMaxTime(rDataList);
+  mi=cell(nNeu,length(window_size));
+  for i=1:length(window_size)
+    for idx=1:nNeu
+      mi(idx,i)=calMI_xt_one(rDataList,idx,maxTime,window_size(i));
     end
-    toc;
   end
 end
 
-%type: mi=cell(nNeu,length(window_size)); mi(1)=zeros(length(rDataList));
-mi_c1=rDataList(rData_c1,window_size);
-mi_c2=rDataList(rData_c2,window_size);
-mi_r1=rDataList(rData_r1,window_size);
-mi_r2=rDataList(rData_r2,window_size);
+%type: mi=cell(nNeu,length(window_size),nCue); mi(1)=zeros(nTri);
+mi=cell(nNeu,length(window_size),nCue);
+for i=1:nCue;
+  tic;mi(:,:,i)=calMI_xt(rDataList(:,:,i),window_size);toc;
+end;
+mi2=zeros(nNeu,length(window_size),nCue);
+for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
 
-save('Xtrial.mat','window_size','mi_c1','mi_c2','mi_r1','mi_r2');
+save('Xtrial.mat','window_size','mi');
+
+for cue_id=1:nCue;
+  subplot(2,2,cue_id);plot(log10(window_size/timeUnit2ms),mi2(:,:,cue_id));
+  title([cell2mat(cue_name(cue_id)),' X-trial MI on all neurons']);
+  %legend(num2str((1:nNeu)'));
+end;
+
 
 ###################
 #cross CUE mutual information on identical neuron
 
 %load data part is the same as cross TRIAL part
 
-function mi=calMIOne_xc(rDataList1,rDataList2,idx,maxTime,ws)
+function mi=calMI_xc_one(rDataList1,rDataList2,idx,maxTime,ws)
 %mean MI for all trial pairs
   vecLength=ceil(maxTime/ws);
   l1=length(rDataList1); l2=length(rDataList2);
@@ -116,35 +126,62 @@ function mi=calMIOne_xc(rDataList1,rDataList2,idx,maxTime,ws)
   for i=1:l1;
     data1(:,i)=discretize(cell2mat(rDataList1(i,idx)),ws,0,vecLength);    
   end;
-  mi=0;
+  mi=0; %mi=zeros(l1,l2);
   for i=1:l2;
     data2=discretize(cell2mat(rDataList2(i,idx)),ws,0,vecLength);    
     for j=1:l1;
       mi+=mutual_info(data2,data1(:,j));
+      %mi(j,i)=mutual_info(data1(:,j),data2);
     end
   end;
   mi/=l1*l2;
 end
 
-maxTime=zeros(4,1);
-maxTime(1)=findMaxTime(rData_c1);
-maxTime(2)=findMaxTime(rData_c2);
-maxTime(3)=findMaxTime(rData_r1);
-maxTime(4)=findMaxTime(rData_r2);
-
-mi=cell(nNeu,length(window_size));
-for i=1:length(window_size);
-  ws=window_size(i);
-  for idx=1:nNeu;
-   t=zeros(4,4);
-   t(1,2)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([1,2]),ws);
-   t(1,3)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([1,3]),ws);
-   t(1,4)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([1,4]),ws);
-   t(2,3)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([2,3]),ws);
-   t(2,4)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([2,4]),ws);
-   t(3,4)=calMIOne_xc(rData_c1,rData_c2,idx,max(maxTime([3,4]),ws);
-   mi(idx,i)=t;
+function mi=calMI_xc(rDataList,window_size)
+  [nTri,nNeu,nCue]=size(rDataList);
+  maxTime=zeros(nCue,1);
+  for i=1:nCue; maxTime(i)=findMaxTime(rDataList(:,:,i)); end;
+  mi=cell(nNeu,length(window_size));
+  for i=1:length(window_size);
+    tic;
+    ws=window_size(i);
+    for idx=1:nNeu;
+      t=zeros(nCue);
+      for cue_i=1:nCue;for cue_j=cue_i+1:nCue;
+        t(cue_i,cue_j)=calMI_xc_one(rDataList(:,:,cue_i),rDataList(:,:,cue_j),idx,max(maxTime([cue_i,cue_j])),ws);
+      end;end;
+     mi(idx,i)=t;
+    end;
+    toc;
   end;
+end
+
+%type: mi=cell(nNeu,length(window_size)); mi(1)=zeros(nCue);
+mi=calMI_xc(rDataList,window_size);
+
+save('Xcue.mat','window_size','mi');
+
+function showMI_xc(mi,window_size,nid,nCue,timeUnit2ms)
+  l=length(window_size);
+  idx=[]; ticks=num2str([]);
+  for i=1:nCue;for j=i+1:nCue;
+    idx=[idx; i+nCue*(j-1)];
+    ticks=[ticks; sprintf('%d-%d',i,j)];
+  end;end;
+  sort(idx);
+  data=zeros(length(idx),l);
+  for j=1:l;  data(:,j)=cell2mat(mi(nid,j))(idx); end;
+  plot(log10(window_size/timeUnit2ms),data);title(['Neuron ',num2str(nid),' X-cue MI']);
+  %legend(ticks)
+end
+
+nid=1;
+showMI_xc(mi,window_size,nid,nCue,timeUnit2ms);
+
+for i=1:nNeu;
+  subplot(4,5,i);showMI_xc(mi,window_size,i,nCue,timeUnit2ms);
 end;
+
+
 
 
