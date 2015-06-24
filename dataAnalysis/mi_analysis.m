@@ -52,7 +52,7 @@ for i=1:length(idx);
   mi2(:,i)=mi(ii,jj,:)(:);
 end;
 plot(log10(window_size/timeUnit2ms),mi2)
-
+xlabel('log10(window size)');ylabel('MI')
 
 ###################
 #cross TRIAL mutual information on identical neuron and identical cue
@@ -101,16 +101,61 @@ mi=cell(nNeu,length(window_size),nCue);
 for i=1:nCue;
   tic;mi(:,:,i)=calMI_xt(rDataList(:,:,i),window_size);toc;
 end;
-mi2=zeros(nNeu,length(window_size),nCue);
-for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
 
 save('Xtrial.mat','window_size','mi');
 
+%figure for mean MI over all trial-pairs of same cue
+mi2=zeros(nNeu,length(window_size),nCue);
+for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
+mi2/=(nTri-1)*nTri/2;
 for cue_id=1:nCue;
   subplot(2,2,cue_id);plot(log10(window_size/timeUnit2ms),mi2(:,:,cue_id));
   title([cell2mat(cue_name(cue_id)),' X-trial MI on all neurons']);
+  xlabel('log10(window size)');ylabel('mean MI over all trial-pairs');
   %legend(num2str((1:nNeu)'));
 end;
+
+%figure for MI of one trial pairs of all cue
+function showMI_xt_1tp4c(mi,xPoints,cue_name,tid_s,tid_t)
+  %make sure trial_id_source is small that trial_id_target (mi is symmetric)
+  if(tid_s>tid_t) t=tid_s;tid_s=tid_t;tid_t=t;  end;
+  [nNeu,l,nCue]=size(mi);
+  mi3=zeros(nNeu,length(xPoints),nCue);
+  for i=1:prod(size(mi)); mi3(i)=(cell2mat(mi(i)))(tid_s,tid_t); end;
+  mi3=max(mi3,0);
+  for cue_id=1:nCue;
+    subplot(2,2,cue_id);plot(xPoints,mi3(:,:,cue_id));
+    title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' MI on all neurons']);
+    xlabel('log10(window size)');ylabel('MI');
+    %legend(num2str((1:nNeu)'));
+  end;
+end
+
+showMI_xt_1tp4c(mi,log10(window_size/timeUnit2ms),cue_name,2,5)
+
+%figure for MI of one trial pairs of one cue
+function showMI_xt_4(mi,xPoints,cue_name,cids,tid_mat)
+  [nNeu,l,nCue]=size(mi);
+  if(l!=length(xPoints)) error('xPoints size doesn''t fit mi size');  end;
+  len=length(cids);
+  if(len!=size(tid_mat,1) || size(tid_mat,2)!=2)  error('Wrong coordinate size'); end;
+  %make sure trial_id_source is small that trial_id_target (mi is symmetric)
+  tid_mat=sort(tid_mat,2);
+  mi3=zeros(nNeu,length(xPoints));
+  for k=1:min(4,len);
+    cue_id=cids(k);tid_s=tid_mat(k,1);tid_t=tid_mat(k,2);
+    for i=1:nNeu;for j=1:l;
+      mi3(i,j)=(cell2mat(mi(i,j,cue_id)))(tid_s,tid_t);
+    end;end;
+    mi3=max(mi3,0);
+    subplot(2,2,k);plot(xPoints,mi3(:,:));xlabel('log10(window size)');ylabel('MI');
+    title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' MI on all neurons']);
+    %legend(num2str((1:nNeu)'));
+  end
+end
+
+tid_mat=[zeros(4,1)+2,zeros(4,1)+5];
+showMI_xt_4(mi,log10(window_size/timeUnit2ms),cue_name,[1:4],tid_mat)
 
 
 ###################
