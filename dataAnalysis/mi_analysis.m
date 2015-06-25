@@ -17,10 +17,10 @@ function maxTime=findMaxTime(rDataList)
   end;end;
 end
 
-maxTime=findMaxTime(rData);
+maxTime=findMaxTime(rData);%=40000000, log10(maxTime/timeUnit2ms)=7+log10(4)
 
-window_size=10.^[1:9]*timeUnit2ms;
-window_size=[10:10:50, 100:50:300, 400:100:1000, 2000:1000:10000]*timeUnit2ms;
+window_size=((1:2:10)'*(10.^(1:6)))(:)*timeUnit2ms; %log-scale
+window_size=[0.1:0.2:2,2:10]*10000*timeUnit2ms;  %around peak 
 mi=zeros(nNeu,nNeu,length(window_size));
 for i=1:length(window_size);
   tic;
@@ -37,22 +37,24 @@ end;
 save('Xneu.mat','window_size','mi');
 
 i=6;j=14;
-plot(window_size/timeUnit2ms,mi(i,j,:)(:));xlabel('windows size(ms)');ylabel('mutual information');
+plot(window_size/timeUnit2ms,mi(i,j,:)(:));xlabel('windows size(ms)');ylabel('MI');
 title(['MI between ',num2str(i),' and ',num2str(j)]);
 
-hold on
-for i=1:nNeu;for j=i+1:nNeu;plot(window_size/timeUnit2ms,mi(i,j,:)(:));end;end;
-hold off
+function showMI_xn(xPoints,mi)
+  [nNeu,~,l]=size(mi);
+  if(length(xPoints)!=l)  error('Unmatched xPoint and mi');  end;
+  idx=find(triu(ones(nNeu),1));
+  mi2=zeros(l,length(idx));
+  for i=1:length(idx);
+    ii=mod(idx(i)-1,nNeu)+1;
+    jj=ceil(idx(i)/nNeu);
+    mi2(:,i)=mi(ii,jj,:)(:);
+  end;
+  plot(xPoints,mi2);ylabel('MI');title('MI of all neuron pairs on whole period(4k seconds)')
+end
+showMI_xn(log10(window_size/timeUnit2ms),mi);xlabel('log10(window size) (ms)');
+showMI_xn(window_size/timeUnit2ms,mi);xlabel('window size (ms)');
 
-idx=find(mi(:,:,1));
-mi2=zeros(length(window_size),length(idx));
-for i=1:length(idx);
-  ii=mod(idx(i)-1,nNeu)+1;
-  jj=ceil(idx(i)/nNeu);
-  mi2(:,i)=mi(ii,jj,:)(:);
-end;
-plot(log10(window_size/timeUnit2ms),mi2)
-xlabel('log10(window size)');ylabel('MI')
 
 ###################
 #cross TRIAL mutual information on identical neuron and identical cue
@@ -68,13 +70,14 @@ basicParameters
 nTri=50;
 fnlist=cell(nTri,nCue);
 fnlist(:,1)=fn_c1(1:nTri);fnlist(:,2)=fn_c2(1:nTri);fnlist(:,3)=fn_r1(1:nTri);fnlist(:,4)=fn_r2(1:nTri);
-
 rDataList=cell(nTri,nNeu,nCue);
 for i=1:nCue;  rDataList(:,:,i)=_readList(fnlist(:,i),nNeu);  end;
 rmpath('../mRegression/')
 
-window_size=10.^[1:9]*timeUnit2ms;
-window_size=[10:10:50, 100:50:300, 400:100:1000, 2000:1000:10000]*timeUnit2ms;
+maxTime=findMaxTime(rDataList);%=100000, log10(maxTime/timeUnit2ms)=5
+
+window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
+window_size=[0.05,0.1:0.2:2,2:8]*1000*timeUnit2ms;  %around peak 
 
 function mi=calMI_xt_one(rDataList,idx,maxTime,ws)
   nTri=size(rDataList,1);
@@ -99,51 +102,40 @@ end
 %type: mi=cell(nNeu,length(window_size),nCue); mi(1)=zeros(nTri);
 mi=cell(nNeu,length(window_size),nCue);
 for i=1:nCue;
-  tic;mi(:,:,i)=calMI_xt(rDataList(:,:,i),window_size);toc;
+  tic;mi(:,16,i)=calMI_xt(rDataList(:,:,i),window_size(16));toc;
 end;
 
-save('Xtrial.mat','window_size','mi');
+save('Xtrial-log.mat','window_size','mi');
 
 %figure for mean MI over all trial-pairs of same cue
-mi2=zeros(nNeu,length(window_size),nCue);
-for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
-mi2/=(nTri-1)*nTri/2;
-for cue_id=1:nCue;
-  subplot(2,2,cue_id);plot(log10(window_size/timeUnit2ms),mi2(:,:,cue_id));
-  title([cell2mat(cue_name(cue_id)),' X-trial MI on all neurons']);
-  xlabel('log10(window size)');ylabel('mean MI over all trial-pairs');
-  %legend(num2str((1:nNeu)'));
-end;
-
-%figure for MI of one trial pairs of all cue
-function showMI_xt_1tp4c(mi,xPoints,cue_name,tid_s,tid_t)
-  %make sure trial_id_source is small that trial_id_target (mi is symmetric)
-  if(tid_s>tid_t) t=tid_s;tid_s=tid_t;tid_t=t;  end;
+function showMI_xt(mi,xPoints,cue_name,nTri)
   [nNeu,l,nCue]=size(mi);
-  mi3=zeros(nNeu,length(xPoints),nCue);
-  for i=1:prod(size(mi)); mi3(i)=(cell2mat(mi(i)))(tid_s,tid_t); end;
-  mi3=max(mi3,0);
+  if(length(xPoints)!=l)  error('Unmatched xPoint and mi');  end;
+  if(length(cue_name)!=nCue)  error('Unmatched cue_name length and mi');  end;
+  mi2=zeros(size(mi));
+  for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
+  mi2/=(nTri-1)*nTri/2;
   for cue_id=1:nCue;
-    subplot(2,2,cue_id);plot(xPoints,mi3(:,:,cue_id));
-    title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' MI on all neurons']);
-    xlabel('log10(window size)');ylabel('MI');
+    subplot(2,2,cue_id);plot(xPoints,mi2(:,:,cue_id));
+    title([cell2mat(cue_name(cue_id)),' X-trial MI on all neurons']);
+    xlabel('log10(window size)');ylabel('mean MI over all trial-pairs');
     %legend(num2str((1:nNeu)'));
   end;
 end
+showMI_xt(mi,log10(window_size/timeUnit2ms),cue_name,nTri)
 
-showMI_xt_1tp4c(mi,log10(window_size/timeUnit2ms),cue_name,2,5)
-
-%figure for MI of one trial pairs of one cue
-function showMI_xt_4(mi,xPoints,cue_name,cids,tid_mat)
+%figure for MI of 4 trial pairs on their own cues
+function showMI_xt_4single(mi,xPoints,cue_name,cue_trials_mat)
+  %cue_trials_mat(1,1)-cueID, cue_trials_mat(1,2)-trialFrom, cue_trials_mat(1,3)-trialTo
   [nNeu,l,nCue]=size(mi);
-  if(l!=length(xPoints)) error('xPoints size doesn''t fit mi size');  end;
-  len=length(cids);
-  if(len!=size(tid_mat,1) || size(tid_mat,2)!=2)  error('Wrong coordinate size'); end;
+  if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
+  len=length(cue_trials_mat,1);
+  if(size(cue_trials_mat,2)!=3)  error('Wrong coordinate size'); end;
   %make sure trial_id_source is small that trial_id_target (mi is symmetric)
-  tid_mat=sort(tid_mat,2);
+  cue_trials_mat=sort(tid_mat,2);
   mi3=zeros(nNeu,length(xPoints));
-  for k=1:min(4,len);
-    cue_id=cids(k);tid_s=tid_mat(k,1);tid_t=tid_mat(k,2);
+  for k=1:min(4,len); %first 4
+    cue_id=cue_trials_mat(k,1);tid_s=cue_trials_mat(k,2);tid_t=cue_trials_mat(k,3);
     for i=1:nNeu;for j=1:l;
       mi3(i,j)=(cell2mat(mi(i,j,cue_id)))(tid_s,tid_t);
     end;end;
@@ -155,13 +147,15 @@ function showMI_xt_4(mi,xPoints,cue_name,cids,tid_mat)
 end
 
 tid_mat=[zeros(4,1)+2,zeros(4,1)+5];
-showMI_xt_4(mi,log10(window_size/timeUnit2ms),cue_name,[1:4],tid_mat)
+showMI_xt_4single(mi,log10(window_size/timeUnit2ms),cue_name,[(1:4)';tid_mat)
+showMI_xt_4single(mi,log10(window_size/timeUnit2ms),cue_name, ...
+  [1 3 5; 2 5 8; 3 8 14; 4 9 19])
 
 
 ###################
 #cross CUE mutual information on identical neuron
 
-%load data part is the same as cross TRIAL part
+%initialization part is the same as cross TRIAL part
 
 function mi=calMI_xc_one(rDataList1,rDataList2,idx,maxTime,ws)
 %mean MI for all trial pairs
@@ -201,13 +195,17 @@ function mi=calMI_xc(rDataList,window_size)
   end;
 end
 
+window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
+window_size=[0.05,0.1:0.2:2,2:5]*1000*timeUnit2ms;  %around peak 
+
 %type: mi=cell(nNeu,length(window_size)); mi(1)=zeros(nCue);
 mi=calMI_xc(rDataList,window_size);
 
-save('Xcue.mat','window_size','mi');
+save('Xcue-log.mat','window_size','mi');
 
-function showMI_xc(mi,window_size,nid,nCue,timeUnit2ms)
-  l=length(window_size);
+function showMI_xc(mi,xPoints,nid,nCue)
+  [nNeu,l]=size(mi);
+  if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
   idx=[]; ticks=num2str([]);
   for i=1:nCue;for j=i+1:nCue;
     idx=[idx; i+nCue*(j-1)];
@@ -216,16 +214,17 @@ function showMI_xc(mi,window_size,nid,nCue,timeUnit2ms)
   sort(idx);
   data=zeros(length(idx),l);
   for j=1:l;  data(:,j)=cell2mat(mi(nid,j))(idx); end;
-  plot(log10(window_size/timeUnit2ms),data);title(['Neuron ',num2str(nid),' X-cue MI']);
+  plot(xPoints,data);grid;set(gca,'xtick',1:4);xlabel('log10(WS)');%ylabel('MI');
+  title(['N',num2str(nid),' X-cue MI']);
   %legend(ticks)
 end
 
-nid=1;
-showMI_xc(mi,window_size,nid,nCue,timeUnit2ms);
-
-for i=1:nNeu;
-  subplot(4,5,i);showMI_xc(mi,window_size,i,nCue,timeUnit2ms);
+for nid=1:nNeu;
+  subplot(4,5,i);showMI_xc(mi,log10(window_size/timeUnit2ms),nid,nCue);
 end;
+
+nid=1;
+showMI_xc(mi,log10(window_size/timeUnit2ms),nid,nCue);
 
 
 
