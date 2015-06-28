@@ -170,18 +170,21 @@ showMI_xt_4single(mi,log10(window_size/timeUnit2ms),cue_name, ...
 
 %initialization part is the same as cross TRIAL part
 
-function mi=calMI_xc_one(rDataList1,rDataList2,idx,maxTime,ws)
+window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
+window_size=[0.5, 1:2:20, 20]*100*timeUnit2ms;  %around peak
+
+function mi=calMI_xc_one(rDataList1,rDataList2,maxTime,ws)
 %mean MI for all trial pairs
   vecLength=ceil(maxTime/ws);
   l1=length(rDataList1); l2=length(rDataList2);
-  data1=zeros(vecLength,length(rDataList1));
+  data1=zeros(vecLength,l1);
   global disFun infoFun
   for i=1:l1;
-    data1(:,i)=disFun(cell2mat(rDataList1(i,idx)),ws,0,vecLength);    
+    data1(:,i)=disFun(cell2mat(rDataList1(i)),ws,0,vecLength);
   end;
   mi=0; %mi=zeros(l1,l2);
   for i=1:l2;
-    data2=discretize(cell2mat(rDataList2(i,idx)),ws,0,vecLength);    
+    data2=discretize(cell2mat(rDataList2(i)),ws,0,vecLength);
     for j=1:l1;
       mi+=infoFun(data2,data1(:,j));
       %mi(j,i)=infoFun(data2,data1(:,j));
@@ -191,33 +194,29 @@ function mi=calMI_xc_one(rDataList1,rDataList2,idx,maxTime,ws)
 end
 function mi=calMI_xc(rDataList,window_size)
   [nTri,nNeu,nCue]=size(rDataList);
-  maxTime=zeros(nCue,1);
-  for i=1:nCue; maxTime(i)=findMaxTime(rDataList(:,:,i)); end;
+  maxTime=findMaxTime(rDataList);
   mi=cell(nNeu,length(window_size));
   for i=1:length(window_size);
     tic;
     ws=window_size(i);
-    for idx=1:nNeu;
+    for nid=1:nNeu;
       t=zeros(nCue);
       for cue_i=1:nCue;for cue_j=cue_i+1:nCue;
-        t(cue_i,cue_j)=calMI_xc_one(rDataList(:,:,cue_i),rDataList(:,:,cue_j),idx,max(maxTime([cue_i,cue_j])),ws);
+        t(cue_i,cue_j)=calMI_xc_one(rDataList(:,nid,cue_i),rDataList(:,nid,cue_j),maxTime,ws);
       end;end;
-     mi(idx,i)=t;
+     mi(nid,i)=t;
     end;
     toc;
   end;
 end
 
-window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
-window_size=[0.5, 1:2:20, 20]*100*timeUnit2ms;  %around peak 
-
 %type: mi=cell(nNeu,length(window_size)); mi(1)=zeros(nCue);
 mi=calMI_xc(rDataList,window_size);
-save('Xcue-log.mat','window_size','mi');
 
+save('Xcue-log.mat','window_size','mi');
 save('Xcue-focus.mat','window_size','mi');
 
-
+%figure
 function showMI_xc(mi,xPoints,nid,nCue)
   [nNeu,l]=size(mi);
   if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
