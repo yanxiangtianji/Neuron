@@ -5,7 +5,7 @@ if(iscell(value)) value=cell2mat(value)(:); end
 value=ceil((value-offset)./binSize);
 
 
-if(type=='count')
+if(strcmp(type,'count')==1)
   [idx,~,j]=unique(value(:)); %make idx and j to be column vectors
   count=accumarray(j,1);
   if(resLength==0)  resLength=length(idx);  end;
