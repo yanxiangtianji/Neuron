@@ -5,17 +5,24 @@
 addpath('../mRegression/')
 basicParameters
 rData=readRaw([fn_prefix,'all.txt']);
+clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2 lambdaA lambdaW clear fRep vanishTime95
 rmpath('../mRegression/')
 
 %mutual information:
-global disFun=@(data,ws,off,len)discretize(data,ws,off,len,'count');
-global infoFun=@(data1,data2)mutual_info(data1,data2);
+global disFun infoFun type
+disFun=@(data,ws,off,len)discretize(data,ws,off,len,'count');
+infoFun=@(data1,data2)mutual_info(data1,data2);
+type='MI';
 %dot product:
-global disFun=@(data,ws,off,len)discretize(data,ws,off,len,'binary');
-global infoFun=@(data1,data2)dot_product(data1,data2);
+global disFun infoFun type
+disFun=@(data,ws,off,len)discretize(data,ws,off,len,'binary');
+infoFun=@(data1,data2)dot_product(data1,data2);
+type='DP';
 %Pearson correlation:
-global disFun=@(data,ws,off,len)discretize(data,ws,off,len,'count');
-global infoFun=@(data1,data2)corr(data1(:),data2(:));
+global disFun infoFun type
+disFun=@(data,ws,off,len)discretize(data,ws,off,len,'count');
+infoFun=@(data1,data2)corr(data1(:),data2(:));
+type='PC';
 
 maxTime=findMaxTime(rData);%=40000000, log10(maxTime/timeUnit2ms)=7+log10(4)
 
@@ -47,8 +54,8 @@ save('Xneu-log.mat','window_size','mi');
 save('Xneu-focus.mat','window_size','mi');
 
 i=6;j=14;
-plot(window_size/timeUnit2ms,mi(i,j,:)(:));xlabel('windows size(ms)');ylabel('MI');
-title(['MI between ',num2str(i),' and ',num2str(j)]);
+plot(window_size/timeUnit2ms,mi(i,j,:)(:));xlabel('windows size(ms)');ylabel(type);
+title([type,' between ',num2str(i),' and ',num2str(j)]);
 
 function showMI_xn(xPoints,mi)
   [nNeu,~,l]=size(mi);
@@ -60,7 +67,9 @@ function showMI_xn(xPoints,mi)
     jj=ceil(idx(i)/nNeu);
     mi2(:,i)=mi(ii,jj,:)(:);
   end;
-  plot(xPoints,mi2);ylabel('MI');title('MI of all neuron pairs on whole period(4k seconds)')
+  global type;
+  plot(xPoints,mi2);ylabel(type);
+  title([type,' of all neuron pairs on whole period(4k seconds)'])
 end
 showMI_xn(log10(window_size/timeUnit2ms),mi);xlabel('log10(window size) (ms)');
 showMI_xn(window_size/timeUnit2ms,mi);xlabel('window size (ms)');
@@ -82,6 +91,7 @@ fnlist=cell(nTri,nCue);
 fnlist(:,1)=fn_c1(1:nTri);fnlist(:,2)=fn_c2(1:nTri);fnlist(:,3)=fn_r1(1:nTri);fnlist(:,4)=fn_r2(1:nTri);
 rDataList=cell(nTri,nNeu,nCue);
 for i=1:nCue;  rDataList(:,:,i)=_readList(fnlist(:,i),nNeu);  end;
+clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2 lambdaA lambdaW clear fRep vanishTime95
 rmpath('../mRegression/')
 
 maxTime=findMaxTime(rDataList);%=100000, log10(maxTime/timeUnit2ms)=5
@@ -89,56 +99,62 @@ maxTime=findMaxTime(rDataList);%=100000, log10(maxTime/timeUnit2ms)=5
 window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
 window_size=[0.5, 1:2:20, 20]*100*timeUnit2ms;  %around peak 
 
-function mi=calMI_xt_one(rDataList,idx,maxTime,ws)
-  nTri=size(rDataList,1);
+function mi=calMI_xt_one(rDataList,maxTime,ws)
+  nTri=length(rDataList);
   vecLength=ceil(maxTime/ws);
   data=zeros(vecLength,nTri);
   global disFun infoFun
   for i=1:nTri;
-    data(:,i)=disFun(cell2mat(rDataList(i,idx)),ws,0,vecLength);
+    data(:,i)=disFun(cell2mat(rDataList(i)),ws,0,vecLength);
   end;
   mi=zeros(nTri);
   for i=1:nTri;for j=i+1:nTri; mi(i,j)=infoFun(data(:,i),data(:,j)); end;end;
 end
-function mi=calMI_xt(rDataList,window_size)
+function mi=calMI_xt_cue(rDataList,maxTime,window_size)
   nNeu=size(rDataList,2);
-  maxTime=findMaxTime(rDataList);
   mi=cell(nNeu,length(window_size));
-  for i=1:length(window_size)
-    for idx=1:nNeu
-      mi(idx,i)=calMI_xt_one(rDataList,idx,maxTime,window_size(i));
-    end
+  for i=1:length(window_size);
+    for nid=1:nNeu
+      mi(nid,i)=calMI_xt_one(rDataList(:,nid),maxTime,window_size(i));
+    end;
+  end;
+end
+function mi=calMI_xt(rDataList,window_size)
+  [~,nNeu,nCue]=size(rDataList);
+  mi=cell(nNeu,length(window_size),nCue);
+  maxTime=findMaxTime(rDataList);
+  for cid=1:nCue
+    tic;mi(:,:,cid)=calMI_xt_cue(rDataList(:,:,cid),maxTime,window_size);toc;
   end
 end
-
 %type: mi=cell(nNeu,length(window_size),nCue); mi(1)=zeros(nTri);
-mi=cell(nNeu,length(window_size),nCue);
-for i=1:nCue;
-  tic;mi(:,:,i)=calMI_xt(rDataList(:,:,i),window_size);toc;
-end;
+mi=calMI_xt(rDataList,window_size);
 
 save('Xtrial-log.mat','window_size','mi');
 save('Xtrial-focus.mat','window_size','mi');
 
 %figure for mean MI over all trial-pairs of same cue
-function showMI_xt(mi,xPoints,cue_name,nTri)
+function showMI_xt(mi,xPoints,cue_name,xlbl)
   [nNeu,l,nCue]=size(mi);
+  if(length(mi)!=0) nTri=length(cell2mat(mi(1))); else return; end;%nTri
   if(length(xPoints)!=l)  error('Unmatched xPoint and mi');  end;
   if(length(cue_name)!=nCue)  error('Unmatched cue_name length and mi');  end;
   mi2=zeros(size(mi));
   for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
   mi2/=(nTri-1)*nTri/2;
+  global type;
   for cue_id=1:nCue;
     subplot(2,2,cue_id);plot(xPoints,mi2(:,:,cue_id));
-    title([cell2mat(cue_name(cue_id)),' X-trial MI on all neurons']);
-    xlabel('log10(window size)');ylabel('mean MI over all trial-pairs');
+    xlabel(xlbl);ylabel(['mean ',type,' on trial-pairs']);
+    title([cell2mat(cue_name(cue_id)),': X-trial ',type,' on all neurons']);
     %legend(num2str((1:nNeu)'));
   end;
 end
-showMI_xt(mi,log10(window_size/timeUnit2ms),cue_name,nTri)
+showMI_xt(mi,log10(window_size/timeUnit2ms),cue_name,'log10(window size)');
+showMI_xt(mi,window_size/timeUnit2ms,cue_name,'window size');
 
 %figure for MI of 4 trial pairs on their own cues
-function showMI_xt_4single(mi,xPoints,cue_name,cue_trials_mat)
+function showMI_xt_4single(mi,xPoints,xlbl,cue_name,cue_trials_mat)
   %cue_trials_mat(1,1)-cueID, cue_trials_mat(1,2)-trialFrom, cue_trials_mat(1,3)-trialTo
   [nNeu,l,nCue]=size(mi);
   if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
@@ -147,21 +163,22 @@ function showMI_xt_4single(mi,xPoints,cue_name,cue_trials_mat)
   %make sure trial_id_source is small that trial_id_target (mi is symmetric)
   cue_trials_mat=sort(tid_mat,2);
   mi3=zeros(nNeu,length(xPoints));
+  global type;
   for k=1:min(4,len); %first 4
     cue_id=cue_trials_mat(k,1);tid_s=cue_trials_mat(k,2);tid_t=cue_trials_mat(k,3);
     for i=1:nNeu;for j=1:l;
       mi3(i,j)=(cell2mat(mi(i,j,cue_id)))(tid_s,tid_t);
     end;end;
     mi3=max(mi3,0);
-    subplot(2,2,k);plot(xPoints,mi3(:,:));xlabel('log10(window size)');ylabel('MI');
-    title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' MI on all neurons']);
+    subplot(2,2,k);plot(xPoints,mi3(:,:));xlabel(xlbl);ylabel(type);
+    title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' ',type,' on all neurons']);
     %legend(num2str((1:nNeu)'));
   end
 end
 
-tid_mat=[zeros(4,1)+2,zeros(4,1)+5];
-showMI_xt_4single(mi,log10(window_size/timeUnit2ms),cue_name,[(1:4)';tid_mat)
-showMI_xt_4single(mi,log10(window_size/timeUnit2ms),cue_name, ...
+ct_mat=[(1:4)';zeros(4,1)+2,zeros(4,1)+5];%1 cln->cueID, 2 cln->trialFrom, 3 cln->trialTo
+showMI_xt_4single(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,ct_mat)
+showMI_xt_4single(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name, ...
   [1 3 5; 2 5 8; 3 8 14; 4 9 19])
 
 
@@ -228,18 +245,18 @@ function showMI_xc(mi,xPoints,nid,nCue)
   sort(idx);
   data=zeros(length(idx),l);
   for j=1:l;  data(:,j)=cell2mat(mi(nid,j))(idx); end;
-  plot(xPoints,data);%legend(ticks)
+  global type
+  plot(xPoints,data);title(['N',num2str(nid),' X-cue ',type]);%ylabel(type);%legend(ticks)
 end
 
 for nid=1:nNeu;%log-scale
-  subplot(4,5,nid);showMI_xc(mi,log10(window_size/timeUnit2ms),nid,nCue);grid;set(gca,'xtick',1:4)
-  title(['N',num2str(nid),' X-cue MI']);xlabel('log10(WS)');%ylabel('MI');
+  subplot(4,5,nid);showMI_xc(mi,log10(window_size/timeUnit2ms),nid,nCue);grid;
+  set(gca,'xtick',1:4);xlabel('log10(WS)');ylim([0,1]);
 end;
 
 for nid=1:nNeu;%linear-scale
-  subplot(4,5,nid);showMI_xc(mi,(window_size/timeUnit2ms),nid,nCue);
-  set(gca,'xtick',[5:5:20]*100);set(gca,'xticklabel',{'';'1s';'';'2s'});grid;
-  title(['N',num2str(nid),' X-cue MI']);%xlabel('log10(WS)');ylabel('MI');
+  subplot(4,5,nid);showMI_xc(mi,(window_size/timeUnit2ms),nid,nCue);grid;
+  set(gca,'xtick',[5:5:20]*100);set(gca,'xticklabel',{'';'1s';'';'2s'});ylim([0,1]);
 end;
 
 nid=1;
