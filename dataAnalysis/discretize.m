@@ -24,7 +24,12 @@ else
   result=zeros(resLength,1);
   if(length(idx)==0)  return; end;
 
-  result(_pick_rng(idx,resLength))=1;
+  if(idx(1)>0 && idx(end)<=resLength)
+    result(idx)=1;  %to speed up
+  else
+    rng=_pick_rng(idx,resLength);
+    result(idx(rng))=1;
+  end
 end
 
 end
@@ -45,14 +50,14 @@ function idxMin=_pick_min(idx,resLength)
     idxMin=2;
   elseif(idx(1)<0)
     t=min(resLength,-idx(1));
-    idxMin=max(find(idx(1:t)<1))+1;
+    idxMin=max(find(idx(1:t)<1))+2;
   end
 end
 
 function idxMax=_pick_max(idx,resLength)
   l=length(idx);
   idxMax=l;
-  if(resLength!=0 && idx(end)>resLength)
+  if(resLength>0 && idx(end)>resLength)
     t=min(l,idx(end)-resLength);
     idxMax=l-t+min(find(idx(end-t+1:end)>resLength))-1;
   end
