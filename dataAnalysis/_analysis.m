@@ -61,7 +61,7 @@ title([type,' between ',num2str(i),' and ',num2str(j)]);
 
 function showMI_xn(xPoints,mi)
   [nNeu,~,l]=size(mi);
-  if(length(xPoints)!=l)  error('Unmatched xPoint and mi');  end;
+  if(length(xPoints)!=l)  error('Unmatched xPoints and mi');  end;
   idx=find(triu(ones(nNeu),1));
   mi2=zeros(l,length(idx));
   for i=1:length(idx);
@@ -139,7 +139,7 @@ save('Xtrial-focus.mat','window_size','mi');
 function showMI_xt(mi,xPoints,cue_name,xlbl)
   [nNeu,l,nCue]=size(mi);
   if(length(mi)!=0) nTri=length(cell2mat(mi(1))); else return; end;%nTri
-  if(length(xPoints)!=l)  error('Unmatched xPoint and mi');  end;
+  if(length(xPoints)!=l)  error('Unmatched xPoints and mi');  end;
   if(length(cue_name)!=nCue)  error('Unmatched cue_name length and mi');  end;
   mi2=zeros(size(mi));
   for i=1:prod(size(mi)); mi2(i)=sum(sum(cell2mat(mi(i)))); end;
@@ -159,7 +159,7 @@ showMI_xt(mi,window_size/timeUnit2ms,cue_name,'window size');
 function showMI_xt_sample(mi,xPoints,xlbl,cue_name,cue_trials,neuidx=0)
   %cue_trials(1)->cueID, cue_trials(2)->trialFrom, cue_trials(3)->trialTo
   [nNeu,l,nCue]=size(mi);
-  if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
+  if(l!=length(xPoints)) error('Unmatched xPoints and mi');  end;
   if(length(cue_trials)<3)  error('Wrong coordinate size'); end;
   %make sure trial_id_source is small that trial_id_target (mi is symmetric)
   cue_trials([2,3])=sort(cue_trials([2,3]));
@@ -180,6 +180,28 @@ showMI_xt_sample(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name
 showMI_xt_sample(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,[1,3,5],1:9)
 ylim([0,1]);
 
+%figure for MI of one neuron on all trial-pairs on given cue
+function showMI_xt_neuron(mi,xPoints,xlbl,cue_name,nid,cue_id)
+  [nNeu,l,nCue]=size(mi);
+  if(l!=length(xPoints)) error('Unmatched xPoints and mi');  end;
+  nTri=length(cell2mat(mi(1)));
+  idx=find(triu(ones(nTri),1));
+  mi4=zeros(nTri*(nTri-1)/2,length(xPoints));
+  for wid=1:l;
+    mi4(:,wid)=cell2mat(mi(nid,wid,cue_id))(idx);
+  end;
+  mi4=max(mi4,0);
+  global type;
+  %plot(xPoints,mi4,xPoints,mean(mi4,1),'linewidth',4);xlabel(xlbl);ylabel(type);
+  plot(xPoints,mi4(1:600,:),xPoints,mean(mi4,1),'linewidth',4);xlabel(xlbl);ylabel(type);
+  %title([cell2mat(cue_name(cue_id)),': Neuron ',num2str(nid),' ',type,' on all trial pairs']);
+  title([cell2mat(cue_name(cue_id)),': Neuron ',num2str(nid),' ',type]);
+end
+showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,3,1)
+
+for i=1:9
+  subplot(3,3,i);showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,i,1)
+end;
 
 ###################
 #cross CUE mutual information on identical neuron
@@ -235,7 +257,7 @@ save('Xcue-focus.mat','window_size','mi');
 %figure
 function showMI_xc(mi,xPoints,nid,nCue)
   [nNeu,l]=size(mi);
-  if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
+  if(l!=length(xPoints)) error('Unmatched xPoints and mi');  end;
   idx=[]; ticks=num2str([]);
   for i=1:nCue;for j=i+1:nCue;
     idx=[idx; i+nCue*(j-1)];
