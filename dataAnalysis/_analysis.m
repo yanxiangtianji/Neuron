@@ -1,3 +1,5 @@
+return %directly return, when whole scri[t is run by accident
+
 ###################
 #cross NEUORN mutual information on identical period
 
@@ -153,33 +155,30 @@ end
 showMI_xt(mi,log10(window_size/timeUnit2ms),cue_name,'log10(window size)');
 showMI_xt(mi,window_size/timeUnit2ms,cue_name,'window size');
 
-%figure for MI of 4 trial pairs on their own cues
-function showMI_xt_4single(mi,xPoints,xlbl,cue_name,cue_trials_mat)
-  %cue_trials_mat(1,1)-cueID, cue_trials_mat(1,2)-trialFrom, cue_trials_mat(1,3)-trialTo
+%figure for MI of one trial pairs on one cue
+function showMI_xt_sample(mi,xPoints,xlbl,cue_name,cue_trials,neuidx=0)
+  %cue_trials(1)->cueID, cue_trials(2)->trialFrom, cue_trials(3)->trialTo
   [nNeu,l,nCue]=size(mi);
   if(l!=length(xPoints)) error('Unmatched xPoint and mi');  end;
-  len=length(cue_trials_mat,1);
-  if(size(cue_trials_mat,2)!=3)  error('Wrong coordinate size'); end;
+  if(length(cue_trials)<3)  error('Wrong coordinate size'); end;
   %make sure trial_id_source is small that trial_id_target (mi is symmetric)
-  cue_trials_mat=sort(tid_mat,2);
+  cue_trials([2,3])=sort(cue_trials([2,3]));
+  if(neuidx==0) neuidx=1:nNeu; end;  %initialize neuidx if it is not input
+  cue_id=cue_trials(1);tid_s=cue_trials(2);tid_t=cue_trials(3);
   mi3=zeros(nNeu,length(xPoints));
+  for i=1:nNeu;for j=1:l;
+    mi3(i,j)=(cell2mat(mi(i,j,cue_id)))(tid_s,tid_t);
+  end;end;
+  mi3=max(mi3,0);
   global type;
-  for k=1:min(4,len); %first 4
-    cue_id=cue_trials_mat(k,1);tid_s=cue_trials_mat(k,2);tid_t=cue_trials_mat(k,3);
-    for i=1:nNeu;for j=1:l;
-      mi3(i,j)=(cell2mat(mi(i,j,cue_id)))(tid_s,tid_t);
-    end;end;
-    mi3=max(mi3,0);
-    subplot(2,2,k);plot(xPoints,mi3(:,:));xlabel(xlbl);ylabel(type);
-    title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' ',type,' on all neurons']);
-    %legend(num2str((1:nNeu)'));
-  end
+  plot(xPoints,mi3(neuidx,:));xlabel(xlbl);ylabel(type);
+  title([cell2mat(cue_name(cue_id)),': trial ',num2str(tid_s),'-',num2str(tid_t),' ',type,' on all neurons']);
+  %legend(num2str((1:nNeu)(neuidx)'));%legend(num2str((1:nNeu)'));
 end
-
-ct_mat=[(1:4)';zeros(4,1)+2,zeros(4,1)+5];%1 cln->cueID, 2 cln->trialFrom, 3 cln->trialTo
-showMI_xt_4single(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,ct_mat)
-showMI_xt_4single(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name, ...
-  [1 3 5; 2 5 8; 3 8 14; 4 9 19])
+%1st->cueID, 2nd->trialFrom, 3rd->trialTo
+showMI_xt_sample(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,[1,3,5])
+showMI_xt_sample(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,[1,3,5],1:9)
+ylim([0,1]);
 
 
 ###################
