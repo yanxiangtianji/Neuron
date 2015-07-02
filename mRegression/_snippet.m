@@ -60,6 +60,11 @@ end
 
 save('../data/count.mat','Carr','Cdis','Ca','Cs')
 
+plot(Cdis');xlim([1,160]);legend(num2str((1:nNeu)'));
+figure;plot(Cdis(1:6,:)');xlim([1,160]);legend(num2str((1:6)'));
+figure;plot(Cdis(7:12,:)');xlim([1,160]);legend(num2str((7:12)'));
+figure;plot(Cdis(13:19,:)');xlim([1,160]);legend(num2str((13:19)'));
+
 ##################
 #accurancy & valid:
 
