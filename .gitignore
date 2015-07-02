@@ -193,6 +193,7 @@ data/
 
 # matlab mat files:
 *.mat
+octave-workspace
 
 # figure files:
 *.png
