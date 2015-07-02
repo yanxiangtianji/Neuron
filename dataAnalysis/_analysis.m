@@ -181,19 +181,30 @@ showMI_xt_sample(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name
 ylim([0,1]);
 
 %figure for MI of one neuron on all trial-pairs on given cue
-function showMI_xt_neuron(mi,xPoints,xlbl,cue_name,nid,cue_id)
+function showMI_xt_neuron(mi,xPoints,xlbl,cue_name,nid,cue_id,form='bunch',form_arg=299)
   [nNeu,l,nCue]=size(mi);
   if(l!=length(xPoints)) error('Unmatched xPoints and mi');  end;
   nTri=length(cell2mat(mi(1)));
-  idx=find(triu(ones(nTri),1));
-  mi4=zeros(nTri*(nTri-1)/2,length(xPoints));
+  idx=find(triu(ones(nTri),1)); %length(idx)=nTri*(nTri-1)/2;
+  mi4=zeros(length(idx),length(xPoints));
   for wid=1:l;
     mi4(:,wid)=cell2mat(mi(nid,wid,cue_id))(idx);
   end;
   mi4=max(mi4,0);
+  if(strcmp(form,'bunch'))
+    if(form_arg<=0 || form_arg>=length(idx))
+      plot(xPoints,mi4,xPoints,mean(mi4,1),'linewidth',4);
+    else
+      form_arg=fix(form_arg/7)*7+5;%7 colors. 6th is good for bold
+      idx=randi(length(idx),form_arg,1);
+      plot(xPoints,mi4(idx,:),xPoints,mean(mi4,1),'linewidth',4);
+    end
+  else %error-bar
+    m=mean(mi4);s=mean(mi4);
+    errorbar(xPoints,m,min(s,m),min(s,1-m));
+  end
   global type;
-  %plot(xPoints,mi4,xPoints,mean(mi4,1),'linewidth',4);xlabel(xlbl);ylabel(type);
-  plot(xPoints,mi4(1:600,:),xPoints,mean(mi4,1),'linewidth',4);xlabel(xlbl);ylabel(type);
+  xlabel(xlbl);ylabel(type);
   %title([cell2mat(cue_name(cue_id)),': Neuron ',num2str(nid),' ',type,' on all trial pairs']);
   title([cell2mat(cue_name(cue_id)),': Neuron ',num2str(nid),' ',type]);
 end
@@ -201,6 +212,16 @@ showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name
 
 for i=1:9
   subplot(3,3,i);showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,i,1)
+end;
+
+for i=1:9;  %all cue, error bar
+  subplot(3,3,mod(i-1,9)+1);hold all;
+  for j=1:nCue;
+    showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,i,j,'errorbar')
+  end
+  title(['Neuron ',num2str(i),' ',type]);%legend(num2str((1:nCue)'))
+  xlim(log10(window_size([1,end])/timeUnit2ms)+[-0.1,0.1]);
+  hold off;
 end;
 
 ###################
