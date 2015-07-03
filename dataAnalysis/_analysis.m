@@ -5,11 +5,9 @@ return %directly return, when whole scri[t is run by accident
 
 %load data
 addpath('../mBasic/')
-addpath('../mRegression/')
-basicParameters
+basicDataParameters
 rData=readRaw([fn_prefix,'all.txt']);
-clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2 lambdaA lambdaW clear fRep vanishTime95
-rmpath('../mRegression/')
+clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2
 
 %mutual information:
 global disFun infoFun type
@@ -82,21 +80,17 @@ showMI_xn(window_size/timeUnit2ms,mi);xlabel('window size (ms)');
 #cross TRIAL mutual information on identical neuron and identical cue
 
 addpath('../mBasic/')
-addpath('../mRegression/')
 function rData=_readList(flist,n)
   rData=cell(length(flist),n);
   for i=1:length(flist)
     rData(i,:)=readRaw(flist(i));
   end
 end
-basicParameters
 nTri=50;
-fnlist=cell(nTri,nCue);
-fnlist(:,1)=fn_c1(1:nTri);fnlist(:,2)=fn_c2(1:nTri);fnlist(:,3)=fn_r1(1:nTri);fnlist(:,4)=fn_r2(1:nTri);
+basicDataParameters
+clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2
 rDataList=cell(nTri,nNeu,nCue);
 for i=1:nCue;  rDataList(:,:,i)=_readList(fnlist(:,i),nNeu);  end;
-clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2 lambdaA lambdaW clear fRep vanishTime95
-rmpath('../mRegression/')
 
 maxTime=findMaxTime(rDataList);%=100000, log10(maxTime/timeUnit2ms)=5
 

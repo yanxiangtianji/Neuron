@@ -1,26 +1,12 @@
-n_c1=54;    n_c2=52;
-fn_c1=cell(n_c1,1);   fn_c2=cell(n_c2,1);
-fn_r1=cell(n_c1,1);   fn_r2=cell(n_c2,1);
-fn_prefix='../data/real/st/';   %fn_prefix='../data/real/st3-6/';
-for i=1:n_c1    fn_c1(i)=[fn_prefix,'cue1_',num2str(i-1),'.txt']; end
-for i=1:n_c2    fn_c2(i)=[fn_prefix,'cue2_',num2str(i-1),'.txt']; end
-for i=1:n_c1    fn_r1(i)=[fn_prefix,'rest1_',num2str(i-1),'.txt'];    end
-for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
+#file parameters:
+addpath('../mBasic/')
+basicDataParameters();
 
-nCue=4;
-nNeu=19;
-nTri=40;
-
-fnlist=cell(nTri,nCue);
-fnlist(:,1)=fn_c1(1:nTri);fnlist(:,2)=fn_c2(1:nTri);fnlist(:,3)=fn_r1(1:nTri);fnlist(:,4)=fn_r2(1:nTri);
-cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
-
+#training parameters:
 
 %dMin=0.0001;    dUnit=0.0001;  %for readRawSpike
 %dMin=1; dUnit=1;    %readRaw
 %[D,Ainit,Winit]=init(nNeu,dMin,dUnit);
-
-timeUnit2ms=10;
 
 lambdaA=1;
 lambdaW=1;
