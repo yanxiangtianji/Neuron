@@ -1,4 +1,5 @@
 
+addpath('../mBasic/')
 
 prefix='../data/real/crcns/';
 suffixData='_data.txt';

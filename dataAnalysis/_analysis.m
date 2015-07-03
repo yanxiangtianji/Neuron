@@ -4,6 +4,7 @@ return %directly return, when whole scri[t is run by accident
 #cross NEUORN mutual information on identical period
 
 %load data
+addpath('../mBasic/')
 addpath('../mRegression/')
 basicParameters
 rData=readRaw([fn_prefix,'all.txt']);
@@ -80,6 +81,7 @@ showMI_xn(window_size/timeUnit2ms,mi);xlabel('window size (ms)');
 ###################
 #cross TRIAL mutual information on identical neuron and identical cue
 
+addpath('../mBasic/')
 addpath('../mRegression/')
 function rData=_readList(flist,n)
   rData=cell(length(flist),n);

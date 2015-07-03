@@ -1,6 +1,4 @@
-fn_spike='../data/real/st/all.txt';
-fn_processed='../data/real/st/all.txt';
-fn_processed='../data/real/st/cue1_0.txt';
+addpath('../mBasic/')
 
 disp('Initial:');
 

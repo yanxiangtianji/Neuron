@@ -3,6 +3,7 @@
 
 basicParameters()
 basicStatFuns()
+addpath('../mBasic/')
 
 #################
 #get data

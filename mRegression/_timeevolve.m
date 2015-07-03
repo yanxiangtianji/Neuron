@@ -1,3 +1,5 @@
+addpath('../mBasic/')
+
 #W for whole trial
 
 [~,W]=goTogether2(fnlist,nNeu,D,fRep,1,1,Ainit,Winit);

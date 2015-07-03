@@ -1,5 +1,7 @@
 ################
 
+addpath('../mBasic/')
+
 #helper:
 function A=binA2pnA(Aorg, dif=5)
   A=Aorg*2-1;
