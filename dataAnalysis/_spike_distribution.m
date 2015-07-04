@@ -1,5 +1,6 @@
 
 addpath('../mBasic/')
+basicDataParameters
 
 function data=loadNeuronData(fnlist,fun)
   nTri=length(fnlist);
@@ -17,6 +18,11 @@ function data=loadNeuronData(fnlist,fun)
     data(i)=cell2mat(t(i,:));
   end
 end;
+
+################
+#try possion process (intervals follow exponential distribution)
+
+%load interval data
 function info=diffFun(data)
   nNeu=numel(data);
   info=cell(size(data));
@@ -25,7 +31,26 @@ function info=diffFun(data)
     if(length(t)>=2) info(i)=t(2:end)-t(1:end-1); end;
   end
 end
+data=cell(nNeu,nCue);
+for i=1:nCue
+  data=loadNeuronData(fnlist(:,i),@diffFun);
+end
 
-%
-data=loadNeuronData(fn_c1,@diffFun);
 hist(cell2mat(data(1)),100);
+
+%hypothesis testing (Kolmogorov–Smirnov method)
+%step 1, estimate exponential parameter -- lambda (required by step 2)
+
+lambda=zeros(nNeu,nCue);
+for i=1:nNeu;
+  lambda(i)=mean(cell2mat(data(i)));
+end;
+
+%step 2, distribution testing
+
+pval=zeros(nNeu,nCue);
+for i=1:nNeu;
+  pval(i)=kolmogorov_smirnov_test(cell2mat(data(i)),'exp',lambda(i));
+end;
+plot(pval)
+%pval>alpha -> accept; pval<=alpha -> reject(not exponential on lambda)
