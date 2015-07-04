@@ -1,13 +1,16 @@
 n_c1=54;    n_c2=52;
 fn_c1=cell(n_c1,1);   fn_c2=cell(n_c2,1);
 fn_r1=cell(n_c1,1);   fn_r2=cell(n_c2,1);
-fn_prefix='../data/real/st/';   %fn_prefix='../data/real/st3-6/';
+if(exist('fn_prefix','var')==0)
+  fn_prefix='../data/real/st/';
+  %fn_prefix='../data/real/st3-6/';
+end
 for i=1:n_c1    fn_c1(i)=[fn_prefix,'cue1_',num2str(i-1),'.txt']; end
 for i=1:n_c2    fn_c2(i)=[fn_prefix,'cue2_',num2str(i-1),'.txt']; end
 for i=1:n_c1    fn_r1(i)=[fn_prefix,'rest1_',num2str(i-1),'.txt'];    end
 for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
 
-clear i
+clear i fn_prefix
 
 nCue=4;
 nNeu=19;

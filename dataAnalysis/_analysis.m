@@ -7,7 +7,7 @@ return %directly return, when whole scri[t is run by accident
 addpath('../mBasic/')
 basicDataParameters
 rData=readRaw([fn_prefix,'all.txt']);
-clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2
+clear fn_c1 fn_c2 fn_r1 fn_r2
 
 %mutual information:
 global disFun infoFun type
@@ -80,17 +80,11 @@ showMI_xn(window_size/timeUnit2ms,mi);xlabel('window size (ms)');
 #cross TRIAL mutual information on identical neuron and identical cue
 
 addpath('../mBasic/')
-function rData=_readList(flist,n)
-  rData=cell(length(flist),n);
-  for i=1:length(flist)
-    rData(i,:)=readRaw(flist(i));
-  end
-end
 nTri=50;
 basicDataParameters
-clear fn_prefix fn_c1 fn_c2 fn_r1 fn_r2
+clear fn_c1 fn_c2 fn_r1 fn_r2
 rDataList=cell(nTri,nNeu,nCue);
-for i=1:nCue;  rDataList(:,:,i)=_readList(fnlist(:,i),nNeu);  end;
+for i=1:nCue;  rDataList(:,:,i)=readList(fnlist(:,i));  end;
 
 maxTime=findMaxTime(rDataList);%=100000, log10(maxTime/timeUnit2ms)=5
 
