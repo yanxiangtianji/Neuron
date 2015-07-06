@@ -37,6 +37,11 @@ for i=1:nCue
 end
 
 hist(cell2mat(data(1)),100);
+for i=1:9;
+  nid=randi(nNeu,9,1);cid=randi(nCue,9,1);
+  subplot(3,3,i);hist(cell2mat(data(nid,cid)),100);
+  title(['N',num2str(nid(i)),'-C',num2str(cid(i))]);ylabel('frequency');
+end
 
 %hypothesis testing (Kolmogorov–Smirnov method)
 %step 1, estimate exponential parameter -- lambda (required by step 2)
