@@ -2,9 +2,9 @@ addpath('../mBasic/')
 nTri=50;
 basicDataParameters
 
-data=readList(fn_c1);
-data=cell(nTri,nNeu,nCue);
-for i=1:nCue; data(:,:,i)=readList(fnlist(:,i)); end;
+rData=readList(fn_c1);
+rData=cell(nTri,nNeu,nCue);
+for i=1:nCue; rData(:,:,i)=readList(fnlist(:,i)); end;
 
 function ref=initRef_binMean(rData,maxTime,ws,threshold)
   %require: data=cell(nTri); WindowSize>0
@@ -28,13 +28,20 @@ function ref=initRef_binMean(rData,maxTime,ws,threshold)
   ref/=nTri;
 end
 
-maxTime=findMaxTime(data);
+maxTime=findMaxTime(rData);
 ws=200*timeUnit2ms;
 
+%ref
 ref=cell(nNeu,1);
 cid=1;
 for nid=1:nNeu;
-  ref(nid)=initRef_binMean(data(:,nid,cid),maxTime,ws,0.6);
+  ref(nid)=initRef_binMean(rData(:,nid,cid),maxTime,ws,0.3);
 end;
+
+%align
+center=cell(nNeu,1);error=zeros(nNeu,1);
+for nid=1:nNeu;
+  [center(i),error(i)]=knn(rData(:,nid,cid),ref(i),400,1e-4);
+end
 
 
