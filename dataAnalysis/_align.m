@@ -61,17 +61,33 @@ w=_pairMMWref(rData(1,11),rData(2,11),100)
 [ws,cr]=pairMMW(rData(1,11),rData(2,11));
 plot(ws,cr);
 
-
-ws=cell(nTri,nTri,nNeu,nCue);
-cr=cell(nTri,nTri,nNeu,nCue);
+idx=find(triu(ones(nTri),1));
+back_idx=[mod((idx-1),nTri)+1, fix((idx-1)/nTri)+1];
+ws=cell(length(nTri),nNeu,nCue);
+cr=cell(length(nTri),nNeu,nCue);
 for cid=1:nCue;
+  tic;
   for nid=1:nNeu;
-    tic;
+    count=1;
     for tid1=1:nTri;  for tid2=tid1+1:nTri
-      [ws(tid1,tid2,nid,cid),cr(tid1,tid2,nid,cid)]=pairMMW(rData(tid1,nid,cid),rData(tid2,nid,cid));
+%      [ws(tid1,tid2,nid,cid),cr(tid1,tid2,nid,cid)]=pairMMW(rData(tid1,nid,cid),rData(tid2,nid,cid));
+      [ws(count,nid,cid),cr(count,nid,cid)]=pairMMW(rData(tid1,nid,cid),rData(tid2,nid,cid));
+      ++count;
     end;end
-    toc;
   end
+  toc;
 end
-save('./align/base.mat','ws','cr')
+save('-binary','./align/base.mat','ws','cr')
+load('./align/base.mat')
+
+%plot(cell2mat(ws(1,11,1)),cell2mat(cr(1,11,1)),cell2mat(ws(2,11,1)),cell2mat(cr(2,11,1)));
+showWC(ws,cr,timeUnit2ms,[1 11 2])
+
+nid=11;cid=1;
+
+figure;hold all;
+for i=1:length(idx)
+  showWC(ws,cr,timeUnit2ms,[i,nid,cid]);
+end
+hold off;
 
