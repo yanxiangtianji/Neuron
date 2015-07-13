@@ -4,7 +4,7 @@ return %directly return, when whole scri[t is run by accident
 #cross NEUORN mutual information on identical period
 
 %load data
-addpath('../mBasic/')
+addpath([pwd,'/../mBasic/'])
 basicDataParameters
 rData=readRaw([fn_prefix,'all.txt']);
 clear fn_c1 fn_c2 fn_r1 fn_r2

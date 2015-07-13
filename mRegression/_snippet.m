@@ -3,7 +3,7 @@
 
 basicParameters()
 basicStatFuns()
-addpath('../mBasic/')
+addpath([pwd,'/../mBasic/'])
 
 #################
 #get data
