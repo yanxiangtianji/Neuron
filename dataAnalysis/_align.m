@@ -84,10 +84,14 @@ load('./align/base.mat')
 showWC(ws,cr,timeUnit2ms,[1 11 2])
 
 nid=11;cid=1;
+rng=0:.05:1;
+%function showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng)
+showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng);xlabel('window size (ms)');ylabel('coverage');
+title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);grid;
 
-figure;hold all;
-for i=1:length(idx)
-  showWC(ws,cr,timeUnit2ms,[i,nid,cid]);
-end
-hold off;
+for i=1:9;nid=i;
+  subplot(3,3,nid);showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng);
+  xlabel('WS(ms)');ylabel('coverage');title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);grid;
+end;
+
 
