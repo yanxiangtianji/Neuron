@@ -12,8 +12,8 @@ function [ws,cr]=pairMMW(d1,d2,compact=false)  %ws and cr are column vectors
   %main:
   cr=(1:ld1)'./ld1;
   %dis=abs(d1-d2');%size=[length(d2),length(d1)]
-  ws=sort(min(abs(bsxfun(@minus,d1,d2'))))';
-  %ws=sort(min(abs(d1-d2')))';%for Octave 4.0 and later
+  ws=sort(min(abs(bsxfun(@minus,d1,d2')),[],1))';
+  %ws=sort(min(abs(d1-d2'),[],1))';%for Octave 4.0 and later
   if(isbool(compact))
     if(compact==true)
       [ws,idx]=unique(ws);%idx is the last occurence in ws
