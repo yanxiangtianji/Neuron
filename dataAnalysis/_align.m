@@ -87,11 +87,21 @@ nid=11;cid=1;
 rng=0:.05:1;
 %function showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng)
 showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng);xlabel('window size (ms)');ylabel('coverage');
-title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);grid;
+title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);grid on;
 
-for i=1:9;nid=i;
-  subplot(3,3,nid);showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng);
-  xlabel('WS(ms)');ylabel('coverage');title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);grid;
+cid=1;rng=0:.05:1;
+for i=1:9;nid=i;%nid=i+9;
+  subplot(3,3,i);showWC_bunch(ws,cr,timeUnit2ms,nid,cid,rng);
+  xlabel('WS(ms)');ylabel('coverage');title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);
+  _l=get(gca,'xlim');set(gca,'xtick',fix(linspace(_l(1),_l(2),5)));grid on;
 end;
 
+%function showWC_Xcue(ws,cr,timeUnit2ms,rng,nid)
+rng=0:.05:1;
+for i=1:9;nid=i;%nid=i+9;
+  subplot(3,3,i);showWC_Xcue(ws,cr,timeUnit2ms,rng,nid);
+  xlabel('WS(ms)');ylabel('mean coverage');title(['N',num2str(nid),' on all cues']);
+  _l=get(gca,'xlim');set(gca,'xtick',fix(linspace(_l(1),_l(2),5)));grid on;
+end
+legend(cue_name(1:2),'location','southeast');legend('boxoff');
 
