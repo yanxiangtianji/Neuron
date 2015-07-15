@@ -3,11 +3,11 @@ nTri=50;
 basicDataParameters
 clear fn_c1 fn_c2 fn_r1 fn_r2
 addpath([pwd,'/align/'])
+rData=cell(nTri,nNeu,nCue);
+for i=1:nCue; rData(:,:,i)=readList(fnlist(:,i)); end;
 
 %rData=readList(fnlist(:,1));%for test
 
-rData=cell(nTri,nNeu,nCue);
-for i=1:nCue; rData(:,:,i)=readList(fnlist(:,i)); end;
 
 ####################
 # algorithm 1
@@ -65,13 +65,14 @@ idx=find(triu(ones(nTri),1));
 back_idx=[mod((idx-1),nTri)+1, fix((idx-1)/nTri)+1];
 ws=cell(length(nTri),nNeu,nCue);
 cr=cell(length(nTri),nNeu,nCue);
+compact=true;%compact=false;
 for cid=1:nCue;
   tic;
   for nid=1:nNeu;
     count=1;
     for tid1=1:nTri;  for tid2=tid1+1:nTri
 %      [ws(tid1,tid2,nid,cid),cr(tid1,tid2,nid,cid)]=pairMMW(rData(tid1,nid,cid),rData(tid2,nid,cid));
-      [ws(count,nid,cid),cr(count,nid,cid)]=pairMMW(rData(tid1,nid,cid),rData(tid2,nid,cid));
+      [ws(count,nid,cid),cr(count,nid,cid)]=pairMMW(rData(tid1,nid,cid),rData(tid2,nid,cid),compact);
       ++count;
     end;end
   end
@@ -95,6 +96,21 @@ for i=1:9;nid=i;%nid=i+9;
   xlabel('WS(ms)');ylabel('coverage');title([cell2mat(cue_name(cid)),' : N',num2str(nid)]);
   _l=get(gca,'xlim');set(gca,'xtick',fix(linspace(_l(1),_l(2),5)));grid on;
 end;
+
+%error bar plot
+rng=0:.05:1;
+cSelected=[1 2];%cSelected=[1:nCue];
+figure
+for i=1:9;nid=i;%nid=i+9;
+  subplot(3,3,i);hold all;
+  for j=1:length(cSelected);cid=cSelected(j);
+    showWC_bunch(ws(1:100,:,:),cr(1:100,:,:),10,nid,cid,rng,'errorbar');
+  end;hold off;
+  xlabel('WS(ms)');ylabel('coverage');title(['N',num2str(nid)]);grid on;
+  legend(cue_name(cSelected),'location','southeast');legend('boxoff')
+  _l=get(gca,'xlim');set(gca,'xtick',fix(linspace(_l(1),_l(2),4)));clear _l;
+end;
+
 
 %function showWC_Xcue(ws,cr,timeUnit2ms,rng,nid)
 rng=0:.05:1;
