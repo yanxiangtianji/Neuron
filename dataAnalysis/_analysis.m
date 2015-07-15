@@ -171,7 +171,8 @@ showMI_xt_sample(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name
 ylim([0,1]);
 
 %figure for MI of one neuron on all trial-pairs on given cue
-function showMI_xt_neuron(mi,xPoints,xlbl,cue_name,nid,cue_id,form='bunch',form_arg=299)
+function showMI_xt_neuron(mi,xPoints,xlbl,cue_name,nid,cue_id,mode='bunch',mode_arg=299)
+  %mode can be 'bunch' or 'error-bar'
   [nNeu,l,nCue]=size(mi);
   if(l!=length(xPoints)) error('Unmatched xPoints and mi');  end;
   nTri=length(cell2mat(mi(1)));
@@ -181,16 +182,16 @@ function showMI_xt_neuron(mi,xPoints,xlbl,cue_name,nid,cue_id,form='bunch',form_
     mi4(:,wid)=cell2mat(mi(nid,wid,cue_id))(idx);
   end;
   mi4=max(mi4,0);
-  if(strcmp(form,'bunch'))
-    if(form_arg<=0 || form_arg>=length(idx))
+  if(strcmp(mode,'bunch'))
+    if(mode_arg<=0 || mode_arg>=length(idx))
       plot(xPoints,mi4,xPoints,mean(mi4,1),'linewidth',4);
     else
-      form_arg=fix(form_arg/7)*7+5;%7 colors. 6th is good for bold
-      idx=randi(length(idx),form_arg,1);
+      mode_arg=fix(mode_arg/7)*7+5;%7 colors in all. the 6th is good for bold
+      idx=randi(length(idx),mode_arg,1);
       plot(xPoints,mi4(idx,:),xPoints,mean(mi4,1),'linewidth',4);
     end
   else %error-bar
-    m=mean(mi4);s=mean(mi4);
+    m=mean(mi4);s=std(mi4);
     errorbar(xPoints,m,min(s,m),min(s,1-m));
   end
   global type;
@@ -201,7 +202,7 @@ end
 showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,3,1)
 
 for i=1:9
-  subplot(3,3,i);showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,i,1)
+  subplot(3,3,i);showMI_xt_neuron(mi,log10(window_size/timeUnit2ms),'log10(window size)',cue_name,i,1,'bunch',299)
 end;
 
 for i=1:9;  %all cue, error bar
