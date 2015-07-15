@@ -1,5 +1,5 @@
 function idx=idx_nd2ser(s,ndIdx)
-  if(length(ndIdx)>length(s))
+  if(length(ndIdx)>length(s) && sum(ndIdx(length(s)+1:end)==1)!=length(ndIdx)-length(s))
     error(sprintf('idx has higher dimension (%d>%d)',length(ndIdx),length(s)))
   elseif(sum(ndIdx>s(1:length(ndIdx)))!=0)
     error('value(s) of some dimension(s) of idx is(are) large than size');
