@@ -1,16 +1,17 @@
 function result=discretize(value,binSize=1,offset=0,resLength=0,type='count')
 %type can be either 'count' or 'binary'
+%result is a column vector
 
 if(iscell(value)) value=cell2mat(value)(:); end
 value=ceil((value-offset)./binSize);
-
+result=[];
 
 if(strcmp(type,'count')==1)
   [idx,~,j]=unique(value(:)); %make idx and j to be column vectors
-  count=accumarray(j,1);
-  if(resLength==0)  resLength=length(idx);  end;
+  if(length(idx)==0 || idx(end)<=0)  return; end;
+  if(resLength==0)  resLength=idx(end); end;
   result=zeros(resLength,1);
-  if(length(idx)==0)  return; end;
+  count=accumarray(j,1);%only works on colum vector
 
   if(idx(1)>0 && idx(end)<=resLength)
     result(idx)=count;  %to speed up
@@ -20,9 +21,9 @@ if(strcmp(type,'count')==1)
   end
 else
   [idx]=unique(value(:));
-  if(resLength==0)  resLength=length(idx);  end;
+  if(length(idx)==0 || idx(end)<=0)  return; end;
+  if(resLength==0)  resLength=idx(end); end;
   result=zeros(resLength,1);
-  if(length(idx)==0)  return; end;
 
   if(idx(1)>0 && idx(end)<=resLength)
     result(idx)=1;  %to speed up
