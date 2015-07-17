@@ -10,7 +10,8 @@ for i=1:n_c2    fn_c2(i)=[fn_prefix,'cue2_',num2str(i-1),'.txt']; end
 for i=1:n_c1    fn_r1(i)=[fn_prefix,'rest1_',num2str(i-1),'.txt'];    end
 for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
 
-clear i fn_prefix
+clear i
+%clear fn_prefix
 
 nCue=4;
 nNeu=19;
