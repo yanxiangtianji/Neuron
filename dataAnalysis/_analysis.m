@@ -216,3 +216,43 @@ end;
 nid=1;
 showMI_xc(type,mi,log10(window_size/timeUnit2ms),nid,nCue);
 
+
+###################
+# X-cue difference check
+###################
+
+%maxTime=findMaxTime(rData);
+maxTime=10*1000*timeUnit2ms;
+winSize=100*timeUnit2ms;
+resLength=ceil(maxTime/winSize);
+
+%1, spike rate checking:
+
+%single:
+tid=1;nid=10;cid=1;
+plot(discretize(rData(tid,nid,cid),winSize,0,resLength,'count')/winSize*timeUnit2ms*1000);
+%group:
+sc1=zeros(resLength,nNeu,nCue); sc2=zeros(resLength,nNeu,nCue);
+for cid=1:nCue;
+  for nid=1:nNeu;
+    for tid=1:nTri;
+      t=discretize(rData(tid,nid,cid),winSize,0,resLength,'count');
+      sc1(:,nid,cid)+=t; sc2(:,nid,cid)+=t.^2;
+    end;
+  end;
+end
+sc_m=sc1/nTri/ winSize*timeUnit2ms*1000;% num per second
+sc_s=sqrt(sc2/nTri-(sc1/nTri).^2)/winSize*timeUnit2ms*1000;
+
+%mean spike rate of each neuron on each cue:
+avg_sr=reshape(mean(sc_m,1)(:),nNeu,nCue)
+
+nid=10;
+for i=1:nCue;
+  subplot(nCue,1,i);errorbar(1:resLength,sc_m(:,nid,i),sc_s(:,nid,i)/3);
+  line([0,resLength],mean(sc_m(:,nid,i)),'color','r');xlim([0 resLength]);
+end;
+
+
+
+
