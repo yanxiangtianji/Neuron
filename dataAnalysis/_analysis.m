@@ -221,7 +221,7 @@ showMI_xc(type,mi,log10(window_size/timeUnit2ms),nid,nCue);
 # X-cue difference check
 ###################
 
-%maxTime=findMaxTime(rData);
+%maxTime=findMaxTime(rDataList);
 maxTime=10*1000*timeUnit2ms;
 winSize=100*timeUnit2ms;
 resLength=ceil(maxTime/winSize);
@@ -229,14 +229,17 @@ resLength=ceil(maxTime/winSize);
 %1, spike rate checking:
 
 %single:
-tid=1;nid=10;cid=1;
-plot(discretize(rData(tid,nid,cid),winSize,0,resLength,'count')/winSize*timeUnit2ms*1000);
+tid=1;nid=10;
+for i=1:nCue;cid=i;
+  subplot(2,2,i);
+  plot(discretize(rDataList(tid,nid,cid),winSize,0,resLength,'count')/winSize*timeUnit2ms*1000);
+end;
 %group:
 sc1=zeros(resLength,nNeu,nCue); sc2=zeros(resLength,nNeu,nCue);
 for cid=1:nCue;
   for nid=1:nNeu;
     for tid=1:nTri;
-      t=discretize(rData(tid,nid,cid),winSize,0,resLength,'count');
+      t=discretize(rDataList(tid,nid,cid),winSize,0,resLength,'count');
       sc1(:,nid,cid)+=t; sc2(:,nid,cid)+=t.^2;
     end;
   end;
@@ -252,6 +255,24 @@ for i=1:nCue;
   subplot(nCue,1,i);errorbar(1:resLength,sc_m(:,nid,i),sc_s(:,nid,i)/3);
   line([0,resLength],mean(sc_m(:,nid,i)),'color','r');xlim([0 resLength]);
 end;
+
+
+%2, spike interval checking:
+function interval=getSpikeInterval(rData)
+  if(iscell(rData)) rData=cell2mat(rData);  end;
+  if(length(rData)==0)  interval=[]; return;  end;
+  interval=rData(2:end)-rData(1:end-1);
+end
+
+interval=cell(nTri,nNeu,nCue);
+for cid=1:nCue;for nid=1:nNeu;for tid=1:nTri;
+  interval(tid,nid,cid)=getSpikeInterval(rDataList(tid,nid,cid));
+end;end;end;
+
+%single:
+tid=1;nid=10;
+showSI_xc_one(interval,tid,nid);
+%group:
 
 
 
