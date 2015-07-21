@@ -24,7 +24,7 @@ type='DP';
 %Pearson correlation:
 global disFun infoFun type
 disFun=@(data,ws,off,len)discretize(data,ws,off,len,'count');
-infoFun=@(data1,data2)corr(data1(:),data2(:));
+infoFun=@(data1,data2)pearson_corr(data1(:),data2(:));
 type='PC';
 
 maxTime=findMaxTime(rData);%=40000000, log10(maxTime/timeUnit2ms)=7+log10(4)
@@ -69,16 +69,18 @@ showMI_xn(type,mi,window_size/timeUnit2ms);xlabel('window size (ms)');
 #cross TRIAL mutual information on identical neuron and identical cue
 ###################
 
-addpath('../mBasic/')
+addpath([pwd,'/../mBasic/'])
 nTri=50;
 basicDataParameters
 clear fn_c1 fn_c2 fn_r1 fn_r2
 rDataList=cell(nTri,nNeu,nCue);
 for i=1:nCue;  rDataList(:,:,i)=readList(fnlist(:,i));  end;
+addpath([pwd,'/analysis/'])
 
 maxTime=findMaxTime(rDataList);%=100000, log10(maxTime/timeUnit2ms)=5
 
 window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
+window_size=fix(10.^[1:0.2:4]*timeUnit2ms); %log-scale
 window_size=[0.5, 1:2:20, 20]*100*timeUnit2ms;  %around peak 
 
 function mi=calMI_xt_one(rDataList,maxTime,ws)
@@ -152,7 +154,7 @@ end;
 #cross CUE mutual information on identical neuron
 ###################
 
-%initialization part is the same as cross TRIAL part
+%initialization part is the same to cross TRIAL part
 
 window_size=[((1:2:10)'*(10.^(1:3)))(:);10^4]*timeUnit2ms; %log-scale
 window_size=[0.5, 1:2:20, 20]*100*timeUnit2ms;  %around peak
@@ -220,32 +222,30 @@ showMI_xc(type,mi,log10(window_size/timeUnit2ms),nid,nCue);
 ###################
 # X-cue difference check
 ###################
+%initialization part is the same to cross TRIAL part
 
 %maxTime=findMaxTime(rDataList);
 maxTime=10*1000*timeUnit2ms;
-winSize=100*timeUnit2ms;
-resLength=ceil(maxTime/winSize);
+winSize=100*timeUnit2ms; resLength=ceil(maxTime/winSize);
 
 %1, spike rate checking:
 
 %single:
-tid=1;nid=10;
+nid=10;
+tid_rng=1:7;%tid_rng=1+[0:4];
 for i=1:nCue;cid=i;
   subplot(2,2,i);
-  plot(discretize(rDataList(tid,nid,cid),winSize,0,resLength,'count')/winSize*timeUnit2ms*1000);
+  d=zeros(resLength,7);%7 auto colors in all. color will loop back when plotting mean line
+  for j=1:length(tid_rg); d(:,j)=discretize(rDataList(tid_rng(j),nid,cid),winSize,0,resLength,'count'); end
+  d*=timeUnit2ms*1000/winSize;
+  plot(1:resLength,d);title(cell2mat(cue_name(i)));ylabel('spike/second');xlabel('time bin')
+  hold on;plot(0:resLength,bsxfun(@plus,zeros(resLength+1,7),mean(d)));hold off
 end;
 %group:
-sc1=zeros(resLength,nNeu,nCue); sc2=zeros(resLength,nNeu,nCue);
-for cid=1:nCue;
-  for nid=1:nNeu;
-    for tid=1:nTri;
-      t=discretize(rDataList(tid,nid,cid),winSize,0,resLength,'count');
-      sc1(:,nid,cid)+=t; sc2(:,nid,cid)+=t.^2;
-    end;
-  end;
-end
-sc_m=sc1/nTri/ winSize*timeUnit2ms*1000;% num per second
-sc_s=sqrt(sc2/nTri-(sc1/nTri).^2)/winSize*timeUnit2ms*1000;
+%function [sc_mean,sc_std,sc_skew,sc_kurtosis]=calSC_stat(rDataList,winSize,resLength=0)
+[sc_m,sc_s]=calSC_stat(rDataList,winSize,resLength);
+sc_m*=timeUnit2ms*1000/winSize;% num per second
+sc_s*=timeUnit2ms*1000/winSize;
 
 %mean spike rate of each neuron on each cue:
 avg_sr=reshape(mean(sc_m,1)(:),nNeu,nCue)
@@ -254,6 +254,7 @@ nid=10;
 for i=1:nCue;
   subplot(nCue,1,i);errorbar(1:resLength,sc_m(:,nid,i),sc_s(:,nid,i)/3);
   line([0,resLength],mean(sc_m(:,nid,i)),'color','r');xlim([0 resLength]);
+  if(i==1) title([num2str(winSize/timeUnit2ms),'ms']); end;
 end;
 
 
@@ -271,9 +272,14 @@ end;end;end;
 
 %single:
 tid=1;nid=10;
-showSI_xc_one(interval,tid,nid);
+showSI_xc_4(interval(tid,nid,:)(:));
 %group:
-
+interval_cue=cell(nNeu,nCue);
+for i=1:nCue;for j=1:nNeu;
+  interval_cue(j,i)=cell2mat(interval(:,j,i)');
+end;end;
+nid=10;
+showSI_xc_4(interval_cue(nid,:));
 
 
 
