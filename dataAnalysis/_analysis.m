@@ -242,20 +242,17 @@ for i=1:nCue;cid=i;
   hold on;plot(0:resLength,bsxfun(@plus,zeros(resLength+1,7),mean(d)));hold off
 end;
 %group:
+scaleUnit2ms=timeUnit2ms*1000/winSize;% num per second
 %function [sc_mean,sc_std,sc_skew,sc_kurtosis]=calSC_stat(rDataList,winSize,resLength=0)
 [sc_m,sc_s]=calSC_stat(rDataList,winSize,resLength);
-sc_m*=timeUnit2ms*1000/winSize;% num per second
-sc_s*=timeUnit2ms*1000/winSize;
+sc_m*=scaleUnit2ms;sc_s*=scaleUnit2ms;
+
+nid=10;
+%function showSC_xc_errorbar(nid,sc_m,sc_s,cue_name,stdScale,binSizeInMS)
+showSC_xc_errorbar(nid,sc_m,sc_s,cue_name,1/3,winSize/timeUnit2ms);
 
 %mean spike rate of each neuron on each cue:
 avg_sr=reshape(mean(sc_m,1)(:),nNeu,nCue)
-
-nid=10;
-for i=1:nCue;
-  subplot(nCue,1,i);errorbar(1:resLength,sc_m(:,nid,i),sc_s(:,nid,i)/3);
-  line([0,resLength],mean(sc_m(:,nid,i)),'color','r');xlim([0 resLength]);
-  if(i==1) title(['N',num2str(nid),' : ',num2str(winSize/timeUnit2ms),'ms']); end;
-end;
 
 
 %2, spike interval checking:
