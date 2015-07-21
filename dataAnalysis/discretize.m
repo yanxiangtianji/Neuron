@@ -8,9 +8,9 @@ result=[];
 
 if(strcmp(type,'count')==1)
   [idx,~,j]=unique(value(:)); %make idx and j to be column vectors
-  if(length(idx)==0 || idx(end)<=0)  return; end;
-  if(resLength==0)  resLength=idx(end); end;
+  if(resLength==0)  resLength=max(0,idx(end)); end;
   result=zeros(resLength,1);
+  if(length(idx)==0 || idx(end)<=0)  return; end;
   count=accumarray(j,1);%only works on colum vector
 
   if(idx(1)>0 && idx(end)<=resLength)
@@ -21,9 +21,9 @@ if(strcmp(type,'count')==1)
   end
 else
   [idx]=unique(value(:));
-  if(length(idx)==0 || idx(end)<=0)  return; end;
-  if(resLength==0)  resLength=idx(end); end;
+  if(resLength==0)  resLength=max(0,idx(end)); end;
   result=zeros(resLength,1);
+  if(length(idx)==0 || idx(end)<=0)  return; end;
 
   if(idx(1)>0 && idx(end)<=resLength)
     result(idx)=1;  %to speed up
