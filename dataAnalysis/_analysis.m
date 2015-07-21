@@ -254,7 +254,7 @@ nid=10;
 for i=1:nCue;
   subplot(nCue,1,i);errorbar(1:resLength,sc_m(:,nid,i),sc_s(:,nid,i)/3);
   line([0,resLength],mean(sc_m(:,nid,i)),'color','r');xlim([0 resLength]);
-  if(i==1) title([num2str(winSize/timeUnit2ms),'ms']); end;
+  if(i==1) title(['N',num2str(nid),' : ',num2str(winSize/timeUnit2ms),'ms']); end;
 end;
 
 
@@ -272,14 +272,14 @@ end;end;end;
 
 %single:
 tid=1;nid=10;
-showSI_xc_4(interval(tid,nid,:)(:));
+showSI_xc_4(interval(tid,nid,:)(:),cue_name);
 %group:
 interval_cue=cell(nNeu,nCue);
 for i=1:nCue;for j=1:nNeu;
   interval_cue(j,i)=cell2mat(interval(:,j,i)');
 end;end;
 nid=10;
-showSI_xc_4(interval_cue(nid,:));
+showSI_xc_4(interval_cue(nid,:),cue_name);
 
 
 

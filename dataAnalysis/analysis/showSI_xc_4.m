@@ -1,9 +1,10 @@
-function showSI_xc_4(interval,nBin=20)
+function showSI_xc_4(interval,cue_name,nBin=20)
   nCue=length(interval);
   xmax=0;ymax=0;
   for i=1:nCue;cid=i;
     t=cell2mat(interval(cid));if(isempty(t));t=0;end;
     subplot(2,2,i);hist(t,nBin);
+    title(cell2mat(cue_name(i)))
     xmax=max(xmax,get(gca,'xlim')(2));
     ymax=max(ymax,get(gca,'ylim')(2));
   end;
