@@ -13,11 +13,13 @@ for i=1:n_c2    fn_r2(i)=[fn_prefix,'rest2_',num2str(i-1),'.txt'];    end
 clear i
 %clear fn_prefix
 
-nCue=4;
 nNeu=19;
 if(exist('nTri','var')==0)
   nTri=40;
   %nTri=50;
+end
+if(exist('nCue','var')==0)
+  nCue=4;
 end
 
 cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
