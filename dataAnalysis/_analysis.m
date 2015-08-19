@@ -103,10 +103,10 @@ function mi=calMI_xt_cue(rDataList,maxTime,window_size)
     end;
   end;
 end
-function mi=calMI_xt(rDataList,window_size)
+function mi=calMI_xt(rDataList,window_size,maxTime=0)
   [~,nNeu,nCue]=size(rDataList);
   mi=cell(nNeu,length(window_size),nCue);
-  maxTime=findMaxTime(rDataList);
+  if(maxTime<=0) maxTime=findMaxTime(rDataList); end;
   for cid=1:nCue
     tic;mi(:,:,cid)=calMI_xt_cue(rDataList(:,:,cid),maxTime,window_size);toc;
   end
@@ -178,9 +178,9 @@ function mi=calMI_xc_one(rDataList1,rDataList2,maxTime,ws)
   end;
   mi/=l1*l2;
 end
-function mi=calMI_xc(rDataList,window_size)
+function mi=calMI_xc(rDataList,window_size,maxTime=0)
   [nTri,nNeu,nCue]=size(rDataList);
-  maxTime=findMaxTime(rDataList);
+  if(maxTime<=0) maxTime=findMaxTime(rDataList); end;
   mi=cell(nNeu,length(window_size));
   for i=1:length(window_size);
     tic;
