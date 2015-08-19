@@ -1,6 +1,6 @@
 #prepare 
 addpath([pwd,'/../mBasic/'])
-nTri=50;
+nTri=50;nCue=2;
 basicDataParameters
 clear fn_c1 fn_c2 fn_r1 fn_r2
 
@@ -8,7 +8,9 @@ data=readRaw([fn_prefix,'all.txt']);
 beh=readCue([fn_prefix,'beh.txt']);
 cue1=beh(find(beh(:,1)==1),:);
 cue2=beh(find(beh(:,1)==2),:);
-cue=[cue1(1:nTri,2),cue2(1:nTri,2)];
+cue3=cue1; cue3(:,[2,3])=bsxfun(@plus,cue3(:,[2,3]),cue3(:,4)/2-triLength/2); cue3=cue3(find(cue3(:,4)<=triLength),:);
+cue4=cue2; cue4(:,[2,3])=bsxfun(@plus,cue4(:,[2,3]),cue4(:,4)/2-triLength/2); cue4=cue4(find(cue4(:,4)<=triLength),:);
+cue=[cue1(1:nTri,2),cue2(1:nTri,2),cue3(1:nTri,2),cue4(1:nTri,2)];
 
 binSize=50*timeUnit2ms;
 
@@ -50,10 +52,13 @@ pkg load 'data-smoothing';
 maxTime=findMaxTime(data);
 vecLength=ceil(maxTime/binSize);
 rates=zeros(vecLength,nNeu);
+warning off;
 for nid=1:nNeu;
   #tic;rates(:,nid)=regdatasmooth(1:vecLength,rate(:,nid));toc;
-  tic;rates(:,nid)=rgdtsmcore((1:vecLength)',rate(:,nid),2,2);toc;
+  #tic;rates(:,nid)=rgdtsmcore((1:vecLength)',rate(:,nid),2,2);toc;
+  tic;rates(:,nid)=max(0,smooth(rate(:,nid)',9,'sgolay')');toc;
 end;
+warning on;
 save('rate_s.mat','rates');
 ratesz=zscore(rates);
 %figure: rate of one trial of one neuron
@@ -105,9 +110,10 @@ show_rt4(nid,cid,rt,rtz,rts,rtsz,xPoints)
 
 #cross TRIAL:
 
-function dp=cal_xt(rate,trialBinBeg,trialBinEnd)
+%whole
+function dp=cal_xt_whole(rate,trialBinBeg,trialBinEnd)
   [vecLength,nNeu]=size(rate);
-  nTri=length(cue);
+  nTri=length(trialBinBeg);
   dp=zeros(nTri,nTri,nNeu);
   for nid=1:nNeu; for tid1=1:nTri;
     d1=rate(trialBinBeg(tid1):trialBinEnd(tid1),nid);
@@ -117,10 +123,28 @@ function dp=cal_xt(rate,trialBinBeg,trialBinEnd)
     end;
   end;end;
 end
+dp=zeros(nTri,nTri,nNeu,nCue);
+for cid=1:nCue;
+  dp(:,:,:,cid)=cal_xt(ratesz,cueBinBeg(:,cid),cueBinEnd(:,cid));
+end
 
-dp1=cal_xt(ratesz,cueBinBeg(:,1),cueBinEnd(:,1));
-dp2=cal_xt(ratesz,cueBinBeg(:,2),cueBinEnd(:,2));
+%cue-trial cut
+function dp=cal_xt_cut(rt)
+  %calculate do for only one cue
+  [vecLength,nTri,nNeu]=size(rt);
+  dp=zeros(nTri,nTri,nNeu);
+  for nid=1:nNeu;
+    for tid1=1:nTri; for tid2=tid1+1:nTri;
+      dp(tid1,tid2,nid)=dot_product(rt(:,tid1,nid),rt(:,tid2,nid));
+    end;end;
+  end;
+end
+dp=zeros(nTri,nTri,nNeu,nCue);
+for cid=1:nCue;
+  dp(:,:,:,cid)=cal_xt_cut(rtsz(:,:,:,cid));
+end
 
+%show
 function show_xt_each(dp)
   [nTri,~,nNeu]=size(dp);
   vld_idx=find(triu(ones(nTri),1));
@@ -135,9 +159,10 @@ nid=10;
 imagesc(dp1(:,:,nid));colorbar;
 
 #cross NEURON:
+%whole
 function dp=cal_xn(rate,trialBinBeg,trialBinEnd)
   [vecLength,nNeu]=size(rate);
-  nTri=length(cue);
+  nTri=length(trialBinBeg);
   dp=zeros(nNeu,nNeu,nTri);
   for tid=1:nTri; for nid1=1:nNeu;
     d1=rate(trialBinBeg(tid):trialBinEnd(tid),nid1);
@@ -147,10 +172,27 @@ function dp=cal_xn(rate,trialBinBeg,trialBinEnd)
     end;
   end; end
 end
+dp=zeros(nTri,nTri,nNeu,nCue);
+for cid=1:nCue;
+  dp(:,:,:,cid)=cal_xn(rtsz(:,:,:,cid));
+end
 
-dp1=cal_xn(ratesz,cueBinBeg(:,1),cueBinEnd(:,1));
-dp2=cal_xn(ratesz,cueBinBeg(:,2),cueBinEnd(:,2));
+%cue-trial cut
+function dp=cal_xn_cut(rt)
+  [vecLength,nTri,nNeu]=size(rt);
+  dp=zeros(nNeu,nNeu,nTri);
+  for tid=1:nTri;
+    for nid1=1:nNeu; for nid2=nid1+1:nNeu;
+      dp(nid1,nid2,tid)=dot_product(rt(:,tid,nid1),rt(:,tid,nid2));
+    end;end;
+  end
+end
+dp=zeros(nTri,nTri,nNeu,nCue);
+for cid=1:nCue;
+  dp(:,:,:,cid)=cal_xn(rtsz(:,:,:,cid));
+end
 
+%show
 function show_xn(dp)
   [nNeu,~,nTri]=size(dp);
   vld_idx=find(triu(ones(nNeu),1));
