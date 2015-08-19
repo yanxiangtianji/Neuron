@@ -23,6 +23,7 @@ end
 cue_name={'cue 1'; 'cue 2'; 'rest 1'; 'rest 2'};
 
 timeUnit2ms=10;
+triLength=10000*timeUnit2ms;
 
 %type: fnlist=cell(nTri,nCue);
 fnlist=makeFileList(nTri,fn_c1,fn_c2,fn_r1,fn_r2);
