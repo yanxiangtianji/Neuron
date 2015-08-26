@@ -207,6 +207,8 @@ for cid=1:nCue;
 end;
 function show_xt_cor_rate(mr,rtc,cid,yl1='',yl2='')
   bar(mr(:,cid));hold on;hAx=plotyy(1,0,1:size(rtc,1),rtc(:,cid));hold off;
+  p1=get(hAx(1),'ylim');p2=get(hAx(2),'ylim');
+  set(hAx(2),'ylim',p2(2)*[p1(1)/p1(2),1])
   #ylabel(hAx(1),'pcorr');ylabel(hAx(2),'spike #');
   ylabel(hAx(1),yl1);ylabel(hAx(2),yl2);
 end;
