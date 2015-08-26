@@ -199,6 +199,22 @@ show_xt(info_xt(:,:,:,cid),1);title([cue_name(cid),': x-trial corr.'])
 nid=10;
 imagesc(info_xt(:,:,nid,cid));colorbar;
 
+mr=zeros(nNeu,nCue); mc=zeros(nTri*(nTri-1)/2,nCue);
+rtc=zeros(nNeu,nCue);
+for cid=1:nCue;
+  [mr(:,cid),mc(:,cid)]=show_xt(info_xt(:,:,:,cid));
+  rtc(:,cid)=mean(sum(rt(:,:,:,cid)))(:);
+end;
+function show_xt_cor_rate(mr,rtc,cid,yl1='',yl2='')
+  bar(mr(:,cid));hold on;hAx=plotyy(1,0,1:size(rtc,1),rtc(:,cid));hold off;
+  #ylabel(hAx(1),'pcorr');ylabel(hAx(2),'spike #');
+  ylabel(hAx(1),yl1);ylabel(hAx(2),yl2);
+end;
+for cid=1:nCue;
+  subplot(2,2,cid);if(mod(cid,2)==1)yl1='pcorr';yl2='';else;yl1='';yl2='spike #';end;
+  show_xt_cor_rate(mr,rtc,cid,yl1,yl2);title(cue_name(cid));set(gca,'xtick',1:2:nNeu)
+end
+
 #cross NEURON:
 %whole
 function info=cal_xn_w(rate,trialBinBeg,trialBinEnd)
@@ -240,10 +256,11 @@ save('info_xn.mat','info_xn')
 %function [mr,mc]=show_xn(info,more=0)
 
 cid=1
-show_xn(info_xn(:,:,:,cid));title([cue_name(cid),': x-neuron corr.'])
-show_xn(info_xn(:,:,:,cid),1);title([cue_name(cid),': x-neuron corr.'])
+show_xn(info_xn(:,:,:,cid));title([cell2mat(cue_name(cid)),': x-neuron corr.'])
+show_xn(info_xn(:,:,:,cid),1);title([cell2mat(cue_name(cid)),': x-neuron corr.'])
 tid=1;
 imagesc(info_xn(:,:,tid,cid));colorbar;
+
 
 
 
