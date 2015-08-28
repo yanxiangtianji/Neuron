@@ -107,11 +107,28 @@ show_rt_one_m(reshape(rtsz(:,tid,nid,1:nCue),vecLength,nCue),tid,nid,xAxisTicks,
 show_rt_one_m(reshape(cutRateDate2Trial(rates,cueBinBeg,cueBinEnd,tid,nid,1:nCue),vecLength,nCue),
   tid,nid,xAxisTicks,cue_name,'rts: ');
 
-function show_rt_eb(rt,nid,cid,xAxisTicks)
+function show_rt_eb(rt,nid,cid,x)
   t=rt(:,:,nid,cid)';
-  errorbar(xAxisTicks,mean(t),std(t));xlim([xAxisTicks(1),xAxisTicks(end)])
+  errorbar(x,mean(t),std(t));xlim([x(1),x(end)+x(2)-x(1)])
 end;
 show_rt_eb(rt,nid,cid,xAxisTicks)
+
+nid=10;
+for j=1:4;nid=j+0; %for nid=[1 6 7 18]
+figure
+for i=1:nCue;cid=i;
+  subplot(2,2,i);show_rt_eb(rtz,nid,cid,xAxisTicks);
+  title(['rtz: ',cell2mat(cue_name(cid)),',neuron-',num2str(nid)]);
+end
+end
+
+for cid=1:nCue;figure
+for i=1:nNeu;nid=i;
+  subplot(4,5,i);show_rt_eb(rtsz,nid,cid,xAxisTicks);
+  set(gca,'xtick',[-1,0,1,2]);title(['C',num2str(cid),'-N',num2str(nid)]);
+end
+end
+
 
 %figure: rate of ONE trial of ALL neurons
 imagesc(ratesz(cueBinBeg(tid,cid):cueBinEnd(tid,cid),:)');colorbar;ylabel('neuron id');
@@ -119,15 +136,28 @@ imagesc(ratesz(cueBinBeg(tid,cid):cueBinEnd(tid,cid),:)');colorbar;ylabel('neuro
 
 %figure: rate of ALL trials on ONE neuron
 
+plot(xAxisTicks,rtsz(:,:,nid,1),'b',xAxisTicks,rtsz(:,:,nid,2),'r')
+
 %function _show_rt_xt_kernel(rt,xPoints)
 %function show_rt_xt_w(rate,nid,cid,xPoints,cueBinBeg,cueBinEnd,titlePrefix='')
-%function show_rt_w_m(nid,cid,rate,ratez,rates,ratesz,xPoints,cueBinBeg,cueBinEnd)
+%function show_rt_xt_w_m(nid,cid,rate,ratez,rates,ratesz,xPoints,cueBinBeg,cueBinEnd)
 %function show_rt_xt_c(rt,nid,cid,xPoints,titlePrefix='')
-%function show_rt_c_m(nid,cid,rt,rtz,rts,rtsz,xPoints)
+%function show_rt_xt_c_m(nid,cid,rt,rtz,rts,rtsz,xPoints)
 
 xPoints=(offsetBeg:maxTime/6:offsetEnd)/timeUnit2ms/1000;
 nid=10;cid=1;
-show_rt_m_c(nid,cid,rt,rtz,rts,rtsz,xPoints)
+show_rt_xt_c_m(nid,cid,rt,rtz,rts,rtsz,xPoints)
+
+function show_rt_xt_cmp(rt1,rt2,nid,xAxisTicks,cue_name,tltPre1='',tltPre2='')
+  [vecLength,~,~,nCue]=size(rt1);
+  subplot(2,1,1);
+  t1=reshape(mean(rt1(:,:,nid,:),2),vecLength,nCue); plot(xAxisTicks,t1);
+  title([tltPre1,'N',num2str(nid)]);legend(cue_name,'orientation','horizontal')
+  subplot(2,1,2);
+  t2=reshape(mean(rt2(:,:,nid,:),2),vecLength,nCue); plot(xAxisTicks,t2);
+  title([tltPre2,'N',num2str(nid)]);legend(cue_name,'orientation','horizontal')
+end
+show_rt_xt_cmp(rt,rtsz,nid,xAxisTicks,cue_name,'rt: ','rtsz: ');
 
 %show_rt_xt(rt(:,:,nid,cid)',xPoints);title(['cue: ',num2str(cid),',neuron: ',num2str(nid)])
 
