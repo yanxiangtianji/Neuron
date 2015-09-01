@@ -137,6 +137,7 @@ imagesc(ratesz(cueBinBeg(tid,cid):cueBinEnd(tid,cid),:)');colorbar;ylabel('neuro
 %figure: rate of ALL trials on ONE neuron
 
 plot(xAxisTicks,rtsz(:,:,nid,1),'b',xAxisTicks,rtsz(:,:,nid,2),'r')
+title(['Neuorn ' num2str(nid)])
 
 %function _show_rt_xt_kernel(rt,xPoints)
 %function show_rt_xt_w(rate,nid,cid,xPoints,cueBinBeg,cueBinEnd,titlePrefix='')
