@@ -10,8 +10,8 @@ data=readRaw([fn_prefix,'all.txt']);
 beh=readCue([fn_prefix,'beh.txt']);
 cue1=beh(find(beh(:,1)==1),:);
 cue2=beh(find(beh(:,1)==2),:);
-cue3=cue1; cue3(:,[2,3])=bsxfun(@plus,cue3(:,[2,3]),cue3(:,4)/2-triLength/2); cue3=cue3(find(cue3(:,4)>=triLength),:);
-cue4=cue2; cue4(:,[2,3])=bsxfun(@plus,cue4(:,[2,3]),cue4(:,4)/2-triLength/2); cue4=cue4(find(cue4(:,4)>=triLength),:);
+cue3=cue1; cue3(:,1)=3; cue3(:,[2,3])=bsxfun(@plus,cue3(:,[2,3]),cue3(:,4)/2-triLength/2); cue3=cue3(find(cue3(:,4)>=triLength),:);
+cue4=cue2; cue4(:,1)=4; cue4(:,[2,3])=bsxfun(@plus,cue4(:,[2,3]),cue4(:,4)/2-triLength/2); cue4=cue4(find(cue4(:,4)>=triLength),:);
 cue=[cue1(1:nTri,2),cue2(1:nTri,2),cue3(1:nTri,2),cue4(1:nTri,2)];
 %clear cue1 cue2 cue3 cue4
 

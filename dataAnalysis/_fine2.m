@@ -11,7 +11,7 @@ pre_fn_sub={'PL','IL','OFC'};
 nTri=50;
 nCue=2;
 
-timeUnit2ms=100;
+timeUnit2ms=10;
 trialLength=10*1000*timeUnit2ms;
 
 %data=zeros(nTri,nNeu,nCue);
