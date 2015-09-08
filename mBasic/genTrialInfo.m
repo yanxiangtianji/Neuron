@@ -1,4 +1,4 @@
-function info=genTrialInfo(beh,cueIDs,trialRng=0)
+function info=genTrialInfo(beh,cueIDs,trialRng=0,whetherRest=false)
 %*trialRng*:  0 for all trials;
 %           or a vector (as index used to all used cues);
 %           or a matrix (values at i-th column as index of i-th cue).
@@ -26,9 +26,26 @@ if(nCue!=1 && iscolumn(trialRng) || isrow(trialRng) && length(trialRng)>nCue);
 end
 nTri=size(trialRng,1);
 
-info=zeros(nTri,2,nCue);
+if(whetherRest==false)
+  info=zeros(nTri,2,nCue);
+else
+  info=zeros(nTri,2,2*nCue);
+end
+
 for i=1:nCue
-  info(:,:,i)=beh(find(beh(:,1)==cueIDs(i))(trialRng(:,i)),[2 3]);
+  t=beh(find(beh(:,1)==cueIDs(i))(trialRng(:,i)),[2 3 4]);
+  info(:,:,i)=t(:,[1,2]);
+  if(whetherRest==true)
+    t2=genRestTrials(info(:,2,i),t(:,3),info(:,2,i)-info(:,1,i));
+    if(size(t2,1)!=nTri)
+      t3=beh(find(beh(:,1)==cueIDs(i)),[2 3 4]);
+      t2=genRestTrials(t3(:,2),t3(:,3),t3(:,2)-t3(:,1))(1:nTri,:);
+      if(size(t2,1)!=nTri)
+        error('No enough continous resting period with enough length.');
+      end
+    end
+    info(:,:,i+nCue)=t2;
+  end
 end
 
 end

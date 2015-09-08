@@ -1,4 +1,4 @@
-function dataList=pickTrialFromFiles(fnListSpike,fnListBeh,cueIDs,trialRng,timeOffBeg=0,timeOffEnd=0)
+function dataList=pickTrialFromFiles(fnListSpike,fnListBeh,cueIDs,trialRng,timeOffBeg=0,timeOffEnd=0,whetherRest=false)
 %*cueIDs*: can be an integer or a vector.
 %*trialRng*:or a vector (as index used to all used cues);
 %           or a matrix (values at i-th column as index of i-th cue).
@@ -13,13 +13,13 @@ elseif(nargin<4)
 end
 
 nCue=length(cueIDs);
-
 nTri=size(trialRng,1);
 
 nFile=numel(fnListSpike);
 dataList={};
 for i=1:nFile;
-  trialInfo=genTrialInfo(readCue(fnListBeh(i)),cueIDs,trialRng);
+  %trialInfo=zeros(nTri,2,nCue);
+  trialInfo=genTrialInfo(readCue(fnListBeh(i)),cueIDs,trialRng,whetherRest);
   trialInfo(:,1,:)+=timeOffBeg; trialInfo(:,2,:)+=timeOffEnd;
   t=pickTrial(readRaw(fnListSpike(i)),trialInfo);
   dataList=[dataList,t];
