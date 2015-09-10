@@ -6,6 +6,7 @@ pre_fn_sub={'PL','IL','OFC'};
 [fnl_ps,fnl_ph]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(1))]);
 [fnl_is,fnl_ih]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(2))]);
 [fnl_os,fnl_oh]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(3))]);
+[~,~,fnl_e]=makeFileListOfFolder([pre_fn,'PFC_events']);
 
 %countTrials(fnl_ph)
 nTri=50;
@@ -15,7 +16,7 @@ timeUnit2ms=10;
 trialLength=10*1000*timeUnit2ms;
 
 %data=zeros(nTri,nNeu,nCue);
-data=pickTrialFromFiles(fnl_ps,fnl_ph,1:nCue,1:nTri,-1000*timeUnit2ms,-8000*timeUnit2ms);
+[data,nNeuList]=pickTrialFromFiles(fnl_ps,fnl_ph,1:nCue,1:nTri,-1000*timeUnit2ms,-8000*timeUnit2ms);
 nNeu=size(data,2);
 
 binSize=50*timeUnit2ms;
@@ -41,6 +42,12 @@ end;
 ##############
 # analysis
 ##############
+
+%trialInfo=genTrialInfo(readCue(fnl_ph(1)),1:nCue,1:nTri);
+%event=readEvent(fnl_e(1));
+%x=makeTrialEventTable(trialInfo,event,[8 10;9 9],-100);sum(x)
+%y=makeTrialEventTableFromFile(fnl_ph(1),fnl_e(1),1:nCue,1:nTri,0,0,[8 10;9 9],-100);sum(y)
+
 
 function setTimeX(nBin,nPoints,tickBeg,tickEnd)
   set(gca,'xtick',floor(linspace(0,nBin,nPoints)));
