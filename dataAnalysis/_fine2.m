@@ -60,25 +60,29 @@ end;
 %y=makeTrialEventTableFromFile(fnl_pb(1),fnl_e(map_p(1)),1:nCue,1:nTri,0,0,[8 10;9 9],-100);sum(y)
 
 %[rid,lnid]=mapNid2Local(31,nNeuList);
-%entPhase=[8 6 10;9 9 9];
+
+%entPhase=zeros(nCue,nPha); %(:,1)->init event, (:,2)->first phasic event
 entPhase=[8 10;9 9];
-nPha=size(entPhase,1)-1;
+%entPhase=[8 6 10;9 9 9];
+nPha=size(entPhase,2);
 
-trialPhase=zeros(nTri,nPha,nCue,length(fnl_pb));
-for i=1:length(fnl_pb);
-  trialPhase(:,:,:,i)=makeTrialEventTableFromFile( ...
-    fnl_pb(1),fnl_e(map_p(1)),1:nCue,1:nTri,0,0,entPhase,-100);
+%trialPhase=zeros(nTri,nCue,length(fnl_pb)); %values in range [0,nPha]
+%function trialPhase=makeTrialPhaseFromFiles(fnlb,fnle,fmap,entPhase,nTri,offset=-100)
+trialPhase=makeTrialPhaseFromFiles(fnl_pb,fnl_e,map_p,entPhase,nTri,-100);
+
+function rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,nPha)
+  [nBin,nTri,nNeu,nCue]=size(rt);
+  [~,~,nFile]=size(trialPhase);
+  nNeuSum=[0;cumsum(nNeuList)(:)];
+  rtpm=zeros(nBin,nNeu,nCue,nPha+1);
+  for fid=1:nFile;
+    nids=(nNeuSum(fid)+1):nNeuSum(fid+1);
+    for cid=1:nCue; for pid=0:nPha;
+      tids=find(trialPhase(:,cid,fid)==pid);
+      rtpm(:,nids,cid,pid+1)=reshape(mean(rt(:,tids,nids,cid),2),nBin,nNeuList(fid));
+  end;end;end
 end
-%trialPhaseCnt=reshape(sum(trialPhase),nPha,nCue,length(fnl_pb)); %(nPha,nCue,length(fnl_pb))
-
-rtem=zeros(nBin,nNeu,nPha,nCue);
-for fid=1:length(fnl_pb);for pid=1:nPha;
-  tids=find(trialPhase(:,pid,fid));
-  nids=(nNeuSum(fid)+1):nNeuSum(fid+1);
-  for cid=1:nCue;
-    rtem(:,nids,pid,:)=reshape(mean(rt(:,tids,nids,:),2),nBin,nNeuList(fid),1,nCue);
-  end
-end;end
+rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,nPha);
 
 ##############
 # display:
@@ -93,7 +97,7 @@ rtsm=reshape(mean(rts,2),nBin,nNeu,nCue);
 rtsz=zscore(rts);
 rtsmz=zscore(rtsm);
 
-rtemz=zscore(rtem);
+rtpmz=zscore(rtpm);
 
 cid=1;
 %imagesc(rtmz(:,:,cid)');colorbar;
@@ -118,16 +122,17 @@ end
 
 rng=21:40;
 showByRng(rtm,cid,rng,7,-1,2,'sc ',[0 1.4])
-showByRng(rtmz,cid,rng,7,-1,2,'zscore ',[-0.5 0.9])
-showByRng(rtmz,cid,1:nBin,7,-1,2,'zscore ',[-0.5 0.9],@sumsq)
+showByRng(rtmz,cid,rng,7,-1,2,'zscore ');caxis()
+showByRng(rtmz,cid,1:nBin,7,-1,2,'zscore ',[-3 5],@sumsq)
 showByRng(rtsmz,cid,rng,7,-1,2)
 pid=1;
-showByRng(reshape(rtemz(:,:,pid,:),nBin,nNeu,nCue),cid,rng,7,-1,2)
+showByRng(reshape(rtpmz(:,:,:,pid),nBin,nNeu,nCue),cid,rng,7,-1,2);caxis()
+showByRng(reshape(rtpmz(:,:,:,pid),nBin,nNeu,nCue),cid,rng,7,-1,2,'zscore ',[-3 7])
 
 
 close all
 for cid=1:2;figure
-  showByRng(rtmz,cid,rng,7,-1,2,'zscore ',[-0.5 0.9],@sumsq);
+  showByRng(rtmz,cid,rng,7,-1,2,'zscore '),[-3 5],@sum);
 end
 
 ##############
@@ -156,7 +161,7 @@ sep_c=[0;sepByThrsld(sum(rtm(rng,idx_c,cid)),th_c)(:);nNeu];
 neuGpTbl_c=calNeuGroupTbl(length(fnl_pb),sep_c,idx_c,nNeuSum);
 
 neuGpTbl_cnt_c=zeros(size(neuGpTbl_c));
-for i=1:size(neuGpTbl_zs,1);for j=1:size(neuGpTbl_zs,2)
+for i=1:size(neuGpTbl_c,1);for j=1:size(neuGpTbl_c,2)
   neuGpTbl_cnt_c(i,j)=length(cell2mat(neuGpTbl_c(i,j)));
 end;end
 neuGpTbl_cnt_c
