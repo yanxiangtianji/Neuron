@@ -62,13 +62,13 @@ end;
 %[rid,lnid]=mapNid2Local(31,nNeuList);
 
 %entPhase=zeros(nCue,nPha); %(:,1)->init event, (:,2)->first phasic event
-entPhase=[8 10;9 9];
 %entPhase=[8 6 10;9 9 9];
+entPhase=[8 10;9 9];
 nPha=size(entPhase,2);
 
 %trialPhase=zeros(nTri,nCue,length(fnl_pb)); %values in range [0,nPha]
 %function trialPhase=makeTrialPhaseFromFiles(fnlb,fnle,fmap,entPhase,nTri,offset=-100)
-trialPhase=makeTrialPhaseFromFiles(fnl_pb,fnl_e,map_p,entPhase,nTri,-100);
+trialPhase=makeTrialPhaseFromFiles(fnl_pb,fnl_e,map_p,entPhase,nTri);
 
 function rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,nPha)
   [nBin,nTri,nNeu,nCue]=size(rt);
@@ -132,7 +132,7 @@ showByRng(reshape(rtpmz(:,:,:,pid),nBin,nNeu,nCue),cid,rng,7,-1,2,'zscore ',[-3 
 
 close all
 for cid=1:2;figure
-  showByRng(rtmz,cid,rng,7,-1,2,'zscore '),[-3 5],@sum);
+  showByRng(rtmz,cid,rng,7,-1,2,'zscore ',[-3 5],@sum);
 end
 
 ##############
@@ -155,10 +155,11 @@ t=sum(rtm(rng,idx_c,cid));
 hist(t,20);%[-1,1]
 th_c=[9 30];
 th_c=quantile(t,[1/3 2/3]);
-sep_c=[0;sepByThrsld(sum(rtm(rng,idx_c,cid)),th_c)(:);nNeu];
+sep_c=sepByThrsld(sum(rtm(rng,idx_c,cid)),th_c);
 
+%neuGpTbl_c=size(nRat,nSep)
 %function tbl=calNeuGroupTbl(nRat,sep,idx,nNeuSum)
-neuGpTbl_c=calNeuGroupTbl(length(fnl_pb),sep_c,idx_c,nNeuSum);
+neuGpTbl_c=calNeuGroupTbl(length(fnl_pb),idx_c,sep_c,nNeuList);
 
 neuGpTbl_cnt_c=zeros(size(neuGpTbl_c));
 for i=1:size(neuGpTbl_c,1);for j=1:size(neuGpTbl_c,2)
@@ -169,21 +170,39 @@ neuGpTbl_cnt_c
 %on z-score:
 rng=21:40;
 cid=1;
-idx_r=reorderMatIdx(rtmz(:,:,cid),rng,@sum);
+idx_zs=reorderMatIdx(rtmz(:,:,cid),rng,@sum);
 
 t=sum(rtmz(rng,idx_r,cid));
 hist(t,20);%[-1,1]
 th_zs=[-1 1];
-sep_zs=[0;sepByThrsld(sum(rtmz(rng,idx_r,cid)),th_zs)(:);nNeu];
+sep_zs=sepByThrsld(sum(rtmz(rng,idx_r,cid)),th_zs);
 
 %function tbl=calNeuGroupTbl(nRat,sep,idx,nNeuSum)
-neuGpTbl_zs=calNeuGroupTbl(length(fnl_pb),sep_zs,idx_r,nNeuSum);
+neuGpTbl_zs=calNeuGroupTbl(length(fnl_pb),idx_zs,sep_zs,nNeuList);
 
 neuGpTbl_cnt_zs=zeros(size(neuGpTbl_zs));
 for i=1:size(neuGpTbl_zs,1);for j=1:size(neuGpTbl_zs,2)
   neuGpTbl_cnt_zs(i,j)=length(cell2mat(neuGpTbl_zs(i,j)));
 end;end
 neuGpTbl_cnt_zs
+
+#correalation
+function cor=calCorr(rtm,nids)
+  nNeu=lenght(nids);
+  cor=zeros(nNeu);
+  for i=1:nNeu; for j=1:nNeu;
+    cor(i,j)=corr(rtm(:,nids(i)),rtm(:,nids(j)));
+  end;end
+end
+function showCorr(cor,nidsnids)
+  imagesc(cor);colorbar;caxis([-1 1]);
+  xticklabel(num2str(nids(:)));yticklabel(num2str(nids(:)));
+end
+
+rid=1;
+nids=cell2mat(neuGpTbl_zs(rid,[1,end])')
+cor=calCorr(rtm(:,:,cid),nids);
+showCorr(cor,nids)
 
 
 ##############
