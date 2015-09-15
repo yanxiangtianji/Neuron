@@ -59,75 +59,87 @@ end;
 %x=makeTrialEventTable(trialInfo,event,[8 10;9 9],-100);sum(x)
 %y=makeTrialEventTableFromFile(fnl_pb(1),fnl_e(map_p(1)),1:nCue,1:nTri,0,0,[8 10;9 9],-100);sum(y)
 
-%[rid,lnid]=mapNid2Local(31,nNeuList);
+%rlnID=mapGNId2Local(31,nNeuList);
 
 %entPhase=zeros(nCue,nPha); %(:,1)->init event, (:,2)->first phasic event
 %entPhase=[8 6 10;9 9 9];
 entPhase=[8 10;9 9];
 nPha=size(entPhase,2);
 
-%trialPhase=zeros(nTri,nCue,length(fnl_pb)); %values in range [0,nPha]
+%trialPhase=zeros(nTri,nCue,length(fnl_pb)); %values in range [1,nPha]
 %function trialPhase=makeTrialPhaseFromFiles(fnlb,fnle,fmap,entPhase,nTri,offset=-100)
-trialPhase=makeTrialPhaseFromFiles(fnl_pb,fnl_e,map_p,entPhase,nTri);
+trialPhase=makeTrialPhaseFromFiles(fnl_pb,fnl_e,map_p,entPhase,nTri,'offset');
 
-function rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,nPha)
+function rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,phaRng)
   [nBin,nTri,nNeu,nCue]=size(rt);
   [~,~,nFile]=size(trialPhase);
   nNeuSum=[0;cumsum(nNeuList)(:)];
-  rtpm=zeros(nBin,nNeu,nCue,nPha+1);
+  rtpm=zeros(nBin,nNeu,nCue,length(phaRng));
   for fid=1:nFile;
     nids=(nNeuSum(fid)+1):nNeuSum(fid+1);
-    for cid=1:nCue; for pid=0:nPha;
+    for cid=1:nCue; for pid_i=1:length(phaRng); pid=phaRng(pid_i);
       tids=find(trialPhase(:,cid,fid)==pid);
-      rtpm(:,nids,cid,pid+1)=reshape(mean(rt(:,tids,nids,cid),2),nBin,nNeuList(fid));
+      rtpm(:,nids,cid,pid)=reshape(mean(rt(:,tids,nids,cid),2),nBin,nNeuList(fid));
   end;end;end
 end
-rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,nPha);
+rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,1:nPha);
+
+##############
+# other normalization:
+
+%function z=baselineZscore(x,rngBL,dim=1);
 
 ##############
 # display:
-function setTimeX(nBin,nPoints,tickBeg,tickEnd)
-  set(gca,'xtick',floor(linspace(0,nBin,nPoints)));
-  set(gca,'xticklabel',linspace(tickBeg,tickEnd,nPoints));
-end
 
 rtm=reshape(mean(rt,2),nBin,nNeu,nCue);
 rtmz=zscore(rtm);
+rtmz2=baselineZscore(rtm,1:20,1);
+rtzm=reshape(mean(rtz,2),nBin,nNeu,nCue);
+
 rtsm=reshape(mean(rts,2),nBin,nNeu,nCue);
 rtsz=zscore(rts);
 rtsmz=zscore(rtsm);
 
 rtpmz=zscore(rtpm);
+rtpmz2=baselineZscore(rtpm,1:20,1);
 
 cid=1;
 %imagesc(rtmz(:,:,cid)');colorbar;
-function idx=reorderMatIdx(rtm_mat,range,method=@sumsq)
-  [nBin,nNeu]=size(rtm_mat);
-  t=sortrows([method(rtm_mat(range,:))',(1:nNeu)']);
+function idx=sortedRowsId(rtm_mat,method=@sumsq)
+  t=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
   idx=t(:,2);
 end
 
+function setTimeX(nBin,nPoints,tickBeg,tickEnd)
+  set(gca,'xtick',floor(linspace(0,nBin,nPoints)));
+  set(gca,'xticklabel',linspace(tickBeg,tickEnd,nPoints));
+end
 function showByRng(rtm,cid,rng,nPoints,tickBeg,tickEnd,tltPre='',crng='auto',method=@sum)
-  idx=reorderMatIdx(rtm(:,:,cid),rng,method);
+  idx=sortedRowsId(rtm(rng,:,cid),method);
   imagesc(rtm(:,idx,cid)');colorbar;caxis(crng);
   setTimeX(size(rtm,1),nPoints,tickBeg,tickEnd);
   xlabel('time');ylabel('neuron');title([tltPre,'cue: ',num2str(cid)]);
 end
 
-%idx=reorderMatIdx(rtmz(:,:,cid),1:nBin,@sumsq);
-%idx=reorderMatIdx(rtmz(:,:,cid),21:40,@sum);
+%idx=sortedRowsId(rtmz(:,:,cid),@sumsq);
+%idx=sortedRowsId(rtmz(21:40,:,cid),@sum);
 %imagesc(rtmz(:,idx,cid)');setTimeX(nBin,7,-1,2);colorbar;
-%idx=reorderMatIdx(rtemz(:,:,cid),21:40,@sum);
+%idx=sortedRowsId(rtemz(21:40,:,cid),@sum);
 %imagesc(rtemz(:,idx,1,cid)');setTimeX(nBin,7,-1,2);colorbar;
 
 rng=21:40;
 showByRng(rtm,cid,rng,7,-1,2,'sc ',[0 1.4])
 showByRng(rtmz,cid,rng,7,-1,2,'zscore ');caxis()
 showByRng(rtmz,cid,1:nBin,7,-1,2,'zscore ',[-3 5],@sumsq)
+showByRng(rtmz2,cid,21:nBin,7,-1,2,'bl-zscore ')
+showByRng(rtmz2,cid,21:40,7,-1,2,'bl-zscore ')
+
 showByRng(rtsmz,cid,rng,7,-1,2)
-pid=1;
-showByRng(reshape(rtpmz(:,:,:,pid),nBin,nNeu,nCue),cid,rng,7,-1,2);caxis()
-showByRng(reshape(rtpmz(:,:,:,pid),nBin,nNeu,nCue),cid,rng,7,-1,2,'zscore ',[-3 7])
+
+pid=2;
+showByRng(rtpmz(:,:,:,pid),cid,rng,7,-1,2);caxis()
+showByRng(rtpmz(:,:,:,pid),cid,rng,7,-1,2,'complete trials zscore ',[-3 5])
 
 
 close all
@@ -149,12 +161,12 @@ end
 %on count:
 rng=1:nBin;
 cid=1;
-idx_c=reorderMatIdx(rtm(:,:,cid),rng,@sum);
+idx_c=sortedRowsId(rtm(rng,:,cid),@sum);
 
-t=sum(rtm(rng,idx_c,cid));
-hist(t,20);%[-1,1]
+t=sum(rtm(rng,:,cid));
+%hist(t,20);
 th_c=[9 30];
-th_c=quantile(t,[1/3 2/3]);
+th_c=quantile(t,[20 70]/nNeu);
 sep_c=sepByThrsld(sum(rtm(rng,idx_c,cid)),th_c);
 
 %neuGpTbl_c=size(nRat,nSep)
@@ -170,12 +182,12 @@ neuGpTbl_cnt_c
 %on z-score:
 rng=21:40;
 cid=1;
-idx_zs=reorderMatIdx(rtmz(:,:,cid),rng,@sum);
+idx_zs=sortedRowsId(rtmz(rng,:,cid),@sum);
 
-t=sum(rtmz(rng,idx_r,cid));
-hist(t,20);%[-1,1]
-th_zs=[-1 1];
-sep_zs=sepByThrsld(sum(rtmz(rng,idx_r,cid)),th_zs);
+t=mean(rtmz(rng,:,cid));
+%hist(t,20);
+th_zs=[-0.25,0.25];
+sep_zs=sepByThrsld(mean(rtmz(rng,idx_zs,cid)),th_zs);
 
 %function tbl=calNeuGroupTbl(nRat,sep,idx,nNeuSum)
 neuGpTbl_zs=calNeuGroupTbl(length(fnl_pb),idx_zs,sep_zs,nNeuList);
@@ -186,31 +198,59 @@ for i=1:size(neuGpTbl_zs,1);for j=1:size(neuGpTbl_zs,2)
 end;end
 neuGpTbl_cnt_zs
 
-#correalation
+%on shape:
+
+
+##############
+# correalation
 function cor=calCorr(rtm,nids)
-  nNeu=lenght(nids);
+  nNeu=length(nids);
   cor=zeros(nNeu);
   for i=1:nNeu; for j=1:nNeu;
     cor(i,j)=corr(rtm(:,nids(i)),rtm(:,nids(j)));
   end;end
 end
-function showCorr(cor,nidsnids)
+function showCorr(cor,nids)
   imagesc(cor);colorbar;caxis([-1 1]);
-  xticklabel(num2str(nids(:)));yticklabel(num2str(nids(:)));
+  if(nargin<2)  return;  end;
+  set(gca,'xtick',1:length(nids));set(gca,'ytick',1:length(nids));
+  set(gca,'xticklabel',num2str(nids(:)));set(gca,'yticklabel',num2str(nids(:)));
 end
 
 rid=1;
+rng=21:40;
 nids=cell2mat(neuGpTbl_zs(rid,[1,end])')
-cor=calCorr(rtm(:,:,cid),nids);
-showCorr(cor,nids)
+cor=calCorr(rtm(rng,:,cid),rlnID(:,2));
+%showCorr(cor,nids)
+rlnID=mapGNId2Local(nids,nNeuList);
+showCorr(cor,rlnID(:,2))
+
+%frequent neurons with significant changes
+function gp=pickNeuronSet(gp_count,gp_zscore)
+  nRat=size(gp_count,1);
+  gp=cell(nRat,1);
+  for i=1:nRat
+    gp(i)=intersect(cell2mat(gp_count(i,:)'),cell2mat(gp_zscore(i,:)'));
+  end
+end
+gp=pickNeuronSet(neuGpTbl_c(:,3),neuGpTbl_zs(:,[1 end]));
+
+rid=4;
+for rid=1:6; if(isempty(cell2mat(gp(rid)))); continue; end;
+figure
+nids=cell2mat(gp(rid));
+%showCorr(calCorr(rtm(rng,:,cid),nids),nids)
+showCorr(calCorr(rtmz2(rng,:,cid),nids),mapGNId2Local(nids,nNeuList)(:,2));
+title(["rat ",num2str(rid),' frequent responsing'])
+end
 
 
 ##############
 #overlay:
 function [nOlTop,nOlBottom]=calOverlap(rtm,rng,method=@sum)
   nNeu=size(rtm,2);
-  idx1=reorderMatIdx(rtm(:,:,1),rng);
-  idx2=reorderMatIdx(rtm(:,:,2),rng);
+  idx1=sortedRowsId(rtm(rng,:,1),method);
+  idx2=sortedRowsId(rtm(rng,:,2),method);
   nOlTop=zeros(nNeu,1);
   nOlBottom=zeros(nNeu,1);
   for i=1:nNeu
