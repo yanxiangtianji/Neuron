@@ -145,6 +145,7 @@ showByRng(rtpmz(:,:,:,pid),cid,rng,7,-1,2,'complete trials zscore ',[-3 5])
 close all
 for cid=1:2;figure
   showByRng(rtmz,cid,rng,7,-1,2,'zscore ',[-3 5],@sum);
+%  showByRng(rtmz2,cid,rng,7,-1,2,'zscore ',[-4 6],@sum);
 end
 
 ##############
@@ -200,22 +201,15 @@ neuGpTbl_cnt_zs
 
 %on shape:
 
+%function res=condenseIntoPeriods(rtm,lenPeriod)
+%y=condenseIntoPeriods(rtm(:,1,1),10)
+rtmp=condenseIntoPeriods(rtm,10);
+
 
 ##############
 # correalation
-function cor=calCorr(rtm,nids)
-  nNeu=length(nids);
-  cor=zeros(nNeu);
-  for i=1:nNeu; for j=1:nNeu;
-    cor(i,j)=corr(rtm(:,nids(i)),rtm(:,nids(j)));
-  end;end
-end
-function showCorr(cor,nids)
-  imagesc(cor);colorbar;caxis([-1 1]);
-  if(nargin<2)  return;  end;
-  set(gca,'xtick',1:length(nids));set(gca,'ytick',1:length(nids));
-  set(gca,'xticklabel',num2str(nids(:)));set(gca,'yticklabel',num2str(nids(:)));
-end
+%function cor=calCorr(rtm,nids)
+%function showCorr(cor,nids)
 
 rid=1;
 rng=21:40;
@@ -236,7 +230,7 @@ end
 gp=pickNeuronSet(neuGpTbl_c(:,3),neuGpTbl_zs(:,[1 end]));
 
 rid=4;
-for rid=1:6; if(isempty(cell2mat(gp(rid)))); continue; end;
+for rid=1:6; if(length(cell2mat(gp(rid)))<2); continue; end;
 figure
 nids=cell2mat(gp(rid));
 %showCorr(calCorr(rtm(rng,:,cid),nids),nids)
