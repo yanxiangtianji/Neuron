@@ -107,8 +107,7 @@ rtpmz2=baselineZscore(rtpm,1:20,1);
 cid=1;
 %imagesc(rtmz(:,:,cid)');colorbar;
 function idx=sortedRowsId(rtm_mat,method=@sumsq)
-  t=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
-  idx=t(:,2);
+  [~,idx]=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
 end
 
 function setTimeX(nBin,nPoints,tickBeg,tickEnd)
@@ -151,12 +150,7 @@ end
 ##############
 # neuron grouping
 
-function sepIds=sepByThrsld(values,thresholds)
-%return number of values that are smaller than the thresholds
-  if(!iscolumn(values)); values=values(:);end
-  if(!isrow(thresholds)); thresholds=thresholds(:)';end
-  sepIds=sum(values<thresholds);
-end
+%function sepIds=sepByThrsld(values,thresholds)
 %sepIds=sepByThrsld(sum(rtmz(21:40,idx_r,1)),[-1 1])
 
 %on count:
@@ -171,8 +165,8 @@ th_c=quantile(t,[20 70]/nNeu);
 sep_c=sepByThrsld(sum(rtm(rng,idx_c,cid)),th_c);
 
 %neuGpTbl_c=size(nRat,nSep)
-%function tbl=calNeuGroupTbl(nRat,sep,idx,nNeuSum)
-neuGpTbl_c=calNeuGroupTbl(length(fnl_pb),idx_c,sep_c,nNeuList);
+%function tbl=calNeuGroupTbl(nNeuList,sep,idx)
+neuGpTbl_c=calNeuGroupTbl(nNeuList,idx_c,sep_c);
 
 neuGpTbl_cnt_c=zeros(size(neuGpTbl_c));
 for i=1:size(neuGpTbl_c,1);for j=1:size(neuGpTbl_c,2)
@@ -189,9 +183,7 @@ t=mean(rtmz(rng,:,cid));
 %hist(t,20);
 th_zs=[-0.25,0.25];
 sep_zs=sepByThrsld(mean(rtmz(rng,idx_zs,cid)),th_zs);
-
-%function tbl=calNeuGroupTbl(nRat,sep,idx,nNeuSum)
-neuGpTbl_zs=calNeuGroupTbl(length(fnl_pb),idx_zs,sep_zs,nNeuList);
+neuGpTbl_zs=calNeuGroupTbl(nNeuList,idx_zs,sep_zs);
 
 neuGpTbl_cnt_zs=zeros(size(neuGpTbl_zs));
 for i=1:size(neuGpTbl_zs,1);for j=1:size(neuGpTbl_zs,2)
@@ -201,9 +193,32 @@ neuGpTbl_cnt_zs
 
 %on shape:
 
-%function res=condenseIntoPeriods(rtm,lenPeriod)
+%function showShape(rtm,nRow,nCol,nids,nNeuList, nTick,tickBeg,tickEnd,dashThre)
+showShape(rtm(:,:,1),5,4,idx_zs(1:20),nNeuList,4,-1,2,0.1)
+
+cid=1;nRow=4;nCol=4;
+for fid=1:6;
+  nids=idx_zs(fid*nRow*nCol-nRow*nCol+1:min(end,fid*nRow*nCol));
+  close;showShape(rtm(:,:,cid),nRow,nCol,nids,nNeuList,4,-1,2,0.03);
+  saveas(gcf,[num2str(fid) '.png']);
+end
+
+%function res=condenseIntoPeriods(rtm,sepperORinterval)
 %y=condenseIntoPeriods(rtm(:,1,1),10)
-rtmp=condenseIntoPeriods(rtm,10);
+%rtmc=condenseIntoPeriods(rtm,10);
+rtmc=condenseIntoPeriods(rtm,[1,20,30,40]);
+
+cid=1;
+[~,idx_s]=sort(rtmc(2,:,cid)./rtmc(1,:,cid));
+th_s=[0.5, 2];
+sep_s=sepByThrsld(rtmc(2,:,cid)./rtmc(1,:,cid),th_s);;
+neuGpTbl_s=calNeuGroupTbl(nNeuList,idx_s,sep_s);
+
+neuGpTbl_cnt_s=zeros(size(neuGpTbl_s));
+for i=1:size(neuGpTbl_s,1);for j=1:size(neuGpTbl_s,2)
+  neuGpTbl_cnt_s(i,j)=length(cell2mat(neuGpTbl_s(i,j)));
+end;end
+neuGpTbl_cnt_s
 
 
 ##############
