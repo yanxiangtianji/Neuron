@@ -153,6 +153,8 @@ end
 %function sepIds=sepByThrsld(values,thresholds)
 %sepIds=sepByThrsld(sum(rtmz(21:40,idx_r,1)),[-1 1])
 
+%function cnt=getGpCount(gpTable)
+
 %on count:
 rng=1:nBin;
 cid=1;
@@ -168,11 +170,7 @@ sep_c=sepByThrsld(sum(rtm(rng,idx_c,cid)),th_c);
 %function tbl=calNeuGroupTbl(nNeuList,sep,idx)
 neuGpTbl_c=calNeuGroupTbl(nNeuList,idx_c,sep_c);
 
-neuGpTbl_cnt_c=zeros(size(neuGpTbl_c));
-for i=1:size(neuGpTbl_c,1);for j=1:size(neuGpTbl_c,2)
-  neuGpTbl_cnt_c(i,j)=length(cell2mat(neuGpTbl_c(i,j)));
-end;end
-neuGpTbl_cnt_c
+neuGpTbl_cnt_c=getGpCount(neuGpTbl_c)
 
 %on z-score:
 rng=21:40;
@@ -185,11 +183,7 @@ th_zs=[-0.25,0.25];
 sep_zs=sepByThrsld(mean(rtmz(rng,idx_zs,cid)),th_zs);
 neuGpTbl_zs=calNeuGroupTbl(nNeuList,idx_zs,sep_zs);
 
-neuGpTbl_cnt_zs=zeros(size(neuGpTbl_zs));
-for i=1:size(neuGpTbl_zs,1);for j=1:size(neuGpTbl_zs,2)
-  neuGpTbl_cnt_zs(i,j)=length(cell2mat(neuGpTbl_zs(i,j)));
-end;end
-neuGpTbl_cnt_zs
+neuGpTbl_cnt_zs=getGpCount(neuGpTbl_zs);
 
 %on shape:
 
@@ -214,11 +208,14 @@ th_s=[0.5, 2];
 sep_s=sepByThrsld(rtmc(2,:,cid)./rtmc(1,:,cid),th_s);;
 neuGpTbl_s=calNeuGroupTbl(nNeuList,idx_s,sep_s);
 
-neuGpTbl_cnt_s=zeros(size(neuGpTbl_s));
-for i=1:size(neuGpTbl_s,1);for j=1:size(neuGpTbl_s,2)
-  neuGpTbl_cnt_s(i,j)=length(cell2mat(neuGpTbl_s(i,j)));
-end;end
-neuGpTbl_cnt_s
+neuGpTbl_cnt_s=getGpCount(neuGpTbl_s)
+neuGpTbl_cnt_s<=neuGpTbl_cnt_zs
+
+gp=cell(6,3);
+for i=1:numel(neuGpTbl_zs)
+  gp(i)=intersect(cell2mat(neuGpTbl_zs(i)),cell2mat(neuGpTbl_s(i)));
+end
+gp_cnt=getGpCount(gp)
 
 
 ##############
@@ -236,6 +233,7 @@ showCorr(cor,rlnID(:,2))
 
 %frequent neurons with significant changes
 function gp=pickNeuronSet(gp_count,gp_zscore)
+%regard as two 1-D cell arraies
   nRat=size(gp_count,1);
   gp=cell(nRat,1);
   for i=1:nRat
@@ -271,15 +269,15 @@ end
 rng=21:40;
 nOvlp=calOverlap(rtm,rng,@sum);
 plot(nOvlp);line([0,nNeu],[0,nNeu],'linestyle','--','color','r');
-xlabel('for top x neuorns');ylabel('# of overlap')
+xlabel('for top x neuorns');ylabel('# of common');grid
 
 for i=1:4;rng=[(i*10+11):i*10+20];
   subplot(2,2,i);[lt,lb]=calOverlap(rtmz,rng,@sum);
   [lt(20),lb(20)]
   plot(1:nNeu,lt,1:nNeu,lb,1:nNeu,'--');
-  legend({'top k','bottom k','best line'},'location','southeast')
-  xlabel('for top x neuorns');ylabel('# of overlap');
-  title(['range ',num2str(i*0.5-0.5),'s-',num2str(i*0.5),'s']);
+  legend({'from top','from bottom','best line'},'location','southeast')
+  xlabel('first x neuorns');ylabel('# of common');grid
+  title(sprintf('range %ds-%ds',i*0.5-0.5,i*0.5));
 end
 
 
