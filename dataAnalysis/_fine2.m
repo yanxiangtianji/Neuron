@@ -15,6 +15,7 @@ map_p=mapBehFile2EvnFile(fnl_pb,fnl_e);
 %countTrials(fnl_pb)
 nTri=50;
 nCue=2;
+nRat=length(fnl_ib);
 
 timeUnit2ms=10;
 trialLength=10*1000*timeUnit2ms;
@@ -52,6 +53,7 @@ end;
 
 ##############
 # event
+##############
 
 %trialInfo=genTrialInfo(readCue(fnl_pb(1)),1:nCue,1:nTri);
 %event=readEvent(fnl_e(1));
@@ -91,6 +93,7 @@ rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,1:nPha);
 
 ##############
 # display:
+##############
 
 rtm=reshape(mean(rt,2),nBin,nNeu,nCue);
 rtmz=zscore(rtm);
@@ -147,15 +150,47 @@ for cid=1:2;figure
 %  showByRng(rtmz2,cid,rng,7,-1,2,'zscore ',[-4 6],@sum);
 end
 
+#shape:
+
+%function showShape(rtm,nRow,nCol,nids,nNeuList, nTick,tickBeg,tickEnd,dashThre)
+showShape(rtm(:,:,1),32,[4 4],7,-1,2,0.1)
+showShape(rtm(:,:,1),5,mapGNId2Local(5,nNeuList),4,-1,2,0.1)
+showShape(rtm(:,:,1),32,[4 4],7,-1,2,0.1,[20,30])
+
+function showAllDynamic(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper)
+  nNeu=size(rtm,2);
+  for fid=1:ceil(nNeu/nRow/nCol);
+    close
+    for row=1:nRow;for col=1:nCol;
+      i=(row-1)*nCol+col;
+      if((fid-1)*nRow*nCol+i>nNeu)  break;  end;
+      gnid=idx((fid-1)*nRow*nCol+i); rlnID=mapGNId2Local(gnid,nNeuList);
+      subplot(nRow,nCol,i);
+      showShape(rtm(:,:,cid),gnid,rlnID,nTick,tckBeg,tckEnd,dashThre,sepper);
+    end;end;
+    saveas(gcf,[num2str(fid) '.png']);
+  end
+end
+
+cid=1;
+nRow=4;nCol=4;
+sepper=[20,30,40];
+showAllDynamic(rtm,cid,nRow,nCol,idx_zs,nNeuList,4,-1,2,0.03,sepper)
+
+nid=32
+showShape(rtm(:,:,1),nid,mapGNId2Local(nid,nNeuList),7,-1,2,0,[20,30])
+
 ##############
 # neuron grouping
+##############
 
 %function sepIds=sepByThrsld(values,thresholds)
 %sepIds=sepByThrsld(sum(rtmz(21:40,idx_r,1)),[-1 1])
 
 %function cnt=getGpCount(gpTable)
 
-%on count:
+##############
+#on count:
 rng=1:nBin;
 cid=1;
 idx_c=sortedRowsId(rtm(rng,:,cid),@sum);
@@ -177,7 +212,7 @@ rng=21:40;
 cid=1;
 idx_zs=sortedRowsId(rtmz(rng,:,cid),@sum);
 
-t=mean(rtmz(rng,:,cid));
+%t=mean(rtmz(rng,:,cid));
 %hist(t,20);
 th_zs=[-0.25,0.25];
 sep_zs=sepByThrsld(mean(rtmz(rng,idx_zs,cid)),th_zs);
@@ -185,17 +220,8 @@ neuGpTbl_zs=calNeuGroupTbl(nNeuList,idx_zs,sep_zs);
 
 neuGpTbl_cnt_zs=getGpCount(neuGpTbl_zs);
 
-%on shape:
-
-%function showShape(rtm,nRow,nCol,nids,nNeuList, nTick,tickBeg,tickEnd,dashThre)
-showShape(rtm(:,:,1),5,4,idx_zs(1:20),nNeuList,4,-1,2,0.1)
-
-cid=1;nRow=4;nCol=4;
-for fid=1:6;
-  nids=idx_zs(fid*nRow*nCol-nRow*nCol+1:min(end,fid*nRow*nCol));
-  close;showShape(rtm(:,:,cid),nRow,nCol,nids,nNeuList,4,-1,2,0.03);
-  saveas(gcf,[num2str(fid) '.png']);
-end
+##############
+#on shape:
 
 %function res=condenseIntoPeriods(rtm,sepperORinterval)
 %y=condenseIntoPeriods(rtm(:,1,1),10)
@@ -217,9 +243,36 @@ for i=1:numel(neuGpTbl_zs)
 end
 gp_cnt=getGpCount(gp)
 
+##############
+#on pattern
+
+rng1=21:30;
+rng2=41:60;
+th=[-1 1];
+sep1=sepByThrsld(mean(rtmz2(rng1,:,cid)),th);
+sep2=sepByThrsld(mean(rtmz2(rng2,:,cid)),th);
+gp1=calNeuGroupTbl(nNeuList,idx,sep1);
+gp2=calNeuGroupTbl(nNeuList,idx,sep2);
+
+function ptn=getPtnNeurons(gp1,gp2,idx1,idx2)
+  nRat=size(gp1,1);
+  ptn=cell(nRat,1);
+  for i=1:nRat
+    ptn(i)=intersect(cell2mat(gp1(i,idx1)),cell2mat(gp2(i,idx2)));
+  end
+end
+%decrease -> normal
+ptn_dn=getPtnNeurons(gp1,gp2,1,2);
+%increase -> normal
+ptn_in=getPtnNeurons(gp1,gp2,3,2);
+%keep decrease
+ptn_dd=getPtnNeurons(gp1,gp2,1,1);
+%keep increase
+ptn_ii=getPtnNeurons(gp1,gp2,3,3);
 
 ##############
 # correalation
+##############
 %function cor=calCorr(rtm,nids)
 %function showCorr(cor,nids)
 
