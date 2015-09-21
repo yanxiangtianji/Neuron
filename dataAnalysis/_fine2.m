@@ -12,10 +12,11 @@ map_p=mapBehFile2EvnFile(fnl_pb,fnl_e);
 %map_i=mapBehFile2EvnFile(fnl_ib,fnl_e);
 %map_o=mapBehFile2EvnFile(fnl_ob,fnl_e);
 
+rat_name={'R001','R002','R003','R004','R005','R006','R009','R016','R017','R018','R096','R108'}
 %countTrials(fnl_pb)
 nTri=50;
 nCue=2;
-nRat=length(fnl_ib);
+nRat=length(fnl_pb);
 
 timeUnit2ms=10;
 trialLength=10*1000*timeUnit2ms;
@@ -60,6 +61,22 @@ end;
 %event=readEvent(fnl_e(map_p(1)));
 %x=makeTrialEventTable(trialInfo,event,[8 10;9 9],-100);sum(x)
 %y=makeTrialEventTableFromFile(fnl_pb(1),fnl_e(map_p(1)),1:nCue,1:nTri,0,0,[8 10;9 9],-100);sum(y)
+
+#initial time shifting between event file and spike/behavior file:
+offsetS2E=zeros(nTri,nCue,nRat);
+initEventId=[8 9];
+for fid=1:nRat;
+  trialInfo=genTrialInfo(readCue(fnl_pb(fid)),1:nCue,1:nTri,false);
+  event=readEvent(fnl_e(map_p(fid)));
+  for cid=1:nCue;
+    etime=event(find(event(:,2)==initEventId(cid)),1);
+    offsetS2E(:,cid,fid)=etime(1:nTri)-trialInfo(:,1,cid);
+  end
+end
+for fid=1:nRat
+  subplot(3,2,fid);hist(offsetS2E(:,:,fid)/timeUnit2ms,20);
+  title(rat_name(map_p(fid)));xlabel('offset time(beh-event) (ms)')
+end
 
 %rlnID=mapGNId2Local(31,nNeuList);
 
@@ -217,8 +234,18 @@ idx_zs=sortedRowsId(rtmz(rng,:,cid),@sum);
 th_zs=[-0.25,0.25];
 sep_zs=sepByThrsld(mean(rtmz(rng,idx_zs,cid)),th_zs);
 neuGpTbl_zs=calNeuGroupTbl(nNeuList,idx_zs,sep_zs);
-
 neuGpTbl_cnt_zs=getGpCount(neuGpTbl_zs);
+
+rng=21:30;
+idx_zs=sortedRowsId(rtmz(rng,:,cid),@sum);
+for j=1:4;
+  th_zs=[-0.25,0.25]*j;
+  sep_zs=sepByThrsld(mean(rtmz2(rng,idx_zs,cid)),th_zs);
+  neuGpTbl_zs=calNeuGroupTbl(nNeuList,idx_zs,sep_zs);
+  for i=1:3;disp(length(cell2mat(neuGpTbl_zs(:,i))));end
+  disp('')
+end
+
 
 ##############
 #on shape:
@@ -226,11 +253,12 @@ neuGpTbl_cnt_zs=getGpCount(neuGpTbl_zs);
 %function res=condenseIntoPeriods(rtm,sepperORinterval)
 %y=condenseIntoPeriods(rtm(:,1,1),10)
 %rtmc=condenseIntoPeriods(rtm,10);
-rtmc=condenseIntoPeriods(rtm,[1,20,30,40]);
+rtmc=condenseIntoPeriods(rtm,[1,20,30,40,60]);
 
 cid=1;
-[~,idx_s]=sort(rtmc(2,:,cid)./rtmc(1,:,cid));
-th_s=[0.5, 2];
+[t,idx_s]=sort(rtmc(2,:,cid)./rtmc(1,:,cid));
+hist(t,20)
+th_s=[0.5, 2];%[2/3 3/2]
 sep_s=sepByThrsld(rtmc(2,:,cid)./rtmc(1,:,cid),th_s);;
 neuGpTbl_s=calNeuGroupTbl(nNeuList,idx_s,sep_s);
 
@@ -248,11 +276,18 @@ gp_cnt=getGpCount(gp)
 
 rng1=21:30;
 rng2=41:60;
+
+idx1=sortedRowsId(rtmz2(rng1,:,cid),@sum);
+idx2=sortedRowsId(rtmz2(rng2,:,cid),@sum);
 th=[-1 1];
-sep1=sepByThrsld(mean(rtmz2(rng1,:,cid)),th);
-sep2=sepByThrsld(mean(rtmz2(rng2,:,cid)),th);
-gp1=calNeuGroupTbl(nNeuList,idx,sep1);
-gp2=calNeuGroupTbl(nNeuList,idx,sep2);
+gp1=calNeuGroupTbl(nNeuList,idx1,sepByThrsld(mean(rtmz2(rng1,:,cid)),th));
+gp2=calNeuGroupTbl(nNeuList,idx2,sepByThrsld(mean(rtmz2(rng2,:,cid)),th));
+
+th=[0.5 2];
+[~,idx1]=sort(rtmc(2,:,cid)./rtmc(1,:,cid));
+gp1=calNeuGroupTbl(nNeuList,idx1,sepByThrsld(rtmc(2,:,cid)./rtmc(1,:,cid),th));
+[~,idx2]=sort(rtmc(end,:,cid)./rtmc(1,:,cid));
+gp2=calNeuGroupTbl(nNeuList,idx2,sepByThrsld(rtmc(end,:,cid)./rtmc(1,:,cid),th));
 
 function ptn=getPtnNeurons(gp1,gp2,idx1,idx2)
   nRat=size(gp1,1);
@@ -261,14 +296,27 @@ function ptn=getPtnNeurons(gp1,gp2,idx1,idx2)
     ptn(i)=intersect(cell2mat(gp1(i,idx1)),cell2mat(gp2(i,idx2)));
   end
 end
+function ptn=getAllPtnNeurons(gp1,gp2)
+  nRat=size(gp1,1);
+  ptn=cell(nRat,size(gp1,2),size(gp2,2));
+  for j1=1:size(gp1,2); for j2=1:size(gp2,2);
+    ptn(:,j1,j2)=getPtnNeurons(gp1,gp2,j1,j2);
+  end; end
+end
 %decrease -> normal
-ptn_dn=getPtnNeurons(gp1,gp2,1,2);
+ptn_dn=getPtnNeurons(gp1,gp2,1,2)
 %increase -> normal
-ptn_in=getPtnNeurons(gp1,gp2,3,2);
+ptn_in=getPtnNeurons(gp1,gp2,3,2)
 %keep decrease
-ptn_dd=getPtnNeurons(gp1,gp2,1,1);
+ptn_dd=getPtnNeurons(gp1,gp2,1,1)
 %keep increase
-ptn_ii=getPtnNeurons(gp1,gp2,3,3);
+ptn_ii=getPtnNeurons(gp1,gp2,3,3)
+
+ptn_all=getAllPtnNeurons(gp1,gp2);
+ptn_all_cnt=zeros(size(ptn_all));
+for i=1:numel(ptn_all);
+  ptn_all_cnt(i)=length(cell2mat(ptn_all(i)));
+end
 
 ##############
 # correalation
