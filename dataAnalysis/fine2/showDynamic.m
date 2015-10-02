@@ -1,4 +1,4 @@
-function showShape(rtm,nid,rlnId, nTick,tickBeg,tickEnd, dashThre=0,meanSepper)
+function showDynamic(rtm,nid,rlnId, nTick,tickBeg,tickEnd, dashThre=0,meanSepper)
   _color='krgbmc';
   nBin=size(rtm,1);
   
@@ -11,7 +11,7 @@ function showShape(rtm,nid,rlnId, nTick,tickBeg,tickEnd, dashThre=0,meanSepper)
   plot(rtm(:,nid),[_color(cid),dash]);
   
   if(exist('meanSepper','var'))
-    meanSepper=[0;meanSepper(:);nBin];
+    meanSepper=[0;meanSepper(meanSepper>0 & meanSepper<nBin)(:);nBin];
     m=zeros(size(rtm,1),1);
     for i=1:length(meanSepper)-1;
       rng=meanSepper(i)+1:meanSepper(i+1); m(rng)=mean(rtm(rng,nid));

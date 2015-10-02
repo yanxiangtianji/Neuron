@@ -6,6 +6,6 @@ function showDynamicMat(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dash
     gnid=idx(i);
     rlnID=mapGNId2Local(gnid,nNeuList);
     subplot(nRow,nCol,i);
-    showShape(rtm(:,:,cid),gnid,rlnID,nTick,tckBeg,tckEnd,dashThre,sepper);
+    showDynamic(rtm(:,:,cid),gnid,rlnID,nTick,tckBeg,tckEnd,dashThre,sepper);
   end;end;
 end

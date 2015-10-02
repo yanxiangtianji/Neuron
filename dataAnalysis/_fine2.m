@@ -12,7 +12,7 @@ map_p=mapBehFile2EvnFile(fnl_pb,fnl_e);
 %map_i=mapBehFile2EvnFile(fnl_ib,fnl_e);
 %map_o=mapBehFile2EvnFile(fnl_ob,fnl_e);
 
-rat_name={'R001','R002','R003','R004','R005','R006','R009','R016','R017','R018','R096','R108'}
+rat_name={'R001','R002','R003','R004','R005','R006','R009','R016','R017','R018','R096','R108'};
 %countTrials(fnl_pb)
 nTri=50;
 nCue=2;
@@ -65,17 +65,17 @@ end;
 #initial time shifting between event file and spike/behavior file:
 offsetS2E=zeros(nTri,nCue,nRat);
 initEventId=[8 9];
-for fid=1:nRat;
-  trialInfo=genTrialInfo(readCue(fnl_pb(fid)),1:nCue,1:nTri,false);
-  event=readEvent(fnl_e(map_p(fid)));
+for rid=1:nRat;
+  trialInfo=genTrialInfo(readCue(fnl_pb(rid)),1:nCue,1:nTri,false);
+  event=readEvent(fnl_e(map_p(rid)));
   for cid=1:nCue;
     etime=event(find(event(:,2)==initEventId(cid)),1);
-    offsetS2E(:,cid,fid)=etime(1:nTri)-trialInfo(:,1,cid);
+    offsetS2E(:,cid,rid)=etime(1:nTri)-trialInfo(:,1,cid);
   end
 end
-for fid=1:nRat
-  subplot(3,2,fid);hist(offsetS2E(:,:,fid)/timeUnit2ms,20);
-  title(rat_name(map_p(fid)));xlabel('offset time(beh-event) (ms)')
+for rid=1:nRat
+  subplot(3,2,rid);hist(offsetS2E(:,:,rid)/timeUnit2ms,20);
+  title(rat_name(map_p(rid)));xlabel('offset time(beh-event) (ms)')
 end
 
 %rlnID=mapGNId2Local(31,nNeuList);
@@ -90,6 +90,7 @@ nPha=size(entPhase,2);
 trialPhase=makeTrialPhaseFromFiles(fnl_pb,fnl_e,map_p,entPhase,nTri,'offset');
 
 function rtpm=calPhaseRTEM(rt,nNeuList,trialPhase,phaRng)
+%event related rtm
   [nBin,nTri,nNeu,nCue]=size(rt);
   [~,~,nFile]=size(trialPhase);
   nNeuSum=[0;cumsum(nNeuList)(:)];
@@ -130,10 +131,7 @@ function idx=sortedRowsId(rtm_mat,method=@sumsq)
   [~,idx]=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
 end
 
-function setTimeX(nBin,nPoints,tickBeg,tickEnd)
-  set(gca,'xtick',floor(linspace(0,nBin,nPoints)));
-  set(gca,'xticklabel',linspace(tickBeg,tickEnd,nPoints));
-end
+%function setTimeX(nBin,nPoints,tickBeg,tickEnd)
 function showByRng(rtm,cid,rng,nPoints,tickBeg,tickEnd,tltPre='',crng='auto',method=@sum)
   idx=sortedRowsId(rtm(rng,:,cid),method);
   imagesc(rtm(:,idx,cid)');colorbar;caxis(crng);
@@ -146,6 +144,9 @@ end
 %imagesc(rtmz(:,idx,cid)');setTimeX(nBin,7,-1,2);colorbar;
 %idx=sortedRowsId(rtemz(21:40,:,cid),@sum);
 %imagesc(rtemz(:,idx,1,cid)');setTimeX(nBin,7,-1,2);colorbar;
+
+rng=21:40;
+idx_zs=sortedRowsId(rtmz(rng,:,cid),@sum);
 
 rng=21:40;
 showByRng(rtm,cid,rng,7,-1,2,'sc ',[0 1.4])
@@ -164,38 +165,39 @@ showByRng(rtpmz(:,:,:,pid),cid,rng,7,-1,2,'complete trials zscore ',[-3 5])
 close all
 for cid=1:2;figure
   showByRng(rtmz,cid,rng,7,-1,2,'zscore ',[-3 5],@sum);
-%  showByRng(rtmz2,cid,rng,7,-1,2,'zscore ',[-4 6],@sum);
+%  showByRng(rtmz2,cid,rng,7,-1,2,'zscore ',[-4 12],@sum);
 end
 
 #shape:
 
-%function showShape(rtm,nRow,nCol,nids,nNeuList, nTick,tickBeg,tickEnd,dashThre)
-showShape(rtm(:,:,1),32,[4 4],7,-1,2,0.1)
-showShape(rtm(:,:,1),5,mapGNId2Local(5,nNeuList),4,-1,2,0.1)
-showShape(rtm(:,:,1),32,[4 4],7,-1,2,0.1,[20,30])
+%function showDynamic(rtm,nRow,nCol,nids,nNeuList, nTick,tickBeg,tickEnd,dashThre)
+showDynamic(rtm(:,:,1),32,[4 4],7,-1,2,0.1)
+showDynamic(rtm(:,:,1),5,mapGNId2Local(5,nNeuList),4,-1,2,0.1)
+showDynamic(rtm(:,:,1),32,[4 4],7,-1,2,0.1,[20,30])
 
-function showAllDynamic(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper)
-  nNeu=size(rtm,2);
+%function showDynamicMat(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper)
+
+function showDynamicAll(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper,prefix='')
+  nNeu=length(idx);
+  if(nNeu!=sum(nNeuList))
+    error('neuron number doesnot match in idx(%d) and nNeuList(%d)',nNeu,sum(nNeuList));
+  end
   for fid=1:ceil(nNeu/nRow/nCol);
-    close
-    for row=1:nRow;for col=1:nCol;
-      i=(row-1)*nCol+col;
-      if((fid-1)*nRow*nCol+i>nNeu)  break;  end;
-      gnid=idx((fid-1)*nRow*nCol+i); rlnID=mapGNId2Local(gnid,nNeuList);
-      subplot(nRow,nCol,i);
-      showShape(rtm(:,:,cid),gnid,rlnID,nTick,tckBeg,tckEnd,dashThre,sepper);
-    end;end;
-    saveas(gcf,[num2str(fid) '.png']);
+    inner_idx=idx((fid-1)*nRow*nCol+1:min(end,fid*nRow*nCol));
+    close;
+    showDynamicMat(rtm,cid,nRow,nCol,inner_idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper)
+    saveas(gcf,[prefix,num2str(fid),'.png']);
   end
 end
 
 cid=1;
 nRow=4;nCol=4;
 sepper=[20,30,40];
-showAllDynamic(rtm,cid,nRow,nCol,idx_zs,nNeuList,4,-1,2,0.03,sepper)
+%showDynamicMat(rtm,cid,nRow,nCol,1:16,nNeuList, 4,-1,2,0.03,sepper)
+showDynamicAll(rtm,cid,nRow,nCol,idx_zs,nNeuList,4,-1,2,0.03,sepper)
 
 nid=32
-showShape(rtm(:,:,1),nid,mapGNId2Local(nid,nNeuList),7,-1,2,0,[20,30])
+showDynamic(rtm(:,:,1),nid,mapGNId2Local(nid,nNeuList),7,-1,2,0,[20,30])
 
 ##############
 # neuron grouping
