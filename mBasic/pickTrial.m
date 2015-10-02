@@ -7,7 +7,7 @@ nNeu=length(raw);
 
 dataList=cell(nTri,nNeu,nCue);
 for j=1:nCue;for i=1:nTri;
-  dataList(i,:,j)=pickRawFromRng(raw,trialInfo(i,1,j),trialInfo(i,2,j),1);
+  dataList(i,:,j)=pickRawFromRng(raw,trialInfo(i,1,j),trialInfo(i,2,j),true);
 end;end;
 
 end

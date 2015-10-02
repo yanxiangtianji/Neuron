@@ -1,6 +1,6 @@
-function res=pickRawFromRng(data,start_t,end_t,isNormalize=0)
+function res=pickRawFromRng(data,start_t,end_t,isNormalize=false)
   off=0;
-  if(isNormalize!=0) off=start_t; end;
+  if(isNormalize) off=start_t; end;
   res=cell(size(data));
   for i=1:numel(data)
     t=cell2mat(data(i));
