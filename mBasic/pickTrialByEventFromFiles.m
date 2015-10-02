@@ -1,4 +1,5 @@
-function [dataList,nNeuList]=pickTrialByEventFromFiles(fnl_s,fnl_b,fnl_e,cid,nTri,entPhase,offBef,offAft)
+function [dataList,nNeuList]=pickTrialByEventFromFiles(fnl_s,fnl_b,fnl_e,
+    cid,nTri,entPhase,offBef,offAft,offMis=0,consecutive=false)
 %dataList=cell(nTri,nNeu,nPha);
 
 nFile=numel(fnl_s);
@@ -11,17 +12,9 @@ nPha=length(entPhase);
 dataList=cell(nTri,0,nPha);
 nNeuList=zeros(nFile,1);
 for i=1:nFile
-  cue=readCue(fnl_b(i));
-  nTriAll=sum(cue(:,1)==cid);
-  trialInfo=genTrialInfo(cue,cid,1:nTriAll,false);
-  trialInfo(:,1)-=max(abs(offBef),abs(offAft)); %for error tolerance (time mismatch between fnl_b & fnl_e)
-  entList=readEvent(fnl_e(i));
-  %times=size(nTri,nPha)
-  times=findEventTimeInTrial(entList,trialInfo,entPhase);
-  tids=find(all(isnan(times)==0,2));
-%    length(tids)  %show number of valid trials.
+  times=findEventTimeInTrialByFile(fnl_b(i),fnl_e(i),cid,entPhase,offMis,consecutive,true);
+  times=times(1:nTri,:);
   
-  times=times(tids(1:nTri),:);
   trialInfo=zeros(nTri,2,nPha);
   for pid=1:nPha
     trialInfo(:,1,pid)=times(:,pid)+offBef;

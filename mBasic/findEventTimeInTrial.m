@@ -1,7 +1,8 @@
-function res=findEventTimeInTrial(entList,trialInfo,entPhase)
+function res=findEventTimeInTrial(entList,trialInfo,entPhase,consecutive=false)
 %give: eventList = size(nEvt,2). 1st column is timepoint, 2nd column is event ID
 %     trialInfo = size(nTri,2,nCue).
 %     entPhase = size(nCue,nPha).
+%     consecutive = false: events are independent; true: later event are qualified by previous event
 %return: res = size(nTri,nPha,nCue). when a event doesn't happen, its value=NaN. otherwise value=timepoint
 
 %nEvt=size(eventList,1);
@@ -24,6 +25,10 @@ for cid=1:nCue;
     [tids,idx]=unique(i,"first");
     v=et(j(idx));
     res(tids,pid,cid)=v;
+    if(consecutive && pid!=nPha)
+      tbeg(tids,1,cid)=v;
+      tbeg(setdiff(1:nTri,tids),1,cid)=NaN;
+    end
   end
 end
 
