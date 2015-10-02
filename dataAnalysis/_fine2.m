@@ -185,7 +185,7 @@ function showDynamicAll(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dash
   for fid=1:ceil(nNeu/nRow/nCol);
     inner_idx=idx((fid-1)*nRow*nCol+1:min(end,fid*nRow*nCol));
     close;
-    showDynamicMat(rtm,cid,nRow,nCol,inner_idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper)
+    showDynamicMat(rtm,cid,nRow,nCol,inner_idx,nNeuList, nTick,tckBeg,tckEnd,dashThre,sepper)
     saveas(gcf,[prefix,num2str(fid),'.png']);
   end
 end
