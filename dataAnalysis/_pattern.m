@@ -109,7 +109,7 @@ function showDynamicAll(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dash
   for fid=1:ceil(nNeu/nRow/nCol);
     inner_idx=idx((fid-1)*nRow*nCol+1:min(end,fid*nRow*nCol));
     close;
-    showDynamicMat(rtm,cid,nRow,nCol,inner_idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper)
+    showDynamicMat(rtm,cid,nRow,nCol,inner_idx,nNeuList, nTick,tckBeg,tckEnd,dashThre,sepper)
     saveas(gcf,[prefix,num2str(fid),'.png']);
   end
 end
@@ -138,15 +138,104 @@ end
 
 nRow=4;
 sepper=[20 30 40];
-showDynamicPhase(rtm,nRow,1:nRow,nNeuList,4,-1,2,0.03,sepper)
+idx=33:37;
+showDynamicPhase(rtm,nRow,idx,nNeuList,4,-1,2,0.03,sepper)
 
 
 ##############
 # pattern
 ##############
 
+function ft=genDynamicFeature(rtm,sepper)
+  [nBin,nNeu,nPha]=size(rtm);
+  sepper=[0;sepper(sepper>0 & sepper<nBin)(:);nBin];
+  nFea=length(sepper)-1;
+  ft=zeros(nFea,nNeu,nPha);
+  for pid=1:nPha;for nid=1:nNeu;for fid=1:nFea
+    ft(fid,nid,pid)=mean(rtm(sepper(fid)+1:sepper(fid+1),nid,pid));
+  end;end;end
+end
+
+sepper=[20 30 40];
+ft=genDynamicFeature(rtm,sepper);
+ftz=genDynamicFeature(rtmz,sepper);
+ftz2=genDynamicFeature(rtmz2,sepper);
 
 
+pid=1;
+
+stage1=2;%0~0.5s
+stage2=4;%1~2s
+
+# metric: zscore
+th=[-1 1]*0.75;
+[~,idx1]=sort(ftz2(stage1,:,pid));
+[~,idx2]=sort(ftz2(stage2,:,pid));
+gp1=calNeuGroupTbl(nNeuList,idx1,sepByThrsld(ftz2(stage1,:,pid),th));
+gp2=calNeuGroupTbl(nNeuList,idx2,sepByThrsld(ftz2(stage2,:,pid),th));
+
+# metric: spike rate ratio
+th=[2/3 3/2];
+[~,idx1]=sort(ft(stage1,:,pid)./ft(1,:,pid));
+[~,idx2]=sort(ft(stage2,:,pid)./ft(1,:,pid));
+gp1=calNeuGroupTbl(nNeuList,idx1,sepByThrsld(ftz2(stage1,:,pid)./ft(1,:,pid),th));
+gp2=calNeuGroupTbl(nNeuList,idx2,sepByThrsld(ftz2(stage2,:,pid)./ft(1,:,pid),th));
+
+%getGpCount(gp1)
+
+function ptn=getPtnNeurons(gp1,gp2,idx1,idx2)
+  nRat=size(gp1,1);
+  ptn=cell(nRat,1);
+  for i=1:nRat
+    ptn(i)=intersect(cell2mat(gp1(i,idx1)),cell2mat(gp2(i,idx2)));
+  end
+end
+function ptn=getAllPtnNeurons(gp1,gp2)
+  nRat=size(gp1,1);
+  ptn=cell(size(gp1,2),size(gp2,2),nRat);
+  for j1=1:size(gp1,2); for j2=1:size(gp2,2);
+    ptn(j1,j2,:)=getPtnNeurons(gp1,gp2,j1,j2);
+  end; end
+end
+
+%ptn_all=cell(size(gp1,2),size(gp2,2),nRat);
+ptn_all=getAllPtnNeurons(gp1,gp2);
+ptn_all_cnt=getGpCount(ptn_all)
 
 
+ptn_all=cell(size(gp1,2),size(gp2,2),nRat,nPha);
+for pid=1:nPha;
+  [~,idx1]=sort(ftz2(stage1,:,pid));
+  [~,idx2]=sort(ftz2(stage2,:,pid));
+  gp1=calNeuGroupTbl(nNeuList,idx1,sepByThrsld(ftz2(stage1,:,pid),th));
+  gp2=calNeuGroupTbl(nNeuList,idx2,sepByThrsld(ftz2(stage2,:,pid),th));
+  ptn_all(:,:,:,pid)=getAllPtnNeurons(gp1,gp2);
+end
 
+function ptns=findNeuPtnOverPhase(ptn_all,gnid,nNeuList)
+  [np1,np2,~,nPha]=size(ptn_all);
+  ptns=zeros(2,nPha);
+  rlnID=mapGNId2Local(gnid,nNeuList);
+  for pid=1:nPha;
+    for i=1:np1; for j=1:np2;
+      if(ismember(gnid,cell2mat(ptn_all(i,j,rlnID(1),pid))))
+        ptns(:,pid)=[i;j];
+        break;
+      end
+    end;end
+  end
+end
+
+findNeuPtnOverPhase(ptn_all,5,nNeuList)
+
+%number of neurons hold same pattern all the time
+neuHold=cell(size(gp1,2),size(gp2,2),nRat);
+for gnid=1:nNeu
+  ptns=findNeuPtnOverPhase(ptn_all,gnid,nNeuList);
+  rlnID=mapGNId2Local(gnid,nNeuList);
+  if(all(ptns(1,:)==ptns(2,:)))
+    neuHold(ptns(1),ptns(2),rlnID(1))=[cell2mat(neuHold(ptns(1),ptns(2),rlnID(1))),gnid];
+  end
+end
+
+getGpCount(neuHold)
