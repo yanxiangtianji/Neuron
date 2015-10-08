@@ -127,23 +127,23 @@ rtpmz2=baselineZscore(rtpm,1:20,1);
 
 cid=1;
 %imagesc(rtmz(:,:,cid)');colorbar;
-function idx=sortedRowsId(rtm_mat,method=@sumsq)
-  [~,idx]=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
-end
+%function idx=sortedRowsId(rtm_mat,method=@sumsq)
+%  [~,idx]=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
+%end
 
-%function setTimeX(nBin,nPoints,tickBeg,tickEnd)
+%function setTimeX(nPoints,tickBeg,tickEnd)
 function showByRng(rtm,cid,rng,nPoints,tickBeg,tickEnd,tltPre='',crng='auto',method=@sum)
   idx=sortedRowsId(rtm(rng,:,cid),method);
   imagesc(rtm(:,idx,cid)');colorbar;caxis(crng);
-  setTimeX(size(rtm,1),nPoints,tickBeg,tickEnd);
+  setTimeX(nPoints,tickBeg,tickEnd);
   xlabel('time');ylabel('neuron');title([tltPre,'cue: ',num2str(cid)]);
 end
 
 %idx=sortedRowsId(rtmz(:,:,cid),@sumsq);
 %idx=sortedRowsId(rtmz(21:40,:,cid),@sum);
-%imagesc(rtmz(:,idx,cid)');setTimeX(nBin,7,-1,2);colorbar;
+%imagesc(rtmz(:,idx,cid)');setTimeX(7,-1,2);colorbar;
 %idx=sortedRowsId(rtemz(21:40,:,cid),@sum);
-%imagesc(rtemz(:,idx,1,cid)');setTimeX(nBin,7,-1,2);colorbar;
+%imagesc(rtemz(:,idx,1,cid)');setTimeX(7,-1,2);colorbar;
 
 rng=21:40;
 idx_zs=sortedRowsId(rtmz(rng,:,cid),@sum);

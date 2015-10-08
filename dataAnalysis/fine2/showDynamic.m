@@ -24,6 +24,6 @@ function showDynamic(rtm,nid,rlnId, nTick,tickBeg,tickEnd, dashThre=0,meanSepper
     hold off;
   end
   
-  setTimeX(nBin,nTick,tickBeg,tickEnd)
+  setTimeX(nTick,tickBeg,tickEnd)
   title(sprintf('N%d (R%d-N%d)',nid,rlnId(1),rlnId(2)))
 end
