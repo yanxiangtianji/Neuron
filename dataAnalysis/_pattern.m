@@ -24,7 +24,6 @@ trialLength=10*1000*timeUnit2ms;
 
 ##############
 # event related data
-##############
 
 %event ID:
 %8: reward tone
@@ -65,10 +64,64 @@ end;end;end;
 %rtz=zscore(rt);
 
 rtm=squeeze(mean(rt,2));% size=(nBin,nNeu,nPha)
-rtmz=zscore(rtm);
-rtmz2=baselineZscore(rtm,1:20,1);
+%rtmz=zscore(rtm);
+%rtmz2=baselineZscore(rtm,1:20,1);
+mu=mean(rtm(1:20,:,1));
+sigma=std(rtm(1:20,:,1)); sigma(sigma==0)=1;
+for i=1:nPha
+  rtmz(:,:,i)=bsxfun (@rdivide, bsxfun (@minus, rtm(:,:,i), mu), sigma);
+end
 
 return
+
+##############
+# global display on event separated by rat
+##############
+
+subplot(2,2,1)
+plot(zeros(1,size(rtmz,1)),'--',baselineZscore(mean(rtm(:,:,pid),2),1:20));grid;
+xlabel('time');ylabel('zscore');title('zscore of mean spike count')
+subplot(2,2,2)
+showGDSortInRng(rtmz(:,:,pid),21:30,7,-1,2,[-5 10]);
+title('sorted individual zscore')
+
+%function showMatWithSepper(rtm,sepper,crng='auto',withCount=false)
+
+for pid=1:nPha
+  subplot(2,2,pid);showMatWithSepper(rtmz2(:,:,pid),nNeuSum(2:end))
+end
+
+function showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, nPoints,tickBeg,tickEnd,crng='auto')
+  idx=zeros(size(rtm,2),1);
+  for i=1:length(nNeuSum)-1;t=nNeuSum(i)+1:nNeuSum(i+1);
+    idx(t)=sortedRowsId(rtmz(rng,t,pid),@sum)+nNeuSum(i);
+  end
+  subplot(2,2,1);showMatWithSepper(rtmz(:,idx,pid),nNeuSum,crng,false);%no individual count
+  title('sorted zscore (by rat)');setTimeX(nPoints,tickBeg,tickEnd);
+  subplot(4,2,2);[y,x]=hist(rtmz(:,:,pid)(:),50);bar(x,y/sum(y));grid;
+  title('distr. of zscore');xlabel('zscore');ylabel('frequency')
+  subplot(4,2,4);plot(zeros(1,size(rtmz,1)),'--',mean(rtmz(:,:,pid),2));grid;
+  title('global zscore');setTimeX(nPoints,tickBeg,tickEnd);xlabel('time');ylabel('zscore')
+  subplot(2,2,3);idx=showGDSortInRng(rtmz(:,:,pid),rng,nPoints,tickBeg,tickEnd,crng);
+  title('sorted zscore (global)')
+  subplot(2,2,4);imagesc(rtm(:,idx,pid)');colorbar;
+  title('count (sort by zscore)');setTimeX(nPoints,tickBeg,tickEnd);xlabel('time');ylabel('neuron')
+end
+
+pid=1;
+rng=21:30;
+showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, 7,-1,2,[-5 10])
+
+for i=1:4;rng=20+[10*(i-1)+1:10*i]; %each half second
+  subplot(2,2,i);showGDSortInRng(rtmz(:,:,pid),rng,7,-1,2,[-5 10]);
+  title(sprintf('zscore (scorted by [%.1f,%.1f]s)',0.5*(i-1),0.5*i));
+end
+
+for i=1:3;rng=20+[10*(i-1)+1:10*(i+1)]; %each whole second
+  subplot(2,2,i);showGDSortInRng(rtmz(:,:,pid),rng,7,-1,2,[-5 10]);
+  title(sprintf('zscore (scorted by [%.1f,%.1f]s)',0.5*(i-1),0.5*(i+1)));
+end
+
 
 ##############
 # event
@@ -126,12 +179,17 @@ function showDynamicPhase(rtm,nRow,idx,nNeuList,nTick,tckBeg,tckEnd,dashThre,sep
   for row=1:min(nRow,length(idx));
     gnid=idx(row);
     rlnID=mapGNId2Local(gnid,nNeuList);
-    for pid=1:nPha;
-      i=(row-1)*3+pid; subplot(nRow,nPha,i);
+    yRng=[NaN NaN];
+    for pid=1:nPha; i=(row-1)*3+pid;
+      subplot(nRow,nPha,i);
       showDynamic(rtm(:,:,pid),gnid,rlnID,nTick,tckBeg,tckEnd,dashThre,sepper);
       title([get(get(gca,'title'),'string'),'-',num2str(pid)]);
+      t=ylim(); yRng(1)=min(yRng(1),t(1)); yRng(2)=max(yRng(2),t(2));
       %dif=mean(entTime(:,pid,rlnID(1))-entTime(:,1,rlnID(1)))/1000/timeUnit2ms;
-      %setTimeX(nBin,nTick,dif-1,dif+2);xlabel('mean time')
+      %setTimeX(nTick,dif-1,dif+2);xlabel('mean time')
+    end
+    for pid=1:nPha; i=(row-1)*3+pid;
+      subplot(nRow,nPha,i);ylim(yRng);
     end
   end
 end
