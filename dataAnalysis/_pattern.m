@@ -122,6 +122,25 @@ for i=1:3;rng=20+[10*(i-1)+1:10*(i+1)]; %each whole second
   title(sprintf('zscore (scorted by [%.1f,%.1f]s)',0.5*(i-1),0.5*(i+1)));
 end
 
+%response groups of differnt event
+pid=1;
+for i=1:3;rng=20+[10*(i-1)+1:10*i]; %each half second
+idx=sortedRowsId(rtmz(rng,:,pid),@sum);
+for j=1:3; %each event with the same neuron order
+  subplot(3,3,3*(i-1)+j);imagesc(rtmz(:,idx,j)');colorbar;caxis([-5 10]);
+  setTimeX(7,-1,2);xlabel('time');ylabel('neuron');
+  title(sprintf('zs of E%d by %.1f~%.1f s',j,0.5*(i-1),0.5*i));
+end
+end
+
+%global response significance of all event on all period
+for i=1:3;rng=20+[10*(i-1)+1:10*i];
+  for j=1:3;
+    subplot(3,3,3*(i-1)+j);showGDSortInRng(rtmz(:,:,j),rng,7,-1,2,[-5 10]);
+    xlabel('time');ylabel('neuron');title(sprintf('zs of E%d by %.1f~%.1f s',j,0.5*(i-1),0.5*i));
+  end
+end
+
 
 ##############
 # event
