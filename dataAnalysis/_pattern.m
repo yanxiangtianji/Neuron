@@ -92,10 +92,7 @@ for pid=1:nPha
 end
 
 function showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, nPoints,tickBeg,tickEnd,crng='auto')
-  idx=zeros(size(rtm,2),1);
-  for i=1:length(nNeuSum)-1;t=nNeuSum(i)+1:nNeuSum(i+1);
-    idx(t)=sortedRowsId(rtmz(rng,t,pid),@sum)+nNeuSum(i);
-  end
+  idx=sortRowIDByRat(rtmz(rng,:,pid),nNeuSum,@sum);
   subplot(2,2,1);showMatWithSepper(rtmz(:,idx,pid),nNeuSum,crng,false);%no individual count
   title('sorted zscore (by rat)');setTimeX(nPoints,tickBeg,tickEnd);
   subplot(4,2,2);[y,x]=hist(rtmz(:,:,pid)(:),50);bar(x,y/sum(y));grid;
@@ -125,7 +122,7 @@ end
 %response groups of differnt event
 pid=1;
 for i=1:3;rng=20+[10*(i-1)+1:10*i]; %each half second
-idx=sortedRowsId(rtmz(rng,:,pid),@sum);
+idx=sortRowID(rtmz(rng,:,pid),@sum);
 for j=1:3; %each event with the same neuron order
   subplot(3,3,3*(i-1)+j);imagesc(rtmz(:,idx,j)');colorbar;caxis([-5 10]);
   setTimeX(7,-1,2);xlabel('time');ylabel('neuron');
