@@ -1,4 +1,4 @@
-function showMatWithSepper(rtm,sepper,crng='auto',withCount=false)
+function showMatWithSepper(rtm,sepper,crng='auto',withCountTick=false)
   %mat=rtm;mat(:,sepper(sepper>0))=NaN;
   if(!iscolumn(sepper)) sepper=sepper(:); end;
   if(sepper(1)!=0)  sepper=[0;sepper]; end;
@@ -17,9 +17,9 @@ function showMatWithSepper(rtm,sepper,crng='auto',withCount=false)
   xlabel('time');ylabel('neuron')
 
   t=[(newSepper(1:end-1)+newSepper(2:end))/2];
-  if(withCount) t=[t;newSepper(2:end-1)-1]; end
+  if(withCountTick) t=[t;newSepper(2:end-1)-1]; end
   set(gca,'ytick',t);
   t=[num2cell(strcat('R-',num2str([1:nRat]','%-d')),2)];
-  if(withCount) t=[t;num2cell(num2str(sepper(2:end-1)),2)]; end
+  if(withCountTick) t=[t;num2cell(num2str(sepper(2:end-1)),2)]; end
   set(gca,'yticklabel',t);
 end
