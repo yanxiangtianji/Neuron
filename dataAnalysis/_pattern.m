@@ -215,20 +215,47 @@ sepper=[20 30 40];
 idx=33:37;
 showDynamicPhase(rtm,nRow,idx,nNeuList,4,-1,2,0.03,sepper)
 
-
 ##############
-# pattern
+# delay of response
 ##############
 
-function ft=genDynamicFeature(rtm,sepper)
-  [nBin,nNeu,nPha]=size(rtm);
-  sepper=[0;sepper(sepper>0 & sepper<nBin)(:);nBin];
-  nFea=length(sepper)-1;
-  ft=zeros(nFea,nNeu,nPha);
-  for pid=1:nPha;for nid=1:nNeu;for fid=1:nFea
-    ft(fid,nid,pid)=mean(rtm(sepper(fid)+1:sepper(fid+1),nid,pid));
-  end;end;end
+%function chp=findChangePoint(vec,startIdx,thres,granu=1)
+findChangePoint(rtm(:,1,1),21,0.2)
+
+function cp=calResponseDelay(rtm,threshold,startIdx)
+  [~,nNeu,nPha]=size(rtm);
+  cp=zeros(nNeu,nPha);
+  for nid=1:nNeu; for pid=1:nPha
+    cp(nid,pid)=findChangePoint(rtm(:,nid,pid),startIdx,threshold)-startIdx+1;
+  end;end;
 end
+
+threshold=0.3; %threshold=0.5
+cp=calResponseDelay(rtm,threshold,21);
+cpz=calResponseDelay(rtmz,threshold,21);
+
+function showResponseDelay(cp,threshold,nTick,nPoints,tickBeg,tickEnd)
+  [nNeu,nPha]=size(cp);
+  plot(cp);title(['response delay (threshold=',num2str(threshold),')']);
+  ylim([0,nTick]);xlim([0 nNeu]);xlabel('neuron');
+  set(gca,'ytick',linspace(0,nTick,nPoints));
+  set(gca,'yticklabel',linspace(tickBeg,tickEnd,nPoints))
+  ylabel('delay time (s)');
+  legend({'tone','lever','well'});
+end
+
+showResponseDelay(cp,threshold,40,5,0,2)
+
+[~,idx]=sort(cp);
+
+pid=1;
+showGD_core(rtmz(:,idx(:,pid),pid),7,-1,2,[-5 10]);title(['zscore of E',num2str(pid),' by delay'])
+
+##############
+# pattern (old)
+##############
+
+%function ft=genDynamicFeature(rtm,sepper,method=@mean)
 
 sepper=[20 30 40];
 ft=genDynamicFeature(rtm,sepper);
@@ -313,3 +340,17 @@ for gnid=1:nNeu
 end
 
 getGpCount(neuHold)
+
+##############
+# pattern (fine classified)
+##############
+
+sepper=[20 30 40 50];
+ft=genDynamicFeature(rtm,sepper);
+ftz=genDynamicFeature(rtmz,sepper);
+
+
+
+
+
+
