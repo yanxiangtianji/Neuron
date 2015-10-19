@@ -1,4 +1,4 @@
-function showMatWithSepper(rtm,sepper,crng='auto',withCountTick=false)
+function showGDWithSepper(rtm,sepper,nPoints,tickBeg,tickEnd,crng='auto',withCountTick=false)
   %mat=rtm;mat(:,sepper(sepper>0))=NaN;
   if(!iscolumn(sepper)) sepper=sepper(:); end;
   if(sepper(1)!=0)  sepper=[0;sepper]; end;
@@ -13,8 +13,7 @@ function showMatWithSepper(rtm,sepper,crng='auto',withCountTick=false)
     end
     mat(:,newSepper(i)+1:newSepper(i+1)-1)=rtm(:,sepper(i)+1:sepper(i+1));
   end
-  imagesc(mat');colorbar;caxis(crng);
-  xlabel('time');ylabel('neuron')
+  showGD_core(mat,nPoints,tickBeg,tickEnd,crng);
 
   t=[(newSepper(1:end-1)+newSepper(2:end))/2];
   if(withCountTick) t=[t;newSepper(2:end-1)-1]; end

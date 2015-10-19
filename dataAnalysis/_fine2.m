@@ -127,26 +127,26 @@ rtpmz2=baselineZscore(rtpm,1:20,1);
 
 cid=1;
 %imagesc(rtmz(:,:,cid)');colorbar;
-%function idx=sortRowID(rtm_mat,method=@sumsq)
+%function idx=sortNID(rtm_mat,method=@sumsq)
 %  [~,idx]=sortrows([method(rtm_mat(:,:))',(1:size(rtm_mat,2))']);
 %end
 
 %function setTimeX(nPoints,tickBeg,tickEnd)
 function showByRng(rtm,cid,rng,nPoints,tickBeg,tickEnd,tltPre='',crng='auto',method=@sum)
-  idx=sortRowID(rtm(rng,:,cid),method);
+  idx=sortNID(rtm(rng,:,cid),method);
   imagesc(rtm(:,idx,cid)');colorbar;caxis(crng);
   setTimeX(nPoints,tickBeg,tickEnd);
   xlabel('time');ylabel('neuron');title([tltPre,'cue: ',num2str(cid)]);
 end
 
-%idx=sortRowID(rtmz(:,:,cid),@sumsq);
-%idx=sortRowID(rtmz(21:40,:,cid),@sum);
+%idx=sortNID(rtmz(:,:,cid),@sumsq);
+%idx=sortNID(rtmz(21:40,:,cid),@sum);
 %imagesc(rtmz(:,idx,cid)');setTimeX(7,-1,2);colorbar;
-%idx=sortRowID(rtemz(21:40,:,cid),@sum);
+%idx=sortNID(rtemz(21:40,:,cid),@sum);
 %imagesc(rtemz(:,idx,1,cid)');setTimeX(7,-1,2);colorbar;
 
 rng=21:40;
-idx_zs=sortRowID(rtmz(rng,:,cid),@sum);
+idx_zs=sortNID(rtmz(rng,:,cid),@sum);
 
 rng=21:40;
 showByRng(rtm,cid,rng,7,-1,2,'sc ',[0 1.4])
@@ -212,7 +212,7 @@ showDynamic(rtm(:,:,1),nid,mapGNId2Local(nid,nNeuList),7,-1,2,0,[20,30])
 #on count:
 rng=1:nBin;
 cid=1;
-idx_c=sortRowID(rtm(rng,:,cid),@sum);
+idx_c=sortNID(rtm(rng,:,cid),@sum);
 
 t=sum(rtm(rng,:,cid));
 %hist(t,20);
@@ -229,7 +229,7 @@ neuGpTbl_cnt_c=getGpCount(neuGpTbl_c)
 %on z-score:
 rng=21:40;
 cid=1;
-idx_zs=sortRowID(rtmz(rng,:,cid),@sum);
+idx_zs=sortNID(rtmz(rng,:,cid),@sum);
 
 %t=mean(rtmz(rng,:,cid));
 %hist(t,20);
@@ -239,7 +239,7 @@ neuGpTbl_zs=calNeuGroupTbl(nNeuList,idx_zs,sep_zs);
 neuGpTbl_cnt_zs=getGpCount(neuGpTbl_zs);
 
 rng=21:30;
-idx_zs=sortRowID(rtmz(rng,:,cid),@sum);
+idx_zs=sortNID(rtmz(rng,:,cid),@sum);
 for j=1:4;
   th_zs=[-0.25,0.25]*j;
   sep_zs=sepByThrsld(mean(rtmz2(rng,idx_zs,cid)),th_zs);
@@ -279,8 +279,8 @@ gp_cnt=getGpCount(gp)
 rng1=21:30;
 rng2=41:60;
 
-idx1=sortRowID(rtmz2(rng1,:,cid),@sum);
-idx2=sortRowID(rtmz2(rng2,:,cid),@sum);
+idx1=sortNID(rtmz2(rng1,:,cid),@sum);
+idx2=sortNID(rtmz2(rng2,:,cid),@sum);
 th=[-1 1];
 gp1=calNeuGroupTbl(nNeuList,idx1,sepByThrsld(mean(rtmz2(rng1,:,cid)),th));
 gp2=calNeuGroupTbl(nNeuList,idx2,sepByThrsld(mean(rtmz2(rng2,:,cid)),th));
@@ -359,8 +359,8 @@ end
 #overlay:
 function [nOlTop,nOlBottom]=calOverlap(rtm,rng,method=@sum)
   nNeu=size(rtm,2);
-  idx1=sortRowID(rtm(rng,:,1),method);
-  idx2=sortRowID(rtm(rng,:,2),method);
+  idx1=sortNID(rtm(rng,:,1),method);
+  idx2=sortNID(rtm(rng,:,2),method);
   nOlTop=zeros(nNeu,1);
   nOlBottom=zeros(nNeu,1);
   for i=1:nNeu

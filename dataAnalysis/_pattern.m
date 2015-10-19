@@ -85,16 +85,16 @@ subplot(2,2,2)
 showGDSortInRng(rtmz(:,:,pid),21:30,7,-1,2,[-5 10]);
 title('sorted individual zscore')
 
-%function showMatWithSepper(rtm,sepper,crng='auto',withCount=false)
+%function showGDWithSepper(rtm,sepper,nPoints,tickBeg,tickEnd,crng='auto',withCountTick=false)
 
 for pid=1:nPha
   subplot(2,2,pid);showMatWithSepper(rtmz2(:,:,pid),nNeuSum(2:end))
 end
 
 function showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, nPoints,tickBeg,tickEnd,crng='auto')
-  idx=sortRowIDByRat(rtmz(rng,:,pid),nNeuSum,@sum);
-  subplot(2,2,1);showMatWithSepper(rtmz(:,idx,pid),nNeuSum,crng,false);%no individual count
-  title('sorted zscore (by rat)');setTimeX(nPoints,tickBeg,tickEnd);
+  subplot(2,2,1);idx=sortNIDByRat(rtmz(rng,:,pid),nNeuSum,@sum);
+  showGDWithSepper(rtmz(:,idx,pid),nNeuSum,nPoints,tickBeg,tickEnd,crng,false);%no individual count
+  title('sorted zscore (by rat)');
   subplot(4,2,2);[y,x]=hist(rtmz(:,:,pid)(:),50);bar(x,y/sum(y));grid;
   title('distr. of zscore');xlabel('zscore');ylabel('frequency')
   subplot(4,2,4);plot(zeros(1,size(rtmz,1)),'--',mean(rtmz(:,:,pid),2));grid;
@@ -122,7 +122,7 @@ end
 %response groups of differnt event
 pid=1;
 for i=1:3;rng=20+[10*(i-1)+1:10*i]; %each half second
-idx=sortRowID(rtmz(rng,:,pid),@sum);
+idx=sortNID(rtmz(rng,:,pid),@sum);
 for j=1:3; %each event with the same neuron order
   subplot(3,3,3*(i-1)+j);imagesc(rtmz(:,idx,j)');colorbar;caxis([-5 10]);
   setTimeX(7,-1,2);xlabel('time');ylabel('neuron');
