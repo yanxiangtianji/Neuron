@@ -138,6 +138,29 @@ for i=1:3;rng=20+[10*(i-1)+1:10*i];
   end
 end
 
+##############
+# who respond
+##############
+
+pid=1;
+rng=21:30;
+idx=sortNID(rtmz(rng,:,pid),@sum);
+breakPoint=max(find(sum(rtmz(rng,idx,pid))<=0));
+
+%mean response of all neurons (+ neurons and - neurons)
+subplot(2,2,1);
+plot(zeros(nBin,1),'--',baselineZscore(sum(rtm(:,:,pid),2),1:20),';all;','linewidth',2)
+hold all;
+  plot(baselineZscore(sum(rtm(:,idx(1:breakPoint),pid),2),1:20),';-;',
+    baselineZscore(sum(rtm(:,idx(breakPoint+1:end),pid),2),1:20),';+;');
+hold off;
+setTimeX(7,-1,2);grid on;legend('location','southwest')
+title('zscore of mean spike rate');xlabel('time');ylabel('zscore');
+
+%individual response to the same event are different across neurons
+subplot(2,2,2);
+showGD_core(rtmz(:,idx,pid),7,-1,2,[-5 10]);
+title('sorted individual zscore');
 
 ##############
 # event
@@ -155,7 +178,7 @@ function entTime=getEventTime(fnl_b,fnl_e,cid,nTri,entPhase,offMismatch)
 end
 entTime=getEventTime(fnl_pb,fnl_e(map_p),cid,nTri,entPhase,-100*timeUnit2ms);
 
-# time delay between actions
+# time delay between actions (events)
 entDiff=diff(entTime,1,2);
 colormap(summer);
 for i=1:nRat
