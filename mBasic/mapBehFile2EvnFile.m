@@ -12,4 +12,8 @@ for i=1:numel(fnl_b)
   end
 end
 
+if(any(map(:)==0))
+  printf('%d out of %d behavior file(s) cannot be mapped to event file(s).\n',sum(map(:)==0),numel(map))
+end
+
 end
