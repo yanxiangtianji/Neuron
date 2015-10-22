@@ -5,19 +5,25 @@ addpath([pwd,'/pattern/'])
 pre_fn='E:\Data\Data for MUA\';
 pre_fn_sub={'PL','IL','OFC'};
 
-[fnl_ps,fnl_pb]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(1))]);
-%[fnl_is,fnl_ib]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(2))]);
-%[fnl_os,fnl_ob]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(3))]);
+%[fnl_sp,fnl_bp]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(1))]);
+%[fnl_si,fnl_bi]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(2))]);
+%[fnl_so,fnl_bo]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(3))]);
+%fnl_s=fnl_sp;fnl_b=fnl_bp;
+
 [~,~,fnl_e]=makeFileListOfFolder([pre_fn,'PFC_events']);
-map_p=mapBehFile2EvnFile(fnl_pb,fnl_e);
-%map_i=mapBehFile2EvnFile(fnl_ib,fnl_e);
-%map_o=mapBehFile2EvnFile(fnl_ob,fnl_e);
+%fnm_be_p=mapBehFile2EvnFile(fnl_bp,fnl_e);
+%fnm_be_i=mapBehFile2EvnFile(fnl_bi,fnl_e);
+%fnm_be_o=mapBehFile2EvnFile(fnl_bo,fnl_e);
+%fnm_be=fnm_be_p;
+
+[fnl_s,fnl_b]=makeFileListOfFolder([pre_fn,cell2mat(pre_fn_sub(2))]);
+fnm_be=mapBehFile2EvnFile(fnl_b,fnl_e);
 
 rat_name={'R001','R002','R003','R004','R005','R006','R009','R016','R017','R018','R096','R108'};
-%countTrials(fnl_pb)
+%countTrials(fnl_b)
 nCue=1;
 cid=1;
-nRat=length(fnl_pb);
+nRat=length(fnl_b);
 
 timeUnit2ms=10;
 trialLength=10*1000*timeUnit2ms;
@@ -43,13 +49,13 @@ function nVld=checkNTri(fnl_b,fnl_e,cid,entPhase,offMismatch)
     disp([size(times,1) nVld(i)])
   end
 end
-%nVld=checkNTri(fnl_pb,fnl_e(map_p),1,entPhase,-1000*timeUnit2ms);
+%nVld=checkNTri(fnl_b,fnl_e(fnm_be),1,entPhase,-1000*timeUnit2ms);
 %nTri=min(nVld)
 
 nTri=41;
 
 %data=cell(nTri,nNeu,nPha);
-[data,nNeuList]=pickTrialByEventFromFiles(fnl_ps,fnl_pb,fnl_e(map_p),1,nTri,entPhase,-1000*timeUnit2ms,2000*timeUnit2ms,-500*timeUnit2ms,true);
+[data,nNeuList]=pickTrialByEventFromFiles(fnl_s,fnl_b,fnl_e(fnm_be),1,nTri,entPhase,-1000*timeUnit2ms,2000*timeUnit2ms,-500*timeUnit2ms,true);
 nNeu=size(data,2); %nNeu=sum(nNeuList);
 nNeuSum=[0;cumsum(nNeuList)(:)];
 
@@ -68,6 +74,7 @@ rtm=squeeze(mean(rt,2));% size=(nBin,nNeu,nPha)
 %rtmz2=baselineZscore(rtm,1:20,1);
 mu=mean(rtm(1:20,:,1));
 sigma=std(rtm(1:20,:,1)); sigma(sigma==0)=1;
+rtmz=zeros(size(rtm));
 for i=1:nPha
   rtmz(:,:,i)=bsxfun (@rdivide, bsxfun (@minus, rtm(:,:,i), mu), sigma);
 end
@@ -78,17 +85,36 @@ return
 # global display on event separated by rat
 ##############
 
-subplot(2,2,1)
-plot(zeros(1,size(rtmz,1)),'--',baselineZscore(mean(rtm(:,:,pid),2),1:20));grid;
-xlabel('time');ylabel('zscore');title('zscore of mean spike count')
-subplot(2,2,2)
-showGDSortInRng(rtmz(:,:,pid),21:30,7,-1,2,[-5 10]);
-title('sorted individual zscore')
+##############
+# who respond
+
+pid=1;
+rng=21:30;
+idx=sortNID(rtmz(rng,:,pid),@sum);
+breakPoint=max(find(sum(rtmz(rng,idx,pid))<=0));
+
+%mean response of all neurons (+ neurons and - neurons)
+subplot(2,2,1);
+plot(zeros(nBin,1),'--',baselineZscore(sum(rtm(:,:,pid),2),1:20),';all;','linewidth',2)
+setTimeX(7,-1,2);grid on;legend('location','southwest')
+title('zscore of mean spike rate');xlabel('time');ylabel('zscore');
+hold all;
+  plot(baselineZscore(sum(rtm(:,idx(1:breakPoint),pid),2),1:20),';-;',
+    baselineZscore(sum(rtm(:,idx(breakPoint+1:end),pid),2),1:20),';+;');
+hold off;
+
+%individual response to the same event are different across neurons
+subplot(2,2,2);
+showGD_core(rtmz(:,idx,pid),7,-1,2,[-5 10]);
+title('sorted individual zscore');
+
+##############
+# global summary
 
 %function showGDWithSepper(rtm,sepper,nPoints,tickBeg,tickEnd,crng='auto',withCountTick=false)
 
 for pid=1:nPha
-  subplot(2,2,pid);showMatWithSepper(rtmz2(:,:,pid),nNeuSum(2:end))
+  subplot(2,2,pid);showGDWithSepper(rtmz2(:,:,pid),nNeuSum,7,-1,2,[-5 10],false)
 end
 
 function showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, nPoints,tickBeg,tickEnd,crng='auto')
@@ -119,16 +145,8 @@ for i=1:3;rng=20+[10*(i-1)+1:10*(i+1)]; %each whole second
   title(sprintf('zscore (scorted by [%.1f,%.1f]s)',0.5*(i-1),0.5*(i+1)));
 end
 
-%response groups of differnt event
-pid=1;
-for i=1:3;rng=20+[10*(i-1)+1:10*i]; %each half second
-idx=sortNID(rtmz(rng,:,pid),@sum);
-for j=1:3; %each event with the same neuron order
-  subplot(3,3,3*(i-1)+j);imagesc(rtmz(:,idx,j)');colorbar;caxis([-5 10]);
-  setTimeX(7,-1,2);xlabel('time');ylabel('neuron');
-  title(sprintf('zs of E%d by %.1f~%.1f s',j,0.5*(i-1),0.5*i));
-end
-end
+##############
+# resposne group
 
 %global response significance of all event on all period
 for i=1:3;rng=20+[10*(i-1)+1:10*i];
@@ -138,29 +156,20 @@ for i=1:3;rng=20+[10*(i-1)+1:10*i];
   end
 end
 
-##############
-# who respond
-##############
+%response groups of differnt event:
 
-pid=1;
-rng=21:30;
+% row: use the same neuron order for all 3 events
+% column: align with different period
+pid=1;  %the order is sorted for this event
+for i=1:3;rng=20+[10*(i-1)+1:10*i]; %each half second
 idx=sortNID(rtmz(rng,:,pid),@sum);
-breakPoint=max(find(sum(rtmz(rng,idx,pid))<=0));
+for j=1:3; %each event with the same neuron order
+  subplot(3,3,3*(i-1)+j);imagesc(rtmz(:,idx,j)');colorbar;caxis([-5 10]);
+  setTimeX(7,-1,2);xlabel('time');ylabel('neuron');
+  title(sprintf('zs of E%d by %.1f~%.1f s',j,0.5*(i-1),0.5*i));
+end
+end
 
-%mean response of all neurons (+ neurons and - neurons)
-subplot(2,2,1);
-plot(zeros(nBin,1),'--',baselineZscore(sum(rtm(:,:,pid),2),1:20),';all;','linewidth',2)
-hold all;
-  plot(baselineZscore(sum(rtm(:,idx(1:breakPoint),pid),2),1:20),';-;',
-    baselineZscore(sum(rtm(:,idx(breakPoint+1:end),pid),2),1:20),';+;');
-hold off;
-setTimeX(7,-1,2);grid on;legend('location','southwest')
-title('zscore of mean spike rate');xlabel('time');ylabel('zscore');
-
-%individual response to the same event are different across neurons
-subplot(2,2,2);
-showGD_core(rtmz(:,idx,pid),7,-1,2,[-5 10]);
-title('sorted individual zscore');
 
 ##############
 # event
@@ -176,7 +185,7 @@ function entTime=getEventTime(fnl_b,fnl_e,cid,nTri,entPhase,offMismatch)
     entTime(:,:,i)=times(idx(1:nTri),:);
   end
 end
-entTime=getEventTime(fnl_pb,fnl_e(map_p),cid,nTri,entPhase,-100*timeUnit2ms);
+entTime=getEventTime(fnl_b,fnl_e(fnm_be),cid,nTri,entPhase,-100*timeUnit2ms);
 
 # time delay between actions (events)
 entDiff=diff(entTime,1,2);
@@ -193,6 +202,7 @@ end
 # dynamic
 ##############
 
+%show all neurons' response to one certain event.
 function showDynamicAll(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dashThre=0,sepper,prefix='')
   nNeu=length(idx);
   if(nNeu!=sum(nNeuList))
@@ -207,12 +217,12 @@ function showDynamicAll(rtm,cid,nRow,nCol,idx,nNeuList, nTick,tckBeg,tckEnd,dash
 end
 
 nRow=4;nCol=4;
-sepper=[20,30,40];
+sepper=[20,30,40,50];
 showDynamicAll(rtm,1,nRow,nCol,1:nNeu,nNeuList,4,-1,2,0.03,sepper,'tone-')
 showDynamicAll(rtm,2,nRow,nCol,1:nNeu,nNeuList,4,-1,2,0.03,sepper,'lever-')
 showDynamicAll(rtm,3,nRow,nCol,1:nNeu,nNeuList,4,-1,2,0.03,sepper,'well-')
 
-
+%show SOME (specified with IDX) neurons' response to all 3 events.
 function showDynamicPhase(rtm,nRow,idx,nNeuList,nTick,tckBeg,tckEnd,dashThre,sepper)
   nPha=size(rtm,3);
   for row=1:min(nRow,length(idx));
@@ -243,29 +253,15 @@ showDynamicPhase(rtm,nRow,idx,nNeuList,4,-1,2,0.03,sepper)
 ##############
 
 %function chp=findChangePoint(vec,startIdx,thres,granu=1)
-findChangePoint(rtm(:,1,1),21,0.2)
+%findChangePoint(rtm(:,1,1),21,0.2)
 
-function cp=calResponseDelay(rtm,threshold,startIdx)
-  [~,nNeu,nPha]=size(rtm);
-  cp=zeros(nNeu,nPha);
-  for nid=1:nNeu; for pid=1:nPha
-    cp(nid,pid)=findChangePoint(rtm(:,nid,pid),startIdx,threshold)-startIdx+1;
-  end;end;
-end
+%function cp=calResponseDelay(rtm,threshold,startIdx)
 
 threshold=0.3; %threshold=0.5
 cp=calResponseDelay(rtm,threshold,21);
 cpz=calResponseDelay(rtmz,threshold,21);
 
-function showResponseDelay(cp,threshold,nTick,nPoints,tickBeg,tickEnd)
-  [nNeu,nPha]=size(cp);
-  plot(cp);title(['response delay (threshold=',num2str(threshold),')']);
-  ylim([0,nTick]);xlim([0 nNeu]);xlabel('neuron');
-  set(gca,'ytick',linspace(0,nTick,nPoints));
-  set(gca,'yticklabel',linspace(tickBeg,tickEnd,nPoints))
-  ylabel('delay time (s)');
-  legend({'tone','lever','well'});
-end
+%function showResponseDelay(cp,threshold,nPoints,nTick,tickBeg,tickEnd)
 
 showResponseDelay(cp,threshold,40,5,0,2)
 
@@ -273,6 +269,22 @@ showResponseDelay(cp,threshold,40,5,0,2)
 
 pid=1;
 showGD_core(rtmz(:,idx(:,pid),pid),7,-1,2,[-5 10]);title(['zscore of E',num2str(pid),' by delay'])
+
+function showDelaySummary(rtm,rtmz,startIdx,threshold, nTick_d, nTick,tickBeg,tickEnd,crng)
+  [nBin,~,nPha]=size(rtm);
+  cp=calResponseDelay(rtm,threshold,startIdx);
+  nPoints_d=nBin-startIdx+1;
+  subplot(2,2,1);showResponseDelay(cp,threshold,nPoints_d,nTick_d,0,tickEnd)
+  [~,idx]=sort(cp);
+  for pid=1:nPha;
+    subplot(2,2,1+pid);
+    showGD_core(rtmz(:,idx(:,pid),pid),nTick,tickBeg,tickEnd,crng);
+    title(['zscore of E',num2str(pid),' by delay'])
+  end
+end
+
+threshold=0.3;
+showDelaySummary(rtm,rtmz,21,threshold, 5,7,-1,2,[-5 10]);
 
 ##############
 # pattern (old)
