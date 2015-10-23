@@ -90,22 +90,22 @@ return
 
 pid=1;
 rng=21:30;
+blRng=1:20;
 idx=sortNID(rtmz(rng,:,pid),@sum);
 breakPoint=max(find(sum(rtmz(rng,idx,pid))<=0));
+plot(zeros(nBin,1),'--',baselineZscore(sum(rtm(:,:,pid),2),blRng),';all;','linewidth',2,
+  baselineZscore(sum(rtm(:,idx(breakPoint+1:end),pid),2),blRng),';+;',
+  baselineZscore(sum(rtm(:,idx(1:breakPoint),pid),2),blRng),';-;');
+
+%function showMeanDynamic(rtm,rtmz,pid,rng,blRng, nPoints,tickBeg,tickEnd)
 
 %mean response of all neurons (+ neurons and - neurons)
 subplot(2,2,1);
-plot(zeros(nBin,1),'--',baselineZscore(sum(rtm(:,:,pid),2),1:20),';all;','linewidth',2)
-setTimeX(7,-1,2);grid on;legend('location','southwest')
-title('zscore of mean spike rate');xlabel('time');ylabel('zscore');
-hold all;
-  plot(baselineZscore(sum(rtm(:,idx(1:breakPoint),pid),2),1:20),';-;',
-    baselineZscore(sum(rtm(:,idx(breakPoint+1:end),pid),2),1:20),';+;');
-hold off;
+showMeanDynamic(rtm,rtmz,pid,rng,blRng, 7,-1,2);
 
 %individual response to the same event are different across neurons
 subplot(2,2,2);
-showGD_core(rtmz(:,idx,pid),7,-1,2,[-5 10]);
+showGDSortInRng(rtmz(:,:,pid),rng, 7,-1,2,[-5 10]);
 title('sorted individual zscore');
 
 ##############
@@ -117,13 +117,13 @@ for pid=1:nPha
   subplot(2,2,pid);showGDWithSepper(rtmz2(:,:,pid),nNeuSum,7,-1,2,[-5 10],false)
 end
 
-function showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, nPoints,tickBeg,tickEnd,crng='auto')
+function showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng,blRng, nPoints,tickBeg,tickEnd,crng='auto')
   subplot(2,2,1);idx=sortNIDByRat(rtmz(rng,:,pid),nNeuSum,@sum);
   showGDWithSepper(rtmz(:,idx,pid),nNeuSum,nPoints,tickBeg,tickEnd,crng,false);%no individual count
   title('sorted zscore (by rat)');
   subplot(4,2,2);[y,x]=hist(rtmz(:,:,pid)(:),50);bar(x,y/sum(y));grid;
   title('distr. of zscore');xlabel('zscore');ylabel('frequency')
-  subplot(4,2,4);plot(zeros(1,size(rtmz,1)),'--',mean(rtmz(:,:,pid),2));grid;
+  subplot(4,2,4);plot(zeros(1,size(rtmz,1)),'--',baselineZscore(sum(rtm(:,:,pid),2),blRng));grid;
   title('global zscore');setTimeX(nPoints,tickBeg,tickEnd);xlabel('time');ylabel('zscore')
   subplot(2,2,3);idx=showGDSortInRng(rtmz(:,:,pid),rng,nPoints,tickBeg,tickEnd,crng);
   title('sorted zscore (global)')
@@ -133,7 +133,8 @@ end
 
 pid=1;
 rng=21:30;
-showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng, 7,-1,2,[-5 10])
+blRng=1:20;
+showGlobalAnalysisOfEvent(rtm,rtmz,pid,nNeuSum,rng,blRng, 7,-1,2,[-5 10])
 
 for i=1:4;rng=20+[10*(i-1)+1:10*i]; %each half second
   subplot(2,2,i);showGDSortInRng(rtmz(:,:,pid),rng,7,-1,2,[-5 10]);
@@ -187,15 +188,11 @@ function entTime=getEventTime(fnl_b,fnl_e,cid,nTri,entPhase,offMismatch)
 end
 entTime=getEventTime(fnl_b,fnl_e(fnm_be),cid,nTri,entPhase,-100*timeUnit2ms);
 
+##############
 # time delay between actions (events)
 entDiff=diff(entTime,1,2);
-colormap(summer);
-for i=1:nRat
-  subplot(3,2,i);[y,x]=hist(entDiff(:,:,i)/1000/timeUnit2ms,40);bar(x,y/nTri);
-  set(gca,'xtick',linspace(0,xlim()(2),11));legend({'tone-lever';'lever-well'})
-  title(['Rat: ',num2str(i)]);xlabel('delay (s)');ylabel('frequency');
-end
-
+%function showEventInterval(entDiff,names,timeUnit2ms)
+showEventInterval(entDiff,{'tone-lever';'lever-well'},timeUnit2ms)
 
 
 ##############
